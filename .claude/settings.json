@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "enabledPlugins": {
+    "ecc@ecc": true
+  },
+  "mcpServers": {
+    "neon": {
+      "command": "npx",
+      "args": ["-y", "@neondatabase/mcp-server-neon", "start"],
+      "description": "Neon database operations"
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "description": "GitHub operations"
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp@latest"],
+      "description": "Documentation lookup for Next.js, Tailwind, Prisma"
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "D:/CLAUDE-PROJECT/website"],
+      "description": "Filesystem operations"
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "description": "Complex reasoning"
+    },
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp", "--browser", "chrome"],
+      "description": "Browser automation and E2E testing"
+    }
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx -y tsc --noEmit"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const fs=require('fs');const tsconfigPath=p.join(process.cwd(),'tsconfig.json');if(f.existsSync(tsconfigPath)){try{const config=JSON.parse(f.readFileSync(tsconfigPath,'utf8'));const rootDir=config.compilerOptions?.rootDir||process.cwd();const isProjectRootDir=!!config.compilerOptions?.rootDir;for(const key of Object.keys(config)){if(key!=='compilerOptions'&&key!=='include'&&key!=='exclude'&&key!=='references'&&key!=='watch'){config[key]=null;}}const finalConfig=JSON.stringify(config,null,2);f.writeFileSync(tsconfigPath,finalConfig);}catch(e){}}\""
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const fs=require('fs');const p=require('path');const sessionFile=p.join(process.cwd(),'.claude','session-last.json');if(f.existsSync(sessionFile)){const session=JSON.parse(fs.readFileSync(sessionFile,'utf8'));console.log(JSON.stringify({lastSessionPath:session.sessionPath,lastContextChars:session.contextStats?.totalChars,lastToolCalls:session.lastToolCount}));}\""
+          }
+        ]
+      }
+    ]
+  }
+}
