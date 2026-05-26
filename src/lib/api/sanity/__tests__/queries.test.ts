@@ -1,4 +1,11 @@
 import { describe, it, expect, beforeEach } from '@jest/globals'
+import {
+  mockProduct,
+  mockCertification,
+  mockPortfolioEntry,
+  mockSpokeConfig,
+  mockPage,
+} from './fixtures'
 
 jest.mock('next-sanity', () => ({
   groq: (strings: TemplateStringsArray, ...keys: unknown[]) => {
@@ -19,11 +26,11 @@ jest.mock('../client', () => ({
   },
   CACHE_TAGS: {
     product: (id?: string) => (id ? `sanity:product:${id}` : 'sanity:product'),
-    certification: (id?: string) => id ? `sanity:certification:${id}` : 'sanity:certification',
-    portfolio: (id?: string) => id ? `sanity:portfolio:${id}` : 'sanity:portfolio',
+    certification: (id?: string) => (id ? `sanity:certification:${id}` : 'sanity:certification'),
+    portfolio: (id?: string) => (id ? `sanity:portfolio:${id}` : 'sanity:portfolio'),
     spoke: (subdomain: string) => `sanity:spoke:${subdomain}`,
-    spokeConfig: (id?: string) => id ? `sanity:spokeConfig:${id}` : 'sanity:spokeConfig',
-    page: (id?: string) => id ? `sanity:page:${id}` : 'sanity:page',
+    spokeConfig: (id?: string) => (id ? `sanity:spokeConfig:${id}` : 'sanity:spokeConfig'),
+    page: (id?: string) => (id ? `sanity:page:${id}` : 'sanity:page'),
     all: 'sanity:all',
   },
 }))
@@ -35,7 +42,7 @@ describe('GROQ Queries', () => {
 
   describe('getProductsBySpoke', () => {
     it('should fetch products by spoke subdomain', async () => {
-      const mockProducts = [{ _id: 'prod-1', title: 'Solar Panel' }]
+      const mockProducts = [mockProduct()]
       mockFetch.mockResolvedValueOnce(mockProducts)
 
       const { getProductsBySpoke } = await import('../queries')
@@ -65,8 +72,8 @@ describe('GROQ Queries', () => {
 
   describe('getProductBySlug', () => {
     it('should fetch a single product by slug', async () => {
-      const mockProduct = { _id: 'prod-1', title: 'Solar Panel' }
-      mockFetch.mockResolvedValueOnce(mockProduct)
+      const mockProductData = mockProduct()
+      mockFetch.mockResolvedValueOnce(mockProductData)
 
       const { getProductBySlug } = await import('../queries')
       const result = await getProductBySlug('solar-panel')
@@ -80,13 +87,55 @@ describe('GROQ Queries', () => {
           }),
         }),
       )
-      expect(result).toEqual(mockProduct)
+      expect(result).toEqual(mockProductData)
+    })
+
+    it('should return null on fetch error', async () => {
+      mockFetch.mockRejectedValueOnce(new Error('Connection error'))
+
+      const { getProductBySlug } = await import('../queries')
+      const result = await getProductBySlug('solar-panel')
+
+      expect(result).toBeNull()
+    })
+  })
+
+  describe('getProductSlugsWithSpokes', () => {
+    it('should fetch all product slug/subdomain pairs', async () => {
+      const mockMappings = [
+        { slug: 'solar-panel', subdomain: 'pju' },
+        { slug: 'solar-inverter', subdomain: 'solarcell' },
+      ]
+      mockFetch.mockResolvedValueOnce(mockMappings)
+
+      const { getProductSlugsWithSpokes } = await import('../queries')
+      const result = await getProductSlugsWithSpokes()
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.anything(),
+        {},
+        expect.objectContaining({
+          next: expect.objectContaining({
+            tags: expect.arrayContaining(['sanity:product']),
+          }),
+        }),
+      )
+      expect(result).toEqual(mockMappings)
+    })
+
+    it('should return null on fetch error', async () => {
+      mockFetch.mockRejectedValueOnce(new Error('Connection error'))
+
+      const { getProductSlugsWithSpokes } = await import('../queries')
+      const result = await getProductSlugsWithSpokes()
+
+      expect(result).toBeNull()
     })
   })
 
   describe('getCertifications', () => {
     it('should fetch indexable certifications', async () => {
-      const mockCertifications = [{ _id: 'cert-1', title: 'SNI' }]
+      const mockCertifications = [mockCertification()]
       mockFetch.mockResolvedValueOnce(mockCertifications)
 
       const { getCertifications } = await import('../queries')
@@ -103,12 +152,21 @@ describe('GROQ Queries', () => {
       )
       expect(result).toEqual(mockCertifications)
     })
+
+    it('should return null on fetch error', async () => {
+      mockFetch.mockRejectedValueOnce(new Error('Connection error'))
+
+      const { getCertifications } = await import('../queries')
+      const result = await getCertifications()
+
+      expect(result).toBeNull()
+    })
   })
 
   describe('getCertificationBySlug', () => {
     it('should fetch a single certification by slug', async () => {
-      const mockCertification = { _id: 'cert-1', title: 'SNI' }
-      mockFetch.mockResolvedValueOnce(mockCertification)
+      const mockCertificationData = mockCertification()
+      mockFetch.mockResolvedValueOnce(mockCertificationData)
 
       const { getCertificationBySlug } = await import('../queries')
       const result = await getCertificationBySlug('sni')
@@ -122,13 +180,22 @@ describe('GROQ Queries', () => {
           }),
         }),
       )
-      expect(result).toEqual(mockCertification)
+      expect(result).toEqual(mockCertificationData)
+    })
+
+    it('should return null on fetch error', async () => {
+      mockFetch.mockRejectedValueOnce(new Error('Connection error'))
+
+      const { getCertificationBySlug } = await import('../queries')
+      const result = await getCertificationBySlug('sni')
+
+      expect(result).toBeNull()
     })
   })
 
   describe('getPortfolioEntries', () => {
     it('should fetch portfolio entries optionally filtered by subdomain', async () => {
-      const mockPortfolio = [{ _id: 'port-1', title: 'Project 1' }]
+      const mockPortfolio = [mockPortfolioEntry()]
       mockFetch.mockResolvedValueOnce(mockPortfolio)
 
       const { getPortfolioEntries } = await import('../queries')
@@ -147,7 +214,7 @@ describe('GROQ Queries', () => {
     })
 
     it('should fetch all portfolio entries when subdomain is not passed', async () => {
-      const mockPortfolio = [{ _id: 'port-1', title: 'Project 1' }]
+      const mockPortfolio = [mockPortfolioEntry()]
       mockFetch.mockResolvedValueOnce(mockPortfolio)
 
       const { getPortfolioEntries } = await import('../queries')
@@ -164,11 +231,20 @@ describe('GROQ Queries', () => {
       )
       expect(result).toEqual(mockPortfolio)
     })
+
+    it('should return null on fetch error', async () => {
+      mockFetch.mockRejectedValueOnce(new Error('Connection error'))
+
+      const { getPortfolioEntries } = await import('../queries')
+      const result = await getPortfolioEntries()
+
+      expect(result).toBeNull()
+    })
   })
 
   describe('getPortfolioBySlug', () => {
     it('should fetch a single portfolio entry by slug', async () => {
-      const mockPortfolio = { _id: 'port-1', title: 'Project 1' }
+      const mockPortfolio = mockPortfolioEntry()
       mockFetch.mockResolvedValueOnce(mockPortfolio)
 
       const { getPortfolioBySlug } = await import('../queries')
@@ -185,11 +261,20 @@ describe('GROQ Queries', () => {
       )
       expect(result).toEqual(mockPortfolio)
     })
+
+    it('should return null on fetch error', async () => {
+      mockFetch.mockRejectedValueOnce(new Error('Connection error'))
+
+      const { getPortfolioBySlug } = await import('../queries')
+      const result = await getPortfolioBySlug('project-1')
+
+      expect(result).toBeNull()
+    })
   })
 
   describe('getSpokeConfig', () => {
     it('should fetch spoke config by subdomain', async () => {
-      const mockConfig = { _id: 'cfg-1', subdomain: 'pju' }
+      const mockConfig = mockSpokeConfig()
       mockFetch.mockResolvedValueOnce(mockConfig)
 
       const { getSpokeConfig } = await import('../queries')
@@ -206,11 +291,20 @@ describe('GROQ Queries', () => {
       )
       expect(result).toEqual(mockConfig)
     })
+
+    it('should return null on fetch error', async () => {
+      mockFetch.mockRejectedValueOnce(new Error('Connection error'))
+
+      const { getSpokeConfig } = await import('../queries')
+      const result = await getSpokeConfig('pju')
+
+      expect(result).toBeNull()
+    })
   })
 
   describe('getAllSpokeConfigs', () => {
     it('should fetch all spoke configs', async () => {
-      const mockConfigs = [{ _id: 'cfg-1', subdomain: 'pju' }]
+      const mockConfigs = [mockSpokeConfig()]
       mockFetch.mockResolvedValueOnce(mockConfigs)
 
       const { getAllSpokeConfigs } = await import('../queries')
@@ -227,12 +321,21 @@ describe('GROQ Queries', () => {
       )
       expect(result).toEqual(mockConfigs)
     })
+
+    it('should return null on fetch error', async () => {
+      mockFetch.mockRejectedValueOnce(new Error('Connection error'))
+
+      const { getAllSpokeConfigs } = await import('../queries')
+      const result = await getAllSpokeConfigs()
+
+      expect(result).toBeNull()
+    })
   })
 
   describe('getPageBySlug', () => {
     it('should fetch page by slug and optionally by spoke subdomain', async () => {
-      const mockPage = { _id: 'page-1', slug: 'home' }
-      mockFetch.mockResolvedValueOnce(mockPage)
+      const mockPageData = mockPage()
+      mockFetch.mockResolvedValueOnce(mockPageData)
 
       const { getPageBySlug } = await import('../queries')
       const result = await getPageBySlug('home', 'pju')
@@ -246,7 +349,16 @@ describe('GROQ Queries', () => {
           }),
         }),
       )
-      expect(result).toEqual(mockPage)
+      expect(result).toEqual(mockPageData)
+    })
+
+    it('should return null on fetch error', async () => {
+      mockFetch.mockRejectedValueOnce(new Error('Connection error'))
+
+      const { getPageBySlug } = await import('../queries')
+      const result = await getPageBySlug('home', 'pju')
+
+      expect(result).toBeNull()
     })
   })
 })

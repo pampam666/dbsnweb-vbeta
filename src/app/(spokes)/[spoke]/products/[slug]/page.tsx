@@ -1,6 +1,6 @@
-import { getProductBySlug, getSpokeConfig, getProductsBySpoke, getAllSpokeConfigs } from '@/lib/api/sanity/queries'
+import { getProductBySlug, getSpokeConfig, getProductSlugsWithSpokes } from '@/lib/api/sanity/queries'
 import { getOptimizedImageUrl } from '@/lib/api/sanity/image'
-import { getSanityEnv } from '@/lib/config/env'
+import { PortableText } from '@/components/shared/PortableText'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -9,24 +9,12 @@ import type { Metadata } from 'next'
 export const revalidate = 3600 // Revalidate hourly
 
 export async function generateStaticParams() {
-  const configs = await getAllSpokeConfigs()
-  if (!configs) return []
-
-  const params: Array<{ spoke: string; slug: string }> = []
-
-  for (const cfg of configs) {
-    const products = await getProductsBySpoke(cfg.subdomain)
-    if (products) {
-      products.forEach((prod) => {
-        params.push({
-          spoke: cfg.subdomain,
-          slug: prod.slug,
-        })
-      })
-    }
-  }
-
-  return params
+  const mappings = await getProductSlugsWithSpokes()
+  if (!mappings) return []
+  return mappings.map((m) => ({
+    spoke: m.subdomain,
+    slug: m.slug,
+  }))
 }
 
 export async function generateMetadata({
@@ -43,36 +31,7 @@ export async function generateMetadata({
   }
 }
 
-interface PortableTextChild {
-  text: string
-}
 
-interface PortableTextBlock {
-  _type: string
-  style?: string
-  children?: PortableTextChild[]
-}
-
-function PortableTextRenderer({ value }: { value: unknown }) {
-  if (!Array.isArray(value)) return null
-
-  return (
-    <div className="space-y-4 text-slate-700 leading-relaxed">
-      {(value as PortableTextBlock[]).map((block, idx) => {
-        if (block._type !== 'block') return null
-
-        const text = block.children?.map((child) => child.text).join('') || ''
-        
-        if (block.style === 'h1') return <h1 key={idx} className="text-3xl font-bold text-slate-900 mt-6 mb-2">{text}</h1>
-        if (block.style === 'h2') return <h2 key={idx} className="text-2xl font-bold text-slate-900 mt-5 mb-2">{text}</h2>
-        if (block.style === 'h3') return <h3 key={idx} className="text-xl font-bold text-slate-900 mt-4 mb-2">{text}</h3>
-        if (block.style === 'h4') return <h4 key={idx} className="text-lg font-bold text-slate-900 mt-3 mb-2">{text}</h4>
-        
-        return <p key={idx} className="text-base">{text}</p>
-      })}
-    </div>
-  )
-}
 
 export default async function ProductDetailPage({
   params,
@@ -89,7 +48,6 @@ export default async function ProductDetailPage({
     notFound()
   }
 
-  const { SANITY_PROJECT_ID, SANITY_DATASET } = getSanityEnv()
   const primaryColor = config.primaryColor || '#2563eb'
 
   return (
@@ -175,9 +133,9 @@ export default async function ProductDetailPage({
                   )}
 
                   <div className="flex flex-wrap gap-3">
-                    {product.datasheetFile && (
+                    {product.datasheetUrl && (
                       <a
-                        href={`https://cdn.sanity.io/files/${SANITY_PROJECT_ID}/${SANITY_DATASET}/${product.datasheetFile.asset._ref}`}
+                        href={product.datasheetUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex-1 text-center py-3.5 rounded-2xl font-bold text-sm text-white hover:opacity-90 transition"
@@ -204,7 +162,7 @@ export default async function ProductDetailPage({
               <div className="lg:col-span-2 space-y-6">
                 <div>
                   <h2 className="text-2xl font-bold text-slate-900 mb-4">Deskripsi Lengkap</h2>
-                  <PortableTextRenderer value={product.fullDescription} />
+                  <PortableText value={product.fullDescription} />
                 </div>
               </div>
 

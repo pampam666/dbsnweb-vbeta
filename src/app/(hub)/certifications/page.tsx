@@ -1,6 +1,5 @@
 import { getCertifications } from '@/lib/api/sanity/queries'
 import { getOptimizedImageUrl } from '@/lib/api/sanity/image'
-import { getSanityEnv } from '@/lib/config/env'
 import Image from 'next/image'
 import Link from 'next/link'
 import type { Metadata } from 'next'
@@ -14,19 +13,10 @@ export const metadata: Metadata = {
 
 export default async function CertificationsPage() {
   const certifications = await getCertifications()
-  const { SANITY_PROJECT_ID, SANITY_DATASET } = getSanityEnv()
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <header className="border-b border-slate-200 bg-white shadow-sm">
-        <nav className="container mx-auto px-6 py-4 flex gap-6">
-          <Link href="/" className="font-bold text-slate-800 hover:text-blue-600">DBSN</Link>
-          <Link href="/certifications" className="text-blue-600 font-medium">Certifications</Link>
-          <Link href="/portfolio" className="text-slate-600 hover:text-blue-600">Portfolio</Link>
-        </nav>
-      </header>
-
-      <main className="container mx-auto px-6 py-12">
+      <main className="container mx-auto px-6 pt-24 pb-12">
         <div className="max-w-4xl mx-auto text-center mb-12">
           <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight sm:text-5xl">
             Sertifikasi & Kepatuhan
@@ -80,9 +70,9 @@ export default async function CertificationsPage() {
                       }) : 'Seumur Hidup'}
                     </p>
                   </div>
-                  {cert.documentFile && (
+                  {cert.documentUrl && (
                     <a
-                      href={`https://cdn.sanity.io/files/${SANITY_PROJECT_ID}/${SANITY_DATASET}/${cert.documentFile.asset._ref}`}
+                      href={cert.documentUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-blue-600 hover:text-blue-800 font-semibold"

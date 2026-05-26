@@ -66,6 +66,7 @@ describe('Middleware Env Config', () => {
       process.env.SANITY_API_VERSION = 'v2026-05-21'
       process.env.SANITY_API_READ_TOKEN = 'skreadsuff'
       process.env.SANITY_API_WRITE_TOKEN = 'skwritesuff'
+      process.env.SANITY_WEBHOOK_SECRET = 'whsecret'
     })
 
     it('should validate and return sanity env successfully', async () => {
@@ -73,6 +74,7 @@ describe('Middleware Env Config', () => {
       const env = validateSanityEnv()
       expect(env.SANITY_PROJECT_ID).toBe('abcdef12')
       expect(env.SANITY_DATASET).toBe('production')
+      expect(env.SANITY_WEBHOOK_SECRET).toBe('whsecret')
 
       const cached = getSanityEnv()
       expect(cached).toEqual(env)

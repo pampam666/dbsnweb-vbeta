@@ -1,5 +1,6 @@
 import { getPortfolioBySlug, getPortfolioEntries } from '@/lib/api/sanity/queries'
 import { getOptimizedImageUrl } from '@/lib/api/sanity/image'
+import { PortableText } from '@/components/shared/PortableText'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -29,36 +30,7 @@ export async function generateMetadata({
   }
 }
 
-interface PortableTextChild {
-  text: string
-}
 
-interface PortableTextBlock {
-  _type: string
-  style?: string
-  children?: PortableTextChild[]
-}
-
-function PortableTextRenderer({ value }: { value: unknown }) {
-  if (!Array.isArray(value)) return null
-
-  return (
-    <div className="space-y-4 text-slate-700 leading-relaxed">
-      {(value as PortableTextBlock[]).map((block, idx) => {
-        if (block._type !== 'block') return null
-
-        const text = block.children?.map((child) => child.text).join('') || ''
-        
-        if (block.style === 'h1') return <h1 key={idx} className="text-3xl font-bold text-slate-900 mt-6 mb-2">{text}</h1>
-        if (block.style === 'h2') return <h2 key={idx} className="text-2xl font-bold text-slate-900 mt-5 mb-2">{text}</h2>
-        if (block.style === 'h3') return <h3 key={idx} className="text-xl font-bold text-slate-900 mt-4 mb-2">{text}</h3>
-        if (block.style === 'h4') return <h4 key={idx} className="text-lg font-bold text-slate-900 mt-3 mb-2">{text}</h4>
-        
-        return <p key={idx} className="text-base">{text}</p>
-      })}
-    </div>
-  )
-}
 
 export default async function PortfolioDetailPage({
   params,
@@ -74,15 +46,7 @@ export default async function PortfolioDetailPage({
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <header className="border-b border-slate-200 bg-white shadow-sm">
-        <nav className="container mx-auto px-6 py-4 flex gap-6">
-          <Link href="/" className="font-bold text-slate-800 hover:text-blue-600">DBSN</Link>
-          <Link href="/certifications" className="text-slate-600 hover:text-blue-600">Certifications</Link>
-          <Link href="/portfolio" className="text-slate-600 hover:text-blue-600">Portfolio</Link>
-        </nav>
-      </header>
-
-      <main className="container mx-auto px-6 py-12 max-w-5xl">
+      <main className="container mx-auto px-6 pt-24 pb-12 max-w-5xl">
         <div className="mb-8">
           <Link href="/portfolio" className="text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1">
             &larr; Kembali ke Portofolio
@@ -130,7 +94,7 @@ export default async function PortfolioDetailPage({
             <div className="lg:col-span-2 space-y-6">
               <div>
                 <h2 className="text-xl font-bold text-slate-900 mb-3">Deskripsi Proyek</h2>
-                <PortableTextRenderer value={entry.scopeDescription} />
+                <PortableText value={entry.scopeDescription} />
               </div>
 
               <div>

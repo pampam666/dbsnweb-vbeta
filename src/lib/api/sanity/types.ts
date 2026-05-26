@@ -7,11 +7,13 @@
 // Shared Types
 // ============================================================================
 
+import type { PortableTextBlock as SanityPortableTextBlock } from '@portabletext/types'
+
 /**
  * Portable text block from Sanity CMS.
  * Processed with @portabletext/react in components.
  */
-export type PortableTextBlock = unknown[]
+export type PortableTextBlock = SanityPortableTextBlock
 
 /**
  * SEO metadata for CMS content.
@@ -78,10 +80,10 @@ export interface Product {
     _ref: string
   }
   shortDescription: string
-  fullDescription: PortableTextBlock
+  fullDescription: PortableTextBlock[]
   specifications: Specification[]
   images: ImageAsset[]
-  datasheetFile?: FileAsset
+  datasheetUrl?: string
   relatedCertifications: CertificationRef[]
   seoMeta: SeoMeta
 }
@@ -109,7 +111,7 @@ export interface Certification {
   certType: CertType
   issueDate: string
   expiryDate: string
-  documentFile?: FileAsset
+  documentUrl?: string
   coverImage?: ImageAsset
   isIndexable: boolean
   seoMeta: SeoMeta
@@ -132,7 +134,7 @@ export interface PortfolioEntry {
   clientCategory: ClientCategory
   location: string
   completionYear: number
-  scopeDescription: PortableTextBlock
+  scopeDescription: PortableTextBlock[]
   outcome: string
   images: ImageAsset[]
   relatedSpoke?: {
@@ -193,7 +195,7 @@ export interface Page {
   targetSpoke?: {
     _ref: string
   }
-  sections: PortableTextBlock | CustomBlock[]
+  sections: PortableTextBlock[] | CustomBlock[]
   seoMeta: SeoMeta
 }
 

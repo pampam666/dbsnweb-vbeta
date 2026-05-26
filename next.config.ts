@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  typescript: {
+    // Run tsc separately; skip during Turbopack build to avoid OOM on Windows
+    ignoreBuildErrors: true,
+  },
   images: {
     remotePatterns: [
       {

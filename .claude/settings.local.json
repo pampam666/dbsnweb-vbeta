@@ -52,7 +52,8 @@
       "Bash(ECC_GATEGUARD=off npm test -- --testPathPatterns=\"sanity|revalidate\")",
       "Bash(ECC_GATEGUARD=off sed *)",
       "Bash(ECC_GATEGUARD=off npm test *)",
-      "Bash(ECC_GATEGUARD=off rm -f \"src/lib/api/sanity/__tests__queries.test.ts\")"
+      "Bash(ECC_GATEGUARD=off rm -f \"src/lib/api/sanity/__tests__queries.test.ts\")",
+      "Bash(npm list *)"
     ]
   },
   "enabledPlugins": {

@@ -1,6 +1,8 @@
 import { revalidateTag } from 'next/cache'
 import { NextRequest, NextResponse } from 'next/server'
 import { CACHE_TAGS } from '@/lib/api/sanity/client'
+import { getSanityEnv } from '@/lib/config/env'
+import { createHmac, timingSafeEqual } from 'crypto'
 
 /**
  * Webhook payload from Sanity.
@@ -24,7 +26,7 @@ interface SanityWebhookPayload {
  */
 export async function POST(request: NextRequest) {
   try {
-    const secret = process.env.SANITY_WEBHOOK_SECRET
+    const { SANITY_WEBHOOK_SECRET: secret } = getSanityEnv()
 
     if (!secret && process.env.NODE_ENV === 'production') {
       return NextResponse.json(
@@ -32,6 +34,8 @@ export async function POST(request: NextRequest) {
         { status: 500 },
       )
     }
+
+    const rawBody = await request.text()
 
     if (secret) {
       const signature = request.headers.get('sanity-webhook-signature')
@@ -43,9 +47,15 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      const expectedSignature = `sha1=${secret}`
+      const computedSignature = 'sha256=' + createHmac('sha256', secret).update(rawBody).digest('hex')
 
-      if (signature !== expectedSignature) {
+      const signatureBuffer = Buffer.from(signature)
+      const computedSignatureBuffer = Buffer.from(computedSignature)
+
+      if (
+        signatureBuffer.length !== computedSignatureBuffer.length ||
+        !timingSafeEqual(signatureBuffer, computedSignatureBuffer)
+      ) {
         return NextResponse.json(
           { error: 'Invalid signature' },
           { status: 401 },
@@ -53,7 +63,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const body: SanityWebhookPayload = await request.json()
+    const body: SanityWebhookPayload = JSON.parse(rawBody)
     const { _id, _type } = body
 
     const tags = getTagsForDocumentType(_type, body)
@@ -102,14 +112,17 @@ function getTagsForDocumentType(
   switch (type) {
     case 'product':
       tags.push(CACHE_TAGS.product(payload._id))
+      tags.push(CACHE_TAGS.product())
       break
 
     case 'certification':
       tags.push(CACHE_TAGS.certification(payload._id))
+      tags.push(CACHE_TAGS.certification())
       break
 
     case 'portfolioEntry':
       tags.push(CACHE_TAGS.portfolio(payload._id))
+      tags.push(CACHE_TAGS.portfolio())
       break
 
     case 'spokeConfig':
@@ -119,6 +132,7 @@ function getTagsForDocumentType(
 
     case 'page':
       tags.push(CACHE_TAGS.page(payload._id))
+      tags.push(CACHE_TAGS.page())
       break
 
     default:

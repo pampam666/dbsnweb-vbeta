@@ -31,5 +31,5 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules", "everything-claude-code"]
+  "exclude": ["node_modules", "everything-claude-code", "extracted_workspace"]
 }

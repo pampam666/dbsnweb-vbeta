@@ -33,6 +33,10 @@ export const sanityEnvSchema = z.object({
     .string()
     .startsWith('sk', 'Write token must start with "sk"')
     .optional(),
+  SANITY_WEBHOOK_SECRET: z
+    .string()
+    .min(1, 'Webhook secret is required in production')
+    .optional(),
 })
 
 export type SanityEnv = z.infer<typeof sanityEnvSchema>
@@ -50,6 +54,7 @@ export function validateSanityEnv(): SanityEnv {
     SANITY_API_VERSION: process.env.SANITY_API_VERSION || 'v2025-05-21',
     SANITY_API_READ_TOKEN: process.env.SANITY_API_READ_TOKEN,
     SANITY_API_WRITE_TOKEN: process.env.SANITY_API_WRITE_TOKEN,
+    SANITY_WEBHOOK_SECRET: process.env.SANITY_WEBHOOK_SECRET,
   }
 
   const result = sanityEnvSchema.safeParse(raw)

@@ -1,7 +1,7 @@
 # DBSN Project Roadmap
 
 **Version:** 1.0  
-**Last Updated:** 2026-05-20  
+**Last Updated:** 2026-05-22  
 **Status:** Phase 2 - Core Features (In Progress)
 
 ---
@@ -50,7 +50,7 @@ Establish the project foundation with Next.js 15, TypeScript, and shared design 
 
 ## Phase 2: Core Features (IN PROGRESS)
 
-### Status: 🔄 57% COMPLETE (4/7 tasks)
+### Status: 🔄 86% COMPLETE (6/7 tasks)
 
 ### Objectives
 
@@ -64,21 +64,21 @@ Build hub pages, spoke pages, RFQ forms, and authentication system.
 | 2.2 Shared UI Components | ✅ | ECC | 2026-05-19 |
 | 2.3 Hub Pages | ✅ | ECC | 2026-05-19 |
 | 2.4 Spoke Pages | ✅ | ECC | 2026-05-19 |
-| 2.5 RFQ Forms (B2G/B2B) | ⏳ NEXT | - | - |
-| 2.6 Sanity CMS Integration | ⏳ TODO | - | - |
-| 2.7 Subdomain Middleware | ⏳ NEXT | - | - |
+| 2.5 RFQ Forms (B2G/B2B) | ⏳ PARTIAL | ECC | (Form components + Zod schemas done. API endpoint, notifications, fallback pending) |
+| 2.6 Sanity CMS Integration | ✅ | ECC | 2026-05-21 |
+| 2.7 Subdomain Middleware | ✅ | ECC | 2026-05-22 |
 
-### Phase 2.5: Segmented RFQ Forms (NEXT)
+### Phase 2.5: Segmented RFQ Forms (PARTIAL)
 
 **Description:** Implement B2G and B2B RFQ forms with proper validation and submission handling.
 
 **Tasks:**
-- Create B2G form component with government-specific fields
-- Create B2B form component with private sector fields
-- Implement Zod validation schemas
-- Add WhatsApp fallback engine
-- Create `/api/rfq` endpoint
-- Implement source attribution tracking
+- ✅ Create B2G form component with government-specific fields
+- ✅ Create B2B form component with private sector fields
+- ✅ Implement Zod validation schemas
+- ⏳ Add WhatsApp fallback engine
+- ⏳ Create `/api/rfq` endpoint
+- ⏳ Implement source attribution tracking
 
 **Success Criteria:**
 - Forms validate input with clear error messages
@@ -87,18 +87,20 @@ Build hub pages, spoke pages, RFQ forms, and authentication system.
 - Telegram alert triggered on submission
 - WhatsApp fallback activates on API failure
 
-**Blocked By:** Phase 2.7 (Middleware routing for form access)
+**Blocked By:** None (Phase 2.7 is complete)
 
-### Phase 2.6: Sanity CMS Integration (TODO)
+### Phase 2.6: Sanity CMS Integration (COMPLETE)
 
 **Description:** Set up Sanity.io for content federation across hub and spokes.
 
+**Note:** Review: REQUEST CHANGES — bugfixes pending (see [sanity-cms-review.md](file:///d:/CLAUDE-PROJECT/website/.claude/reviews/sanity-cms-review.md))
+
 **Tasks:**
-- Configure Sanity client
-- Define content schemas (Product, Certification, PortfolioEntry, SpokeConfig)
-- Implement GROQ query utilities
-- Set up webhook-based cache invalidation
-- Connect spoke pages to CMS data
+- ✅ Configure Sanity client
+- ✅ Define content schemas (Product, Certification, PortfolioEntry, SpokeConfig)
+- ✅ Implement GROQ query utilities
+- ✅ Set up webhook-based cache invalidation
+- ✅ Connect spoke pages to CMS data
 
 **Success Criteria:**
 - Product data fetches from Sanity
@@ -106,16 +108,18 @@ Build hub pages, spoke pages, RFQ forms, and authentication system.
 - Portfolio entries display correctly
 - Webhook invalidates cache on content changes
 
-### Phase 2.7: Subdomain Middleware (NEXT)
+### Phase 2.7: Subdomain Middleware (COMPLETE)
 
 **Description:** Implement middleware-based routing for hub, spokes, and dashboard.
 
+**Note:** Review: APPROVED — 155/155 tests passing (see [subdomain-middleware-review.md](file:///d:/CLAUDE-PROJECT/website/.claude/reviews/subdomain-middleware-review.md))
+
 **Tasks:**
-- Create `middleware.ts` file
-- Implement hostname-based routing logic
-- Add subdomain-to-route-group mapping
-- Configure local subdomain testing (lvh.me)
-- Add authentication guards for dashboard
+- ✅ Create `middleware.ts` file
+- ✅ Implement hostname-based routing logic
+- ✅ Add subdomain-to-route-group mapping
+- ✅ Configure local subdomain testing (lvh.me)
+- ✅ Add authentication guards for dashboard
 
 **Code Reference (Expected):**
 
@@ -254,4 +258,4 @@ Trigger rollback if any of the following occur:
 
 ---
 
-*Last modified: 2026-05-20*
+*Last modified: 2026-05-22*

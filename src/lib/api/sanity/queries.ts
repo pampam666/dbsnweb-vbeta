@@ -30,7 +30,7 @@ const productFields = groq`
   fullDescription,
   specifications,
   images,
-  datasheetFile,
+  "datasheetUrl": datasheetFile.asset->url,
   relatedCertifications->{_id, title, "slug": slug.current},
   seoMeta
 `
@@ -95,6 +95,32 @@ export async function getProductBySlug(
   }
 }
 
+/**
+ * Fetch all product slug/subdomain pairs in a single query.
+ * Optimized for generateStaticParams() — avoids N+1 queries.
+ */
+export async function getProductSlugsWithSpokes(): Promise<
+  Array<{ slug: string; subdomain: string }> | null
+> {
+  const query = defineQuery(groq`
+    *[_type == "product"]{
+      "slug": slug.current,
+      "subdomain": spoke->subdomain
+    }
+  `)
+  try {
+    return await client.fetch<Array<{ slug: string; subdomain: string }>>(
+      query,
+      {},
+      {
+        next: { revalidate: 3600, tags: [CACHE_TAGS.product()] },
+      },
+    )
+  } catch {
+    return null
+  }
+}
+
 // ============================================================================
 // Certification Queries
 // ============================================================================
@@ -108,7 +134,7 @@ const certificationFields = groq`
   certType,
   issueDate,
   expiryDate,
-  documentFile,
+  "documentUrl": documentFile.asset->url,
   coverImage,
   isIndexable,
   seoMeta

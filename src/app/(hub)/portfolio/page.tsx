@@ -16,15 +16,7 @@ export default async function PortfolioPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <header className="border-b border-slate-200 bg-white shadow-sm">
-        <nav className="container mx-auto px-6 py-4 flex gap-6">
-          <Link href="/" className="font-bold text-slate-800 hover:text-blue-600">DBSN</Link>
-          <Link href="/certifications" className="text-slate-600 hover:text-blue-600">Certifications</Link>
-          <Link href="/portfolio" className="text-blue-600 font-medium">Portfolio</Link>
-        </nav>
-      </header>
-
-      <main className="container mx-auto px-6 py-12">
+      <main className="container mx-auto px-6 pt-24 pb-12">
         <div className="max-w-4xl mx-auto text-center mb-12">
           <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight sm:text-5xl">
             Portofolio Proyek
