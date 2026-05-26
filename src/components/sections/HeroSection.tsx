@@ -161,22 +161,22 @@ export default function HeroSection() {
 
         {/* Trust Badges Bar */}
         <div className="mt-16 lg:mt-20">
-          <div className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-md rounded-2xl border border-white/30 dark:border-gray-700/30 shadow-xl p-4 sm:p-6">
-            <p className="text-center text-sm text-gray-500 dark:text-gray-400 mb-4 font-medium tracking-wide uppercase">
+          <div className="bg-white/5 dark:bg-black/20 backdrop-blur-md rounded-2xl border border-white/10 dark:border-white/5 shadow-2xl p-4 sm:p-6">
+            <p className="text-center text-sm text-emerald-300/80 mb-4 font-semibold tracking-wider uppercase">
               Bersertifikasi & Terverifikasi
             </p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
               {trustBadges.map((badge) => (
                 <div
                   key={badge.label}
-                  className="flex flex-col items-center gap-2.5 p-4 rounded-xl bg-gradient-to-b from-gray-50/80 to-white dark:from-gray-700/80 dark:to-gray-800 border border-gray-100 dark:border-gray-700 hover:border-emerald-200 hover:shadow-md transition-all duration-300 group min-h-[44px]"
+                  className="flex flex-col items-center gap-2.5 p-4 rounded-xl bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/10 hover:border-emerald-500/30 hover:shadow-[0_0_15px_rgba(16,185,129,0.15)] transition-all duration-300 group min-h-[44px]"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/50 dark:to-emerald-800/50 flex items-center justify-center shadow-sm">
-                    <badge.icon className="w-6 h-6 text-emerald-700" />
+                  <div className="w-12 h-12 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/20 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300">
+                    <badge.icon className="w-6 h-6 text-emerald-400 dark:text-emerald-300" />
                   </div>
                   <div className="text-center">
-                    <p className="font-bold text-emerald-800 dark:text-emerald-300 text-sm sm:text-base">{badge.label}</p>
-                    <p className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400 mt-0.5 hidden sm:block leading-tight">{badge.desc}</p>
+                    <p className="font-bold text-white group-hover:text-emerald-300 transition-colors text-sm sm:text-base">{badge.label}</p>
+                    <p className="text-[11px] sm:text-xs text-emerald-100/60 group-hover:text-emerald-100/80 transition-colors mt-0.5 hidden sm:block leading-tight">{badge.desc}</p>
                   </div>
                 </div>
               ))}
