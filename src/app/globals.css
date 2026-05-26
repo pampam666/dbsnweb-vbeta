@@ -153,12 +153,12 @@
   50% { background-position: 100% 50%; }
 }
 .hero-gradient {
-  background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 25%, #fffbeb 50%, #ecfdf5 75%, #f0fdf4 100%);
+  background: linear-gradient(135deg, rgba(3, 44, 34, 0.92) 0%, rgba(4, 78, 57, 0.82) 50%, rgba(120, 53, 15, 0.7) 100%);
   background-size: 400% 400%;
   animation: gradient-shift 15s ease infinite;
 }
 .dark .hero-gradient {
-  background: linear-gradient(135deg, #064e3b 0%, #065f46 25%, #78350f 50%, #064e3b 75%, #065f46 100%);
+  background: linear-gradient(135deg, rgba(3, 44, 34, 0.95) 0%, rgba(6, 95, 70, 0.8) 25%, rgba(120, 53, 15, 0.7) 50%, rgba(3, 44, 34, 0.95) 75%, rgba(6, 95, 70, 0.8) 100%);
 }
 
 @keyframes float {

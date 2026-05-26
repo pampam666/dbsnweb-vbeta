@@ -94,7 +94,7 @@ export default function HeroSection() {
                   onClick={() => scrollTo("produk")}
                   variant="outline"
                   size="lg"
-                  className="border-white/40 text-white hover:bg-white/10 gap-2 min-h-[48px] text-base px-6 backdrop-blur-sm"
+                  className="bg-transparent border-white/40 text-white hover:bg-white/10 gap-2 min-h-[48px] text-base px-6 backdrop-blur-sm"
                 >
                   <Package className="w-5 h-5" />
                   Lihat Produk

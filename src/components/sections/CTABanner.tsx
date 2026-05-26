@@ -87,7 +87,7 @@ export default function CTABanner() {
             <Button onClick={() => scrollTo("permintaan-penawaran")} size="lg" className="bg-white text-emerald-800 hover:bg-emerald-50 gap-2 min-h-[48px] text-base px-8">
               <FileText className="w-5 h-5" />Ajukan Penawaran
             </Button>
-            <Button variant="outline" size="lg" className="border-white/30 text-white hover:bg-white/10 gap-2 min-h-[48px] text-base px-8" asChild>
+            <Button variant="outline" size="lg" className="bg-transparent border-white/30 text-white hover:bg-white/10 gap-2 min-h-[48px] text-base px-8" asChild>
               <a href={WA_URL} target="_blank" rel="noopener noreferrer">
                 <MessageSquare className="w-5 h-5" />Hubungi via WhatsApp
               </a>

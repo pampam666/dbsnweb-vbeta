@@ -58,8 +58,8 @@ export default function Navbar() {
               />
             </div>
             <div className="hidden sm:block">
-              <div className="font-bold text-emerald-900 dark:text-emerald-100 text-sm leading-tight">DBSN Sentradaya</div>
-              <div className="text-xs text-gray-500 dark:text-gray-400">Solusi Energi Indonesia</div>
+              <div className={`font-bold text-sm leading-tight transition-colors duration-300 ${isSolid ? "text-emerald-900 dark:text-emerald-100" : "text-white"}`}>DBSN Sentradaya</div>
+              <div className={`text-xs transition-colors duration-300 ${isSolid ? "text-gray-500 dark:text-gray-400" : "text-emerald-300"}`}>Solusi Energi Indonesia</div>
             </div>
           </Link>
 
@@ -70,7 +70,11 @@ export default function Navbar() {
                 key={link.label}
                 href={isHome ? link.href : `/${link.href}`}
                 onClick={(e) => handleNavClick(link.href, e)}
-                className="px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-emerald-700 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-all duration-200 font-medium"
+                className={`px-3 py-2 text-sm rounded-lg transition-all duration-200 font-medium ${
+                  isSolid
+                    ? "text-gray-600 dark:text-gray-300 hover:text-emerald-700 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+                    : "text-white/95 hover:text-white hover:bg-white/10"
+                }`}
               >
                 {link.label}
               </Link>
@@ -79,7 +83,7 @@ export default function Navbar() {
 
           {/* Actions */}
           <div className="flex items-center gap-2">
-            <ThemeToggle />
+            <ThemeToggle className={isSolid ? "min-h-[44px] min-w-[44px] w-11 h-11 text-emerald-700 dark:text-amber-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors duration-200" : "min-h-[44px] min-w-[44px] w-11 h-11 text-white/90 hover:text-white hover:bg-white/10 transition-colors duration-200"} />
             <Link
               href={isHome ? "#permintaan-penawaran" : "/#permintaan-penawaran"}
               onClick={(e) => {
@@ -93,7 +97,11 @@ export default function Navbar() {
               <FileText className="w-3.5 h-3.5" />Penawaran
             </Link>
             <button onClick={() => setIsOpen(!isOpen)}
-              className="md:hidden w-9 h-9 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className={`md:hidden w-9 h-9 flex items-center justify-center rounded-lg transition-colors ${
+                isSolid
+                  ? "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  : "text-white hover:bg-white/10"
+              }`}
               aria-label="Toggle menu">
               {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
