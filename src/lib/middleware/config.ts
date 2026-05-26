@@ -28,10 +28,18 @@ export function extractSubdomain(hostname: string): string | null {
   if (!clean || clean === 'localhost' || clean === '127.0.0.1') return null
 
   const isLocal = isLocalDevelopment(clean)
+  const isVercel = clean.endsWith('.vercel.app')
   let rootDomain: string
 
   if (isLocal) {
     rootDomain = 'lvh.me'
+  } else if (isVercel) {
+    const parts = clean.split('.')
+    if (parts.length >= 3) {
+      rootDomain = parts.slice(-3).join('.')
+    } else {
+      rootDomain = clean
+    }
   } else {
     try {
       rootDomain = getMiddlewareEnv().NEXT_PUBLIC_ROOT_DOMAIN
@@ -58,10 +66,18 @@ export function isHubDomain(hostname: string): boolean {
     return true
   }
   const isLocal = isLocalDevelopment(clean)
+  const isVercel = clean.endsWith('.vercel.app')
   let rootDomain: string
 
   if (isLocal) {
     rootDomain = 'lvh.me'
+  } else if (isVercel) {
+    const parts = clean.split('.')
+    if (parts.length >= 3) {
+      rootDomain = parts.slice(-3).join('.')
+    } else {
+      rootDomain = clean
+    }
   } else {
     try {
       rootDomain = getMiddlewareEnv().NEXT_PUBLIC_ROOT_DOMAIN

@@ -105,6 +105,7 @@ flowchart TD
   - Hub: corporate trust center (`sentradaya.com`)
   - Product spokes: product content + RFQ entry (`pju`, `solarcell`, `alatpetir`, `baterai`)
   - Dashboard spoke: authenticated client tracking (`dashboard.sentradaya.com`)
+  - *Testing/Preview Domains:* Hostnames ending with `.vercel.app` (e.g., `dbsn-test01.vercel.app`) are dynamically resolved as root domains by the middleware. This allows full hub-and-spoke testing (e.g., `pju.dbsn-test01.vercel.app`) and preview routing on Vercel before deploying to `sentradaya.com`.
 - **UI Architecture:**
   - Single unified app with shadcn/ui patterns (Radix UI primitives)
   - Shared Tailwind token config at repo root (no spoke-local divergence)

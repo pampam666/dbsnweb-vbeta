@@ -47,6 +47,11 @@ describe('Middleware Config Resolution Utilities', () => {
     expect(extractSubdomain('pju.sentradaya.com')).toBe('pju')
     expect(extractSubdomain('dashboard.sentradaya.com')).toBe('dashboard')
 
+    // Vercel subdomains
+    expect(extractSubdomain('dbsn-test01.vercel.app')).toBeNull()
+    expect(extractSubdomain('pju.dbsn-test01.vercel.app')).toBe('pju')
+    expect(extractSubdomain('dashboard.dbsn-test01.vercel.app')).toBe('dashboard')
+
     // Edge cases
     expect(extractSubdomain('')).toBeNull()
     expect(extractSubdomain('127.0.0.1')).toBeNull()
@@ -70,6 +75,11 @@ describe('Middleware Config Resolution Utilities', () => {
     expect(isHubDomain('www.sentradaya.com')).toBe(true)
     expect(isHubDomain('pju.sentradaya.com')).toBe(false)
     expect(isHubDomain('dashboard.sentradaya.com')).toBe(false)
+
+    // Vercel deployment domains
+    expect(isHubDomain('dbsn-test01.vercel.app')).toBe(true)
+    expect(isHubDomain('www.dbsn-test01.vercel.app')).toBe(true)
+    expect(isHubDomain('pju.dbsn-test01.vercel.app')).toBe(false)
   })
 
   it('should identify dashboard domains correctly with isDashboardDomain', async () => {
@@ -78,6 +88,7 @@ describe('Middleware Config Resolution Utilities', () => {
 
     expect(isDashboardDomain('dashboard.lvh.me:3000')).toBe(true)
     expect(isDashboardDomain('dashboard.sentradaya.com')).toBe(true)
+    expect(isDashboardDomain('dashboard.dbsn-test01.vercel.app')).toBe(true)
     expect(isDashboardDomain('pju.sentradaya.com')).toBe(false)
     expect(isDashboardDomain('sentradaya.com')).toBe(false)
   })
@@ -90,6 +101,9 @@ describe('Middleware Config Resolution Utilities', () => {
     expect(isSpokeDomain('solarcell.sentradaya.com')).toBe('solarcell')
     expect(isSpokeDomain('alatpetir.sentradaya.com')).toBe('alatpetir')
     expect(isSpokeDomain('baterai.sentradaya.com')).toBe('baterai')
+
+    // Vercel spoke subdomains
+    expect(isSpokeDomain('pju.dbsn-test01.vercel.app')).toBe('pju')
 
     expect(isSpokeDomain('dashboard.sentradaya.com')).toBeNull()
     expect(isSpokeDomain('unknown.sentradaya.com')).toBeNull()
