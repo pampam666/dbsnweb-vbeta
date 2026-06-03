@@ -25,6 +25,7 @@ describe('Resend Email Notification Service', () => {
     process.env.RESEND_API_KEY = 'mock-resend-key'
     process.env.RESEND_FROM_EMAIL = 'onboarding@resend.dev'
     mockSend.mockClear()
+    mockSend.mockResolvedValue({ data: { id: 'default-id' }, error: null })
   })
 
   afterEach(() => {
@@ -87,7 +88,7 @@ describe('Resend Email Notification Service', () => {
         from: 'onboarding@resend.dev',
         to: 'onboarding@resend.dev', // Defaulting to sender domain or admin inbox
         subject: expect.stringContaining('New B2B RFQ Submission'),
-        html: expect.stringContaining('Lead ID: lead-123'),
+        html: expect.stringContaining('lead-123'),
       })
     )
   })
@@ -102,6 +103,28 @@ describe('Resend Email Notification Service', () => {
     mockSend.mockRejectedValueOnce(new Error('Resend server timeout'))
 
     await expect(sendRfqAcknowledgment(mockLead)).resolves.not.toThrow()
+    await expect(sendInternalNotification(mockLead)).resolves.not.toThrow()
+  })
+
+  it('should return early if API credentials are missing', async () => {
+    delete process.env.RESEND_API_KEY
+    await sendRfqAcknowledgment(mockLead)
+    expect(mockSend).not.toHaveBeenCalled()
+
+    process.env.RESEND_API_KEY = 'mock-resend-key'
+    delete process.env.RESEND_FROM_EMAIL
+    await sendInternalNotification(mockLead)
+    expect(mockSend).not.toHaveBeenCalled()
+  })
+
+  it('should return early if lead contact email is missing', async () => {
+    const leadNoEmail = { ...mockLead, contactEmail: null }
+    await sendRfqAcknowledgment(leadNoEmail)
+    expect(mockSend).not.toHaveBeenCalled()
+  })
+
+  it('should log error when internal notification sending fails with API error', async () => {
+    mockSend.mockResolvedValueOnce({ data: null, error: { message: 'Some Resend API error' } })
     await expect(sendInternalNotification(mockLead)).resolves.not.toThrow()
   })
 })

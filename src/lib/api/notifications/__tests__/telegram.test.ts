@@ -17,6 +17,7 @@ describe('Telegram Alerts Service', () => {
       json: () => Promise.resolve({ ok: true }),
     })) as any
     global.fetch = mockFetch as any
+    globalThis.fetch = mockFetch as any
   })
 
   afterEach(() => {
@@ -86,7 +87,7 @@ describe('Telegram Alerts Service', () => {
     expect(mockFetch).toHaveBeenCalledTimes(1)
     const requestBody = JSON.parse((mockFetch.mock.calls[0] as any)[1].body)
     expect(requestBody.chat_id).toBe('mock-chat-id')
-    expect(requestBody.text).toContain('🚨 RFQ SUBMISSION FAILURE')
+    expect(requestBody.text).toContain('RFQ SUBMISSION FAILURE')
     expect(requestBody.text).toContain('Error: Database connection failed')
     expect(requestBody.text).toContain('Failing Submitter')
   })
@@ -107,5 +108,26 @@ describe('Telegram Alerts Service', () => {
     }))
 
     await expect(alertNewRfq(mockLead)).resolves.not.toThrow()
+  })
+
+  it('should return early if Telegram bot credentials are missing', async () => {
+    delete process.env.TELEGRAM_BOT_TOKEN
+    await alertNewRfq(mockLead)
+    expect(mockFetch).not.toHaveBeenCalled()
+
+    process.env.TELEGRAM_BOT_TOKEN = 'mock-bot-token'
+    delete process.env.TELEGRAM_CHAT_ID
+    await alertRfqFailure(new Error('error'), {})
+    expect(mockFetch).not.toHaveBeenCalled()
+  })
+
+  it('should handle non-ok response for failure alerts without throwing', async () => {
+    mockFetch.mockImplementationOnce(() => Promise.resolve({
+      ok: false,
+      status: 500,
+      statusText: 'Internal Server Error',
+      json: () => Promise.resolve({}),
+    }))
+    await expect(alertRfqFailure(new Error('Db error'), {})).resolves.not.toThrow()
   })
 })

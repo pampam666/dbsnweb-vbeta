@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { rfqB2BSchema, rfqB2GSchema } from '@/lib/schema/rfq-schemas'
+import { prisma } from '@/lib/db/prisma'
+import { Segment } from '@prisma/client'
+import { sendRfqAcknowledgment, sendInternalNotification } from '@/lib/api/notifications/resend'
+import { alertNewRfq, alertRfqFailure } from '@/lib/api/notifications/telegram'
+import { buildWhatsAppFallbackUrl } from '@/lib/api/notifications/whatsapp'
 
 /**
  * POST /api/rfq
@@ -7,10 +12,11 @@ import { rfqB2BSchema, rfqB2GSchema } from '@/lib/schema/rfq-schemas'
  * Handles RFQ form submissions for B2B and B2G segments.
  * Validates request payload against Zod schemas, returning structured
  * errors for validation failures or a 201 response envelope on success.
+ * Persists lead to Postgres, triggers notifications, and offers WhatsApp fallback on failure.
  */
 export async function POST(request: NextRequest) {
+  let body: any
   try {
-    let body: any
     try {
       body = await request.json()
     } catch {
@@ -70,48 +76,84 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const validatedData = parseResult.data
 
-    // ─── Phase 2 / Integration Placeholders ─────────────────────────────
-    // TODO: Ingest lead into Neon Postgres via Prisma Client:
-    // const lead = await prisma.lead.create({ data: { ... } })
-    //
-    // TODO: Trigger Resend transactional emails:
-    // await resendQueue.enqueue({ type: 'email', payload: { ... } })
-    //
-    // TODO: Trigger Telegram operations alert bot:
-    // await telegramQueue.enqueue({ type: 'telegram', payload: { ... } })
-    // ────────────────────────────────────────────────────────────────────
+    // Map Zod-validated fields to Prisma Lead model fields
+    const productCategory = validatedData.items.map(item => item.product_name).join(', ').substring(0, 255)
+    const quantity = validatedData.items.reduce((sum, item) => sum + item.quantity, 0)
 
-    // Generate a unique lead ID (cuid-like mock prefix)
-    const mockId = `lead_${Math.random().toString(36).substring(2, 15)}`
+    const lead = await prisma.lead.create({
+      data: {
+        segment: validatedData.segment as Segment,
+        sourceDomain: validatedData.source_domain,
+        sourcePagePath: validatedData.source_page_path || '',
+        sourceCampaignTag: validatedData.source_campaign_tag || null,
+        utmSource: validatedData.utm_source || null,
+        utmMedium: validatedData.utm_medium || null,
+        utmCampaign: validatedData.utm_campaign || null,
+        contactName: validatedData.contact_name,
+        contactEmail: validatedData.contact_email,
+        contactPhone: validatedData.contact_phone || null,
+        companyName: validatedData.company_name || null,
+        productCategory,
+        quantity,
+        projectScope: validatedData.project_scope || null,
+        timeline: validatedData.timeline || null,
+        procurementType: (validatedData as any).procurement_type || null,
+        notes: validatedData.notes || null,
+      },
+    })
+
+    // Fire-and-forget notifications (non-blocking)
+    void Promise.allSettled([
+      sendRfqAcknowledgment(lead),
+      sendInternalNotification(lead),
+      alertNewRfq(lead),
+    ]).catch(err => {
+      console.error('Failed to trigger non-blocking notifications:', err)
+    })
 
     return NextResponse.json(
       {
         data: {
-          id: mockId,
-          submission_status: 'received',
-          dashboard_access_status: 'not_eligible',
-          created_at: new Date().toISOString(),
+          id: lead.id,
+          submission_status: lead.submissionStatus.toLowerCase(),
+          dashboard_access_status: lead.dashboardAccessStatus.toLowerCase(),
+          created_at: lead.createdAt.toISOString(),
         },
       },
       {
         status: 201,
         headers: {
-          Location: `/api/rfq/${mockId}`,
+          Location: `/api/rfq/${lead.id}`,
         },
       }
     )
   } catch (error) {
+    const errorObj = error instanceof Error ? error : new Error(String(error))
+    console.error('RFQ Submission Infrastructure Failure:', errorObj)
+
+    // Build WhatsApp fallback URL from raw body or validated data
+    let whatsAppUrl = ''
+    try {
+      whatsAppUrl = buildWhatsAppFallbackUrl(body)
+    } catch (waErr) {
+      console.error('Failed to build WhatsApp fallback URL:', waErr)
+    }
+
+    // Fire Telegram failure alert (non-blocking)
+    void alertRfqFailure(errorObj, body).catch(tgErr => {
+      console.error('Failed to trigger Telegram failure alert:', tgErr)
+    })
+
     return NextResponse.json(
       {
         error: {
-          code: 'internal_error',
-          message: error instanceof Error ? error.message : 'Unknown internal server error',
+          code: 'infrastructure_error',
+          fallback_url: whatsAppUrl,
         },
       },
-      { status: 500 }
+      { status: 503 }
     )
   }
 }
