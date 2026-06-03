@@ -75,6 +75,9 @@ model Lead {
   dashboardAccessGrantedAt DateTime?             @map("dashboard_access_granted_at")
   dashboardAccessStatus    DashboardAccessStatus @default(NOT_ELIGIBLE) @map("dashboard_access_status")
   
+  // Notification queue jobs
+  notificationJobs         NotificationJob[]
+  
   @@index([segment, createdAt])
   @@index([sourceDomain])
   @@index([contactEmail])
@@ -158,4 +161,37 @@ model RedirectMap {
   
   @@index([legacyUrl])
   @@map("redirect_map")
+}
+
+enum NotificationType {
+  EMAIL_ACK
+  EMAIL_INTERNAL
+  TELEGRAM
+}
+
+enum JobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+model NotificationJob {
+  id            String           @id @default(cuid())
+  type          NotificationType
+  leadId        String           @map("lead_id")
+  lead          Lead             @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  payload       Json
+  status        JobStatus        @default(PENDING)
+  attempts      Int              @default(0)
+  maxAttempts   Int              @default(3)
+  lastAttemptAt DateTime?        @map("last_attempt_at")
+  nextAttemptAt DateTime?        @map("next_attempt_at")
+  errorLog      String?          @map("error_log") @db.Text
+  createdAt     DateTime         @default(now()) @map("created_at")
+  updatedAt     DateTime         @updatedAt @map("updated_at")
+
+  @@index([status, nextAttemptAt])
+  @@index([leadId])
+  @@map("notification_jobs")
 }
