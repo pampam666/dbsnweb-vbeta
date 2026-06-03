@@ -136,3 +136,159 @@ export function getMiddlewareEnv(): MiddlewareEnv {
   cachedMiddlewareEnv = validateMiddlewareEnv()
   return cachedMiddlewareEnv
 }
+
+/**
+ * Database environment variable validation schema.
+ */
+export const databaseEnvSchema = z.object({
+  DATABASE_URL: z
+    .string()
+    .min(1, 'Database URL is required')
+    .startsWith('postgresql://', 'Database URL must start with "postgresql://"'),
+})
+
+export type DatabaseEnv = z.infer<typeof databaseEnvSchema>
+
+/**
+ * Validate database environment variables.
+ *
+ * @returns Validated database environment configuration
+ * @throws {Error} If validation fails
+ */
+export function validateDatabaseEnv(): DatabaseEnv {
+  const raw = {
+    DATABASE_URL: process.env.DATABASE_URL,
+  }
+
+  const result = databaseEnvSchema.safeParse(raw)
+
+  if (!result.success) {
+    const errors = result.error.issues
+      .map(issue => `${issue.path.join('.')}: ${issue.message}`)
+      .join(', ')
+    throw new Error(`Database environment validation failed: ${errors}`)
+  }
+
+  return result.data
+}
+
+/**
+ * Get validated database environment configuration.
+ * Caches the result after first call.
+ */
+let cachedDatabaseEnv: DatabaseEnv | null = null
+
+export function getDatabaseEnv(): DatabaseEnv {
+  if (cachedDatabaseEnv) {
+    return cachedDatabaseEnv
+  }
+
+  cachedDatabaseEnv = validateDatabaseEnv()
+  return cachedDatabaseEnv
+}
+
+/**
+ * Auth.js environment variable validation schema.
+ */
+export const authEnvSchema = z.object({
+  NEXTAUTH_SECRET: z
+    .string()
+    .min(32, 'NextAuth secret must be at least 32 characters long'),
+  NEXTAUTH_URL: z.string().url('NextAuth URL must be a valid URL'),
+})
+
+export type AuthEnv = z.infer<typeof authEnvSchema>
+
+/**
+ * Validate Auth.js environment variables.
+ *
+ * @returns Validated auth environment configuration
+ * @throws {Error} If validation fails
+ */
+export function validateAuthEnv(): AuthEnv {
+  const raw = {
+    NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
+    NEXTAUTH_URL: process.env.NEXTAUTH_URL,
+  }
+
+  const result = authEnvSchema.safeParse(raw)
+
+  if (!result.success) {
+    const errors = result.error.issues
+      .map(issue => `${issue.path.join('.')}: ${issue.message}`)
+      .join(', ')
+    throw new Error(`Auth environment validation failed: ${errors}`)
+  }
+
+  return result.data
+}
+
+/**
+ * Get validated Auth.js environment configuration.
+ * Caches the result after first call.
+ */
+let cachedAuthEnv: AuthEnv | null = null
+
+export function getAuthEnv(): AuthEnv {
+  if (cachedAuthEnv) {
+    return cachedAuthEnv
+  }
+
+  cachedAuthEnv = validateAuthEnv()
+  return cachedAuthEnv
+}
+
+/**
+ * Notification environment variable validation schema.
+ */
+export const notificationEnvSchema = z.object({
+  RESEND_API_KEY: z.string().min(1, 'Resend API key is required'),
+  RESEND_FROM_EMAIL: z.string().email('Resend from email must be a valid email'),
+  TELEGRAM_BOT_TOKEN: z.string().min(1, 'Telegram bot token is required'),
+  TELEGRAM_CHAT_ID: z.string().min(1, 'Telegram chat ID is required'),
+  WHATSAPP_SALES_NUMBER: z.string().min(1, 'WhatsApp sales number is required'),
+})
+
+export type NotificationEnv = z.infer<typeof notificationEnvSchema>
+
+/**
+ * Validate notification environment variables.
+ *
+ * @returns Validated notification environment configuration
+ * @throws {Error} If validation fails
+ */
+export function validateNotificationEnv(): NotificationEnv {
+  const raw = {
+    RESEND_API_KEY: process.env.RESEND_API_KEY,
+    RESEND_FROM_EMAIL: process.env.RESEND_FROM_EMAIL,
+    TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN,
+    TELEGRAM_CHAT_ID: process.env.TELEGRAM_CHAT_ID,
+    WHATSAPP_SALES_NUMBER: process.env.WHATSAPP_SALES_NUMBER,
+  }
+
+  const result = notificationEnvSchema.safeParse(raw)
+
+  if (!result.success) {
+    const errors = result.error.issues
+      .map(issue => `${issue.path.join('.')}: ${issue.message}`)
+      .join(', ')
+    throw new Error(`Notification environment validation failed: ${errors}`)
+  }
+
+  return result.data
+}
+
+/**
+ * Get validated notification environment configuration.
+ * Caches the result after first call.
+ */
+let cachedNotificationEnv: NotificationEnv | null = null
+
+export function getNotificationEnv(): NotificationEnv {
+  if (cachedNotificationEnv) {
+    return cachedNotificationEnv
+  }
+
+  cachedNotificationEnv = validateNotificationEnv()
+  return cachedNotificationEnv
+}

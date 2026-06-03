@@ -92,5 +92,102 @@ describe('Middleware Env Config', () => {
       expect(() => validateSanityEnv()).toThrow(/Read token must start with "sk"/)
     })
   })
+
+  describe('Database Env Config', () => {
+    beforeEach(() => {
+      process.env.DATABASE_URL = 'postgresql://user:pass@host/db?sslmode=require'
+    })
+
+    it('should validate and return database env successfully', async () => {
+      const { validateDatabaseEnv, getDatabaseEnv } = await import('../env')
+      const env = validateDatabaseEnv()
+      expect(env.DATABASE_URL).toBe('postgresql://user:pass@host/db?sslmode=require')
+
+      const cached = getDatabaseEnv()
+      expect(cached).toEqual(env)
+    })
+
+    it('should throw error when DATABASE_URL is missing', async () => {
+      delete process.env.DATABASE_URL
+      const { validateDatabaseEnv } = await import('../env')
+      expect(() => validateDatabaseEnv()).toThrow(/Database environment validation failed/)
+    })
+
+    it('should throw error when DATABASE_URL does not start with postgresql://', async () => {
+      process.env.DATABASE_URL = 'mysql://user:pass@host/db'
+      const { validateDatabaseEnv } = await import('../env')
+      expect(() => validateDatabaseEnv()).toThrow(/Database URL must start with "postgresql:\/\/"/)
+    })
+  })
+
+  describe('Auth Env Config', () => {
+    beforeEach(() => {
+      process.env.NEXTAUTH_SECRET = 'super-secret-key-must-be-at-least-32-characters-long'
+      process.env.NEXTAUTH_URL = 'http://localhost:3000'
+    })
+
+    it('should validate and return auth env successfully', async () => {
+      const { validateAuthEnv, getAuthEnv } = await import('../env')
+      const env = validateAuthEnv()
+      expect(env.NEXTAUTH_SECRET).toBe('super-secret-key-must-be-at-least-32-characters-long')
+      expect(env.NEXTAUTH_URL).toBe('http://localhost:3000')
+
+      const cached = getAuthEnv()
+      expect(cached).toEqual(env)
+    })
+
+    it('should throw error when NEXTAUTH_SECRET is missing', async () => {
+      delete process.env.NEXTAUTH_SECRET
+      const { validateAuthEnv } = await import('../env')
+      expect(() => validateAuthEnv()).toThrow(/Auth environment validation failed/)
+    })
+
+    it('should throw error when NEXTAUTH_SECRET is too short', async () => {
+      process.env.NEXTAUTH_SECRET = 'short-secret'
+      const { validateAuthEnv } = await import('../env')
+      expect(() => validateAuthEnv()).toThrow(/NextAuth secret must be at least 32 characters long/)
+    })
+
+    it('should throw error when NEXTAUTH_URL is invalid', async () => {
+      process.env.NEXTAUTH_URL = 'not-a-valid-url'
+      const { validateAuthEnv } = await import('../env')
+      expect(() => validateAuthEnv()).toThrow(/NextAuth URL must be a valid URL/)
+    })
+  })
+
+  describe('Notification Env Config', () => {
+    beforeEach(() => {
+      process.env.RESEND_API_KEY = 're_key123'
+      process.env.RESEND_FROM_EMAIL = 'sales@sentradaya.com'
+      process.env.TELEGRAM_BOT_TOKEN = 'bot123'
+      process.env.TELEGRAM_CHAT_ID = 'chat456'
+      process.env.WHATSAPP_SALES_NUMBER = '62812345678'
+    })
+
+    it('should validate and return notification env successfully', async () => {
+      const { validateNotificationEnv, getNotificationEnv } = await import('../env')
+      const env = validateNotificationEnv()
+      expect(env.RESEND_API_KEY).toBe('re_key123')
+      expect(env.RESEND_FROM_EMAIL).toBe('sales@sentradaya.com')
+      expect(env.TELEGRAM_BOT_TOKEN).toBe('bot123')
+      expect(env.TELEGRAM_CHAT_ID).toBe('chat456')
+      expect(env.WHATSAPP_SALES_NUMBER).toBe('62812345678')
+
+      const cached = getNotificationEnv()
+      expect(cached).toEqual(env)
+    })
+
+    it('should throw error when a required variable is missing', async () => {
+      delete process.env.RESEND_API_KEY
+      const { validateNotificationEnv } = await import('../env')
+      expect(() => validateNotificationEnv()).toThrow(/Notification environment validation failed/)
+    })
+
+    it('should throw error when email format is invalid', async () => {
+      process.env.RESEND_FROM_EMAIL = 'invalid-email-address'
+      const { validateNotificationEnv } = await import('../env')
+      expect(() => validateNotificationEnv()).toThrow(/Resend from email must be a valid email/)
+    })
+  })
 })
 

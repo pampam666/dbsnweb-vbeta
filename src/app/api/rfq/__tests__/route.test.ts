@@ -1,5 +1,9 @@
-import { describe, it, expect, beforeEach } from '@jest/globals'
+import { describe, it, expect, beforeEach, jest } from '@jest/globals'
 import { NextRequest } from 'next/server'
+import { prisma } from '../../../../lib/db/prisma'
+import { sendRfqAcknowledgment, sendInternalNotification } from '../../../../lib/api/notifications/resend'
+import { alertNewRfq, alertRfqFailure } from '../../../../lib/api/notifications/telegram'
+import { buildWhatsAppFallbackUrl } from '../../../../lib/api/notifications/whatsapp'
 
 const mockNextRequest = jest.fn()
 const mockNextResponse = { json: jest.fn() }
@@ -7,6 +11,44 @@ jest.mock('next/server', () => ({
   NextRequest: mockNextRequest,
   NextResponse: mockNextResponse,
 }))
+
+// Mock Prisma client singleton
+jest.mock('../../../../lib/db/prisma', () => ({
+  prisma: {
+    lead: {
+      create: jest.fn(),
+    },
+  },
+}))
+
+// Mock Notification services
+jest.mock('../../../../lib/api/notifications/resend', () => ({
+  sendRfqAcknowledgment: jest.fn(),
+  sendInternalNotification: jest.fn(),
+}))
+
+jest.mock('../../../../lib/api/notifications/telegram', () => ({
+  alertNewRfq: jest.fn(),
+  alertRfqFailure: jest.fn(),
+}))
+
+jest.mock('../../../../lib/api/notifications/whatsapp', () => ({
+  buildWhatsAppFallbackUrl: jest.fn(),
+}))
+
+const mockLeadCreate = prisma.lead.create as any
+const mockSendRfqAck = sendRfqAcknowledgment as any
+const mockSendInternalNotif = sendInternalNotification as any
+const mockAlertNew = alertNewRfq as any
+const mockAlertFail = alertRfqFailure as any
+const mockBuildWaUrl = buildWhatsAppFallbackUrl as any
+
+function createMockRequest(payload: any, shouldFail = false): NextRequest {
+  return {
+    text: jest.fn(() => shouldFail ? Promise.reject(new Error('JSON parse error')) : Promise.resolve(JSON.stringify(payload))) as any,
+    json: jest.fn(() => shouldFail ? Promise.reject(new Error('JSON parse error')) : Promise.resolve(payload)) as any,
+  } as unknown as NextRequest
+}
 
 describe('GET /api/rfq', () => {
   let GET: () => Promise<unknown>
@@ -34,6 +76,20 @@ describe('POST /api/rfq', () => {
 
   beforeEach(async () => {
     jest.clearAllMocks()
+    
+    // Default success mocks
+    mockLeadCreate.mockResolvedValue({
+      id: 'lead-db-123',
+      submissionStatus: 'RECEIVED',
+      dashboardAccessStatus: 'NOT_ELIGIBLE',
+      createdAt: new Date(),
+    })
+    mockSendRfqAck.mockResolvedValue(undefined)
+    mockSendInternalNotif.mockResolvedValue(undefined)
+    mockAlertNew.mockResolvedValue(undefined)
+    mockAlertFail.mockResolvedValue(undefined)
+    mockBuildWaUrl.mockReturnValue('https://wa.me/6281234567890?text=fallback-text')
+
     jest.isolateModules(async () => {
       const route = await import('../route')
       POST = route.POST as (request: NextRequest) => Promise<unknown>
@@ -41,10 +97,7 @@ describe('POST /api/rfq', () => {
   })
 
   it('should return 400 when request body contains malformed JSON', async () => {
-    const mockRequest = {
-      text: jest.fn().mockRejectedValue(new Error('JSON parse error')),
-      json: jest.fn().mockRejectedValue(new Error('JSON parse error')),
-    } as unknown as NextRequest
+    const mockRequest = createMockRequest({}, true)
 
     await POST(mockRequest)
 
@@ -61,10 +114,7 @@ describe('POST /api/rfq', () => {
 
   it('should return 400 when segment is missing or invalid', async () => {
     const payload = { contact_name: 'Test Buyer' }
-    const mockRequest = {
-      text: jest.fn().mockResolvedValue(JSON.stringify(payload)),
-      json: jest.fn().mockResolvedValue(payload),
-    } as unknown as NextRequest
+    const mockRequest = createMockRequest(payload)
 
     await POST(mockRequest)
 
@@ -79,7 +129,7 @@ describe('POST /api/rfq', () => {
     )
   })
 
-  it('should accept valid B2B payload and return 201 Created', async () => {
+  it('should accept valid B2B payload, save to DB, trigger notifications, and return 201 Created', async () => {
     const validB2BPayload = {
       segment: 'B2B',
       source_domain: 'solarcell.sentradaya.com',
@@ -101,17 +151,28 @@ describe('POST /api/rfq', () => {
       timeline: '2026-12-31',
     }
 
-    const mockRequest = {
-      text: jest.fn().mockResolvedValue(JSON.stringify(validB2BPayload)),
-      json: jest.fn().mockResolvedValue(validB2BPayload),
-    } as unknown as NextRequest
+    const mockRequest = createMockRequest(validB2BPayload)
 
     await POST(mockRequest)
+
+    expect(mockLeadCreate).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        segment: 'B2B',
+        sourceDomain: 'solarcell.sentradaya.com',
+        contactEmail: 'buyer@example.com',
+        productCategory: 'Solar Module 100W',
+        quantity: 25,
+      }),
+    })
+
+    expect(mockSendRfqAck).toHaveBeenCalled()
+    expect(mockSendInternalNotif).toHaveBeenCalled()
+    expect(mockAlertNew).toHaveBeenCalled()
 
     expect(mockNextResponse.json).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
-          id: expect.stringMatching(/^lead_/),
+          id: 'lead-db-123',
           submission_status: 'received',
           dashboard_access_status: 'not_eligible',
         }),
@@ -142,17 +203,21 @@ describe('POST /api/rfq', () => {
       dipa_reference: 'DIPA-2026-1122',
     }
 
-    const mockRequest = {
-      text: jest.fn().mockResolvedValue(JSON.stringify(validB2GPayload)),
-      json: jest.fn().mockResolvedValue(validB2GPayload),
-    } as unknown as NextRequest
+    const mockRequest = createMockRequest(validB2GPayload)
 
     await POST(mockRequest)
+
+    expect(mockLeadCreate).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        segment: 'B2G',
+        procurementType: 'Tender Langsung',
+      }),
+    })
 
     expect(mockNextResponse.json).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
-          id: expect.stringMatching(/^lead_/),
+          id: 'lead-db-123',
           submission_status: 'received',
           dashboard_access_status: 'not_eligible',
         }),
@@ -172,13 +237,9 @@ describe('POST /api/rfq', () => {
       contact_phone: '08123456789', // Invalid phone format (+62)
       company_name: '',
       items: [], // At least 1 item is required
-      // Missing procurement_type
     }
 
-    const mockRequest = {
-      text: jest.fn().mockResolvedValue(JSON.stringify(invalidPayload)),
-      json: jest.fn().mockResolvedValue(invalidPayload),
-    } as unknown as NextRequest
+    const mockRequest = createMockRequest(invalidPayload)
 
     await POST(mockRequest)
 
@@ -208,6 +269,61 @@ describe('POST /api/rfq', () => {
         }),
       }),
       { status: 422 }
+    )
+  })
+
+  it('should still return 201 if notifications fail', async () => {
+    const payload = {
+      segment: 'B2B',
+      source_domain: 'sentradaya.com',
+      contact_name: 'Buyer Name',
+      contact_email: 'buyer@example.com',
+      items: [{ product_id: '1', product_name: 'Product 1', quantity: 1 }],
+    }
+    const mockRequest = createMockRequest(payload)
+
+    mockSendRfqAck.mockRejectedValueOnce(new Error('Email failed'))
+
+    await POST(mockRequest)
+
+    expect(mockNextResponse.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ id: 'lead-db-123' }),
+      }),
+      expect.objectContaining({ status: 201 })
+    )
+  })
+
+  it('should return 503 with fallback url and alert Telegram when database write fails', async () => {
+    const payload = {
+      segment: 'B2B',
+      source_domain: 'sentradaya.com',
+      contact_name: 'Buyer Name',
+      contact_email: 'buyer@example.com',
+      items: [{ product_id: '1', product_name: 'Product 1', quantity: 1 }],
+    }
+    const mockRequest = createMockRequest(payload)
+
+    mockLeadCreate.mockRejectedValueOnce(new Error('Prisma database unavailable'))
+
+    await POST(mockRequest)
+
+    expect(mockBuildWaUrl).toHaveBeenCalledWith(expect.objectContaining({
+      contact_name: 'Buyer Name',
+    }))
+    expect(mockAlertFail).toHaveBeenCalledWith(
+      expect.any(Error),
+      expect.objectContaining({ contact_name: 'Buyer Name' })
+    )
+
+    expect(mockNextResponse.json).toHaveBeenCalledWith(
+      {
+        error: {
+          code: 'infrastructure_error',
+          fallback_url: 'https://wa.me/6281234567890?text=fallback-text',
+        },
+      },
+      { status: 503 }
     )
   })
 })
