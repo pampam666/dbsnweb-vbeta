@@ -1,6 +1,6 @@
 # Dependencies Codemap
 
-<!-- Generated: 2026-05-26 | Files scanned: 1 | Token estimate: ~450 -->
+<!-- Generated: 2026-06-03 | Files scanned: 1 | Token estimate: ~550 -->
 
 ## Core Runtime
 
@@ -48,6 +48,20 @@
 | `react-hook-form` | ^7.76.0 | Form state management |
 | `@hookform/resolvers` | ^5.2.2 | Zod bridge for RHF |
 
+## Database & Authentication
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| `@prisma/client` | ^6.19.3 | Prisma query engine client for PostgreSQL |
+| `@auth/prisma-adapter` | ^2.11.2 | Database adapter mapping Auth.js users/sessions to Prisma |
+| `next-auth` | ^5.0.0-beta.31 | Auth.js v5 beta library for next-gen React/Next.js authentication |
+
+## Notification Services
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| `resend` | ^6.12.4 | Resend API client for email transmission |
+
 ## Styling
 
 | Package | Version | Purpose |
@@ -55,7 +69,7 @@
 | `tailwindcss` | ^4 | Utility-first CSS |
 | `@tailwindcss/postcss` | ^4 | PostCSS integration |
 
-## Testing (devDependencies)
+## Testing & Tooling (devDependencies)
 
 | Package | Version | Purpose |
 |---------|---------|---------|
@@ -70,6 +84,7 @@
 | `@playwright/test` | ^1.60.0 | E2E testing |
 | `@types/jest` | ^30.0.0 | TypeScript types for Jest |
 | `cross-env` | ^10.1.0 | Cross-platform env variable setting |
+| `prisma` | ^6.19.3 | Prisma CLI and code generator |
 
 ## TypeScript (devDependencies)
 
@@ -82,13 +97,13 @@
 | `eslint` | ^9 | Linter |
 | `eslint-config-next` | 16.2.6 | Next.js ESLint config |
 
-## Planned External Services (Phase 2)
+## External Services (Active & Planned)
 
-| Service | Purpose |
-|---------|---------|
-| Neon Postgres + Prisma | Transactional database |
-| Auth.js v5 | Session management & RBAC |
-| Resend | Email notifications |
-| Telegram Bot API | Push notifications |
-| Cloudflare Pages | Edge hosting & CDN |
-| GA4 + GSC | Analytics & SEO |
+| Service | Status | Purpose |
+|---------|---------|---------|
+| Neon Postgres + Prisma | **Active** | Transactional database storing users, leads, redirects |
+| Auth.js v5 | **Active** | Session management, RBAC, cookie auth |
+| Resend | **Active** | Email notifications (quotation ACK & alerts) |
+| Telegram Bot API | **Active** | Ingestion alerts and dev error messaging channel |
+| Cloudflare Pages | Planned | Edge hosting & CDN |
+| GA4 + GSC | Planned | Analytics & SEO |

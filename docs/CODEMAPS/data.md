@@ -1,6 +1,6 @@
 # Data Codemap
 
-<!-- Generated: 2026-05-26 | Files scanned: 10 | Token estimate: ~550 -->
+<!-- Generated: 2026-06-03 | Files scanned: 15 | Token estimate: ~850 -->
 
 ## Sanity CMS Integration (Active)
 
@@ -66,8 +66,11 @@ Composite schemas built from atomic sub-schemas:
 
 ### Env (`src/lib/config/env.ts`)
 ```
-sanityEnvSchema: SANITY_PROJECT_ID, DATASET, API_VERSION, API_READ_TOKEN, API_WRITE_TOKEN?, WEBHOOK_SECRET?
+sanityEnvSchema: SANITY_PROJECT_ID, SANITY_DATASET, SANITY_API_VERSION, SANITY_API_READ_TOKEN, SANITY_API_WRITE_TOKEN?, SANITY_WEBHOOK_SECRET?
 middlewareEnvSchema: NEXT_PUBLIC_ROOT_DOMAIN, NEXT_PUBLIC_SITE_URL
+databaseEnvSchema: DATABASE_URL
+authEnvSchema: NEXTAUTH_SECRET, NEXTAUTH_URL
+notificationEnvSchema: RESEND_API_KEY, RESEND_FROM_EMAIL, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, WHATSAPP_SALES_NUMBER
 ```
 
 ## ISR Revalidation Pattern
@@ -76,11 +79,78 @@ Sanity → Webhook → POST /api/revalidate → revalidateTag('sanity:product') 
 Default revalidate: 3600s (1 hour) per fetch
 ```
 
-## Database (Planned Phase 2)
+## Database Layer (Active)
 
-| Table | Key Fields |
-|-------|-----------|
-| `User` | id, email, role, tracking_scope_ids |
-| `Lead` | id, rfq_data, source_tracking, status |
-| `Order` | id, user_id, items, status |
-| `Project` | id, name, status, tracking_data |
+Prisma models and fields mapped to PostgreSQL tables:
+
+### `User` (mapped to `users` table)
+- **Fields**:
+  - `id` (String, `@id`, default CUID)
+  - `email` (String, `@unique`, VarChar 255)
+  - `emailVerified` (DateTime, optional)
+  - `image` (String, optional)
+  - `name` (String, VarChar 255)
+  - `role` (Role enum: ADMIN, VIEWER, CLIENT; default ADMIN)
+  - `createdAt` (DateTime, default now)
+  - `linkedLeadId` (String, optional, soft link)
+  - `clientCompanyName` (String, optional, VarChar 255)
+  - `trackingScopeType` (TrackingScopeType enum: PROJECT, ORDER; optional)
+  - `trackingScopeIds` (Json, optional, authorized IDs array)
+  - `lastLoginAt` (DateTime, optional)
+  - `isActive` (Boolean, default true)
+- **Relations**:
+  - `accounts` (Account[])
+  - `sessions` (Session[])
+- **Indexes**:
+  - `@@index([email])`
+  - `@@index([linkedLeadId])`
+  - `@@index([role])`
+
+### `Lead` (mapped to `leads` table)
+- **Fields**:
+  - `id` (String, `@id`, default CUID)
+  - `createdAt` (DateTime, default now)
+  - `updatedAt` (DateTime, `@updatedAt`)
+  - `segment` (Segment enum: B2G, B2B)
+  - `sourceDomain` (String, VarChar 255)
+  - `sourcePagePath` (String, VarChar 512)
+  - `sourceCampaignTag` (String, optional, VarChar 255)
+  - `utmSource`, `utmMedium`, `utmCampaign` (String, optional, VarChar 255)
+  - `contactName` (String, optional, VarChar 255)
+  - `contactEmail` (String, optional, @unique, VarChar 255)
+  - `contactPhone` (String, optional, VarChar 50)
+  - `companyName` (String, optional, VarChar 255)
+  - `productCategory` (String, optional, VarChar 255)
+  - `quantity` (Int, optional, sum of all item quantities)
+  - `projectScope` (String, optional, Text)
+  - `timeline` (String, optional, VarChar 255)
+  - `procurementType` (String, optional, VarChar 255, B2G only)
+  - `notes` (String, optional, Text)
+  - `submissionStatus` (SubmissionStatus enum: RECEIVED, CONTACTED, QUALIFIED, DISQUALIFIED; default RECEIVED)
+  - `fallbackTriggered` (Boolean, default false)
+  - `fallbackWaUrl` (String, optional, Text)
+  - `trackingProjectId` (String, optional, VarChar 255)
+  - `dashboardAccessGrantedAt` (DateTime, optional)
+  - `dashboardAccessStatus` (DashboardAccessStatus enum: NOT_ELIGIBLE, PENDING, GRANTED, REVOKED; default NOT_ELIGIBLE)
+- **Indexes**:
+  - `@@index([segment, createdAt])`
+  - `@@index([sourceDomain])`
+  - `@@index([contactEmail])`
+  - `@@index([submissionStatus])`
+
+### `Account` (mapped to `accounts` table)
+- **Fields**: `id`, `userId` (FK to User), `type`, `provider`, `providerAccountId`, `refresh_token`, `access_token`, `expires_at`, `token_type`, `scope`, `id_token`, `session_state`.
+- **Relations**: `user` User (relation fields: `userId`, references: `id`, onDelete: Cascade).
+- **Constraints**: `@@unique([provider, providerAccountId])`
+
+### `Session` (mapped to `sessions` table)
+- **Fields**: `id`, `sessionToken` (String, `@unique`), `userId` (FK to User), `expires` (DateTime).
+- **Relations**: `user` User (relation fields: `userId`, references: `id`, onDelete: Cascade).
+
+### `VerificationToken` (mapped to `verification_tokens` table)
+- **Fields**: `identifier` (String), `token` (String, `@unique`), `expires` (DateTime).
+- **Constraints**: `@@unique([identifier, token])`
+
+### `RedirectMap` (mapped to `redirect_map` table)
+- **Fields**: `legacyUrl` (String, `@id`), `targetUrl` (String, VarChar 1024), `spoke` (String, VarChar 100).
+- **Indexes**: `@@index([legacyUrl])`

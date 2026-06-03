@@ -1,6 +1,6 @@
 # Architecture Codemap
 
-<!-- Generated: 2026-05-26 | Files scanned: 42 | Token estimate: ~500 -->
+<!-- Generated: 2026-06-03 | Files scanned: 52 | Token estimate: ~700 -->
 
 ## Project Type
 **Single App** — Next.js 16.2.6 App Router, multi-tenant subdomain routing via Edge Middleware
@@ -9,7 +9,7 @@
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│                   Cloudflare Edge (Planned)                  │
+│                       Cloudflare Edge                        │
 │  Hub: sentradaya.com | Spokes: pju/solar/etc | Dashboard     │
 └──────────────────────────────────────────────────────────────┘
                               │
@@ -20,15 +20,18 @@
 │  Route Groups: (hub), (spokes)   Flat routes: dashboard/     │
 └──────────────────────────────────────────────────────────────┘
                               │
-                ┌─────────────┴─────────────┐
-                ↓                           ↓
-┌──────────────────────┐     ┌──────────────────────────────┐
-│  Sanity.io CMS       │     │  Static Data Layer           │
-│  @sanity/client ^7   │     │  articles.ts (6 articles)    │
-│  next-sanity ^12     │     │  rfq-schemas.ts (Zod)        │
-│  GROQ queries        │     └──────────────────────────────┘
-│  ISR + cache tags    │
-└──────────────────────┘
+                ┌─────────────┼─────────────┐
+                ↓             ↓             ↓
+┌──────────────────────┐ ┌─────────┐ ┌─────────────────────────┐
+│  Sanity.io CMS       │ │ Prisma  │ │   Notifications Layer   │
+│  @sanity/client ^7   │ │  Client │ │  Resend | Telegram Bot  │
+│  next-sanity ^12     │ └────┬────┘ │  WhatsApp Fallback URL  │
+│  GROQ queries        │      │      └─────────────────────────┘
+│  ISR + cache tags    │      ↓
+└──────────────────────┘ ┌─────────┐
+                         │  Neon   │
+                         │Postgres │
+                         └─────────┘
 ```
 
 ## Route Structure
@@ -47,7 +50,8 @@
 | `(spokes)/pju/` | Route Group | pju.sentradaya.com | |
 | `(spokes)/[spoke]/` | Route Group | *.sentradaya.com | Dynamic spokes |
 | `api/revalidate/` | API route | any | Sanity webhook ISR |
-| `api/rfq/` | API route | any | POST ingest multi-product RFQ |
+| `api/rfq/` | API route | any | POST ingest multi-product RFQ / GET healthcheck |
+| `api/auth/[...nextauth]` | API route | any | NextAuth.js v5 route handler (GET/POST) |
 
 ## Middleware Routing Logic
 
@@ -64,19 +68,28 @@ Request → src/middleware.ts
 
 | File | Purpose | Lines |
 |------|---------|-------|
-| `src/middleware.ts` | Edge subdomain routing | 97 |
+| `src/middleware.ts` | Edge subdomain routing | 114 |
 | `src/lib/middleware/config.ts` | Domain helpers (cleanHostname, isHubDomain, etc.) | 110 |
-| `src/lib/config/env.ts` | Zod env validation (Sanity + Middleware) | 138 |
+| `src/lib/config/env.ts` | Zod env validation (Sanity, Middleware, DB, Auth, Notifications) | 294 |
 | `src/app/(hub)/page.tsx` | Hub homepage | ~95 |
 | `src/app/dashboard/layout.tsx` | Dashboard shell | ~30 |
 | `src/lib/api/sanity/client.ts` | Sanity client + CACHE_TAGS + ISR | 88 |
 | `src/lib/store/rfq-cart-store.ts` | Zustand RFQ cart persist store | 143 |
 | `src/hooks/use-rfq-cart.ts` | Zustand hydration hooks & selectors | 57 |
-| `src/app/api/rfq/route.ts` | REST API for B2B/B2G RFQ ingestion | 131 |
+| `src/app/api/rfq/route.ts` | REST API for B2B/B2G RFQ ingestion | 173 |
+| `prisma/schema.prisma` | Database schema config for Prisma ORM | 162 |
+| `src/lib/db/prisma.ts` | Prisma Client singleton client | 12 |
+| `src/lib/auth/auth.config.ts` | NextAuth.js v5 core setup and callbacks | 147 |
+| `src/lib/auth/auth-guard.ts` | Route protection and database access verification | 75 |
+| `src/app/api/auth/[...nextauth]/route.ts` | API handlers route mapping for NextAuth | 3 |
+| `src/lib/api/notifications/resend.ts` | Email quotation ACK and sales alert service | 84 |
+| `src/lib/api/notifications/telegram.ts` | Telegram push alerts for RFQ submissions and failures | 77 |
+| `src/lib/api/notifications/whatsapp.ts` | Prefilled client WhatsApp fallback redirect URL helper | 53 |
 
 ## Phase Status
 
 | Phase | Status | Notes |
 |-------|--------|-------|
 | 1 | **Active** | UI components, routing, Sanity CMS, articles, RFQ schemas |
-| 2 | Planned | Neon Postgres, Auth.js v5, full RFQ flow, Cloudflare |
+| 2 | **Active** | Neon Postgres database, Auth.js v5 authentication, notifications, RFQ ingestion |
+| 3 | Planned | Cloudflare Pages hosting, GA4 tracking, 301 redirect engine |

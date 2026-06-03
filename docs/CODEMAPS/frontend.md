@@ -1,6 +1,6 @@
 # Frontend Codemap
 
-<!-- Generated: 2026-05-26 | Files scanned: 45 | Token estimate: ~600 -->
+<!-- Generated: 2026-06-03 | Files scanned: 47 | Token estimate: ~650 -->
 
 ## Page Tree
 
@@ -82,6 +82,7 @@ src/components/
 | File | Purpose |
 |------|---------|
 | `src/hooks/use-counter.ts` | Animated counter hook (IntersectionObserver + RAF) |
+| `src/hooks/use-rfq-cart.ts` | Zustand hydration hook (`useRfqCartHydrated`) to prevent SSR mismatches |
 
 ## Utilities
 
@@ -99,7 +100,9 @@ src/components/
 | Forms | React Hook Form + Zod |
 | Animations | Framer Motion (page transitions, scroll reveals) |
 | Carousel | Embla Carousel React |
-| URL state | Planned Phase 2 |
+| Session & Auth | Auth.js v5 JWT cookie authentication & RBAC |
+| RFQ Cart State | Zustand localStorage persisted store (`dbsn-rfq-cart`) |
+| URL state | Planned Phase 3 |
 
 ## UI Pattern
 

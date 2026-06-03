@@ -1,6 +1,6 @@
 # DBSN Centralized Digital Ecosystem
 
-[![Vercel Deployment](https://img.shields.io/badge/Vercel-Deployed-black?style=flat&logo=vercel)](https://vercel.com)
+[![Cloudflare Pages](https://img.shields.io/badge/Cloudflare-Pages-orange?style=flat&logo=cloudflare)](https://pages.cloudflare.com)
 [![Next.js Version](https://img.shields.io/badge/Next.js-16.2.6-blue?style=flat&logo=nextdotjs)](https://nextjs.org/)
 [![Sanity CMS](https://img.shields.io/badge/CMS-Sanity-red?style=flat&logo=sanity)](https://www.sanity.io/)
 [![Database](https://img.shields.io/badge/Database-Neon%20Postgres-00e699?style=flat&logo=postgresql)](https://neon.tech/)

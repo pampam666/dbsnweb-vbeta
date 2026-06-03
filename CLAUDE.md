@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**DBSN Centralized Digital Ecosystem** — A Next.js 15 hub-and-spoke platform consolidating three legacy WordPress domains into a single codebase with unified design system, CMS, transactional database, and authenticated client tracking portal.
+**DBSN Centralized Digital Ecosystem** — A Next.js 16.2.6 hub-and-spoke platform consolidating three legacy WordPress domains into a single codebase with unified design system, CMS, transactional database, and authenticated client tracking portal.
 
 ---
 
@@ -26,7 +26,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 │                                                              │
 │  ┌───────────────────────────────────────────────────────────────────────────────────────────────┐ │
 │  │                                                │
-│  │                     Next.js 15 App (Single Codebase)         │
+│  │                     Next.js 16 App (Single Codebase)         │
 │  │  App Router + Middleware (Subdomain Routing)    │
 │  └───────────────────────────────────────────────────────────────────────────────────────────────┘ │
 │                                                              │
@@ -44,15 +44,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 | Layer | Technology | Purpose |
 |--------|-----------|---------|
-| Runtime | Next.js 15 (App Router) | Application framework, routing, middleware |
-| Package Manager | pnpm | Dependency management |
+| Runtime | Next.js 16.2.6 (App Router) | Application framework, routing, middleware |
+| Package Manager | npm | Dependency management |
 | Content CMS | Sanity.io | Headless CMS, product/portfolio data, content federation |
 | Transactional DB | Neon Postgres via Prisma ORM | Leads, users, tracking data, redirect mappings |
 | Authentication | Auth.js v5 | Session management, RBAC (`admin`, `viewer`, `client`) |
 | UI System | Tailwind CSS + Radix UI (shadcn/ui patterns) | Shared design tokens, accessible components |
 | State Management | Zustand (persist middleware) | Client-side state persistence (RFQ cart) |
 | Hosting | Cloudflare Pages | Edge delivery, CDN, middleware-based routing, 301 redirects |
-| Notifications | Resend (email) + Telegram Bot API | RFQ alerts, failure notifications |
+| Notifications | Resend (email) + Telegram Bot API + WhatsApp Fallback | RFQ alerts, failure notifications |
 | Analytics | GA4 + GSC + Cloudflare Analytics | Unified telemetry |
 | Phase 2 | Sentry (errors) + PostHog (session replay) | Error tracking, user behavior analytics |
 
@@ -113,38 +113,28 @@ src/
 ### Build & Development
 ```bash
 # Install dependencies
-pnpm install
+npm install
 
 # Development server
-pnpm dev
-
-# Type checking
-pnpm type-check
+npm run dev
 
 # Production build
-pnpm build
+npm run build
 ```
 
 ### Testing
 ```bash
 # Run tests
-pnpm test
-
-# E2E tests (Playwright)
-pnpm test:e2e
+npm test
 
 # Test coverage report
-pnpm coverage:report
+npm run test:coverage
 ```
 
 ### Linting & Code Quality
 ```bash
 # ESLint
-pnpm lint
-
-# Prettier (if configured)
-pnpm prettier --check .
-```
+npm run lint
 
 ---
 
@@ -177,16 +167,19 @@ pnpm prettier --check .
   - Actions (quantity updates, notes, removal) instantly trigger store mutations to keep Zustand and the form in sync.
 
 ### RFQ Submission Flow
-- **REST Endpoint**: POST `/api/rfq` accepts flat composite JSON payloads validated against `rfqB2BSchema` or `rfqB2GSchema` (containing: `segment`, `contact_name`, `contact_email`, `contact_phone`, `company_name`, `project_scope`, `timeline`, `notes`, `source_domain`, `source_page_path`, `source_campaign_tag`, `utm_source`, `utm_medium`, `utm_campaign`, `items[]` array, plus B2G-specific fields `procurement_type` and `dipa_reference`).
-- **Cart Item Schema (`rfqCartItemSchema`)**: `{ product_id, product_name, quantity (1-100,000), variant?, item_notes? }`.
-- **Error Formatting**: Validation errors (422) map Zod issues to business-friendly codes (`required_field`, `invalid_format`, `validation_error`).
-- **Resilience Routing**: On failure (5xx or timeout), retries up to 3 times before rendering a pre-filled WhatsApp handoff CTA (`wa.me`) and triggering a Telegram alerts bot.
+- **REST Endpoint**: POST `/api/rfq` accepts flat composite JSON payloads validated against `rfqB2BSchema` or `rfqB2GSchema` (schema located in `src/lib/schema/rfq-schemas.ts`). Endpoint code is at `src/app/api/rfq/route.ts`.
+- **Infrastructure**: On success, leads are created in Postgres and non-blocking notifications are triggered: email acknowledgment/internal alert (`src/lib/api/notifications/resend.ts`) and Telegram bot notification (`src/lib/api/notifications/telegram.ts`).
+- **Resilience / Fallback**: On failure, the API returns a `fallback_url` built by `src/lib/api/notifications/whatsapp.ts` to redirect to WhatsApp sales prefill, and alerts devs via Telegram.
 
 ### Authentication Flow
-- NextAuth.js v5 for session management
-- JWT tokens stored in httpOnly cookies
-- Role-based route protection using middleware
-- Dashboard sessions enforced via `tracking_scope_ids` authorization check
+- **Session Management**: Auth.js v5 configured via `src/lib/auth/auth.config.ts`, using a custom credentials provider and JWT session storage.
+- **Route Protection**: Middleware matches sessions using cookie session tokens and blocks access.
+- **Server Guards**: Exported from `src/lib/auth/auth-guard.ts` (`getServerSession()`, `requireAuth()`, `requireDashboardAccess()`, `checkDashboardAccess()`) to secure server routes/components and query access permissions.
+- **Route handlers wrapper**: NextAuth endpoint is located at `src/app/api/auth/[...nextauth]/route.ts`.
+
+### Database Singleton Client
+- **Location**: `src/lib/db/prisma.ts` exports the active `prisma` client.
+- **Pattern**: Implements a global client wrapper (`globalThis.__prisma`) in non-production environments to prevent creating multiple connections during Next.js hot-reloading.
 
 ---
 
@@ -194,19 +187,18 @@ pnpm prettier --check .
 
 | Dependency | Version | Purpose |
 |----------|--------|---------|
-| @next-auth/0 | ^21.0.0 | Auth.js v5, session management |
-| @prisma/client | ^5.20.0 | Prisma ORM, Neon Postgres client |
-| @sanity/client | ^3.35.0 | Sanity CMS client |
+| next-auth | ^5.0.0-beta.31 | Auth.js v5, session management |
+| @auth/prisma-adapter | ^2.11.2 | Database adapter mapping Auth.js to Prisma |
+| @prisma/client | ^6.19.3 | Prisma ORM, Neon Postgres client |
+| @sanity/client | ^7.22.0 | Sanity CMS client |
 | zustand | ^4.5.0 | State management with persist middleware |
-| @radix-ui/react-slot | ^1.0.3 | Radix UI primitives |
-| @radix-ui/react-dialog | ^1.0.3 | Radix UI dialog components |
-| @radix-ui/react-select | ^1.0.3 | Radix UI select components |
-| @radix-ui/react-tabs | ^1.0.3 | Radix UI tabs components |
-| tailwindcss | ^3.4.0 | Utility-first CSS framework |
-| @resend/node | ^3.0.0 | Email API client |
-| @supabase/mcp-server | ^0.8.1 | Neon Postgres MCP server |
-| @playwright/mcp | ^0.0.75 | Playwright E2E testing |
-| zod | ^3.23.0 | Schema validation |
+| @radix-ui/react-slot | ^1.2.4 | Radix UI slot primitive |
+| @radix-ui/react-dialog | ^1.1.15 | Radix UI dialog component |
+| @radix-ui/react-select | ^2.2.6 | Radix UI select component |
+| @radix-ui/react-tabs | ^1.1.13 | Radix UI tabs component |
+| tailwindcss | ^4 | Tailwind CSS v4 CSS framework |
+| resend | ^6.12.4 | Email SDK client |
+| zod | ^4.4.3 | Schema validation |
 
 ---
 
@@ -255,4 +247,4 @@ This is a **hub-and-spoke architecture** — all subdomains run from a single Ne
 ---
 
 *Generated: 2026-06-03*
-*Status: Production Ready — Architecture documentation complete, RFQ cart feature integrated*
+*Status: Production Ready — Phase 2 features (Neon Postgres database, Auth.js v5, and RFQ API flow) completed and fully documented*
