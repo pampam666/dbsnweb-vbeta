@@ -1,0 +1,36 @@
+# Cloudflare Pages Configuration
+name = "dbsn-website"
+pages_build_output_dir = ".vercel/output/static"
+compatibility_date = "2026-06-03"
+compatibility_flags = [ "nodejs_compat" ]
+
+[vars]
+# Domain & Routing Configuration
+NEXT_PUBLIC_ROOT_DOMAIN = "sentradaya.com"
+NEXTAUTH_URL = "https://sentradaya.com"
+
+# Supabase Database (Local/Staging Placeholders)
+SUPABASE_ACCESS_TOKEN = "your_supabase_access_token_placeholder"
+SUPABASE_PROJECT_REF = "your_supabase_project_ref_placeholder"
+
+# GitHub Configuration
+GITHUB_PERSONAL_ACCESS_TOKEN = "your_github_token_placeholder"
+
+# Sanity CMS (Production Defaults)
+SANITY_PROJECT_ID = "3h4k8dye"
+SANITY_DATASET = "production"
+SANITY_API_VERSION = "v2026-05-21"
+SANITY_API_READ_TOKEN = "your_read_only_token_placeholder"
+
+# Database Configuration (Placeholder - Manage via Secrets Dashboard)
+DATABASE_URL = "postgresql://user:password@host/database?sslmode=require"
+
+# Auth.js Configuration (Placeholder - Manage via Secrets Dashboard)
+NEXTAUTH_SECRET = "super-secret-key-must-be-at-least-32-characters-long"
+
+# Notification Configuration (Placeholders - Manage via Secrets Dashboard)
+RESEND_API_KEY = "re_your_api_key_placeholder"
+RESEND_FROM_EMAIL = "onboarding@resend.dev"
+TELEGRAM_BOT_TOKEN = "your_telegram_bot_token_placeholder"
+TELEGRAM_CHAT_ID = "-1001234567890"
+WHATSAPP_SALES_NUMBER = "6281234567890"

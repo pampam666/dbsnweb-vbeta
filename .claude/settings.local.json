@@ -53,7 +53,8 @@
       "Bash(ECC_GATEGUARD=off sed *)",
       "Bash(ECC_GATEGUARD=off npm test *)",
       "Bash(ECC_GATEGUARD=off rm -f \"src/lib/api/sanity/__tests__queries.test.ts\")",
-      "Bash(npm list *)"
+      "Bash(npm list *)",
+      "mcp__plugin_ecc_exa__web_search_exa"
     ]
   },
   "enabledPlugins": {

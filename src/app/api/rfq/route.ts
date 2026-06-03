@@ -6,6 +6,8 @@ import { NotificationQueue } from '../../../lib/api/notifications/queue'
 import { alertRfqFailure } from '@/lib/api/notifications/telegram'
 import { buildWhatsAppFallbackUrl } from '@/lib/api/notifications/whatsapp'
 
+export const runtime = 'edge'
+
 /**
  * POST /api/rfq
  *

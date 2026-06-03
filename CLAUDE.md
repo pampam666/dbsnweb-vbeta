@@ -120,7 +120,22 @@ npm run dev
 
 # Production build
 npm run build
+
+# Compile Next.js edge build for Cloudflare Pages
+npm run pages:build
+
+# Local preview of Cloudflare Pages build (wrangler dev)
+npm run pages:preview
+
+# Deploy to Cloudflare Pages (manual CLI)
+npm run pages:deploy
 ```
+
+### Cloudflare Pages Deployment Pipeline
+- **Wrangler Config**: Root-level `wrangler.toml` defines the page project name (`dbsn-website`), compatibility date, edge compatibility flag (`nodejs_compat`), and environment variables under `[vars]`.
+- **Edge Compilation**: Build process compiles via `@cloudflare/next-on-pages` writing to `.vercel/output/static`.
+- **Edge Runtime**: All dynamic routes, API endpoints, and root layout must export `const runtime = 'edge'` to render correctly on Cloudflare Workers edge.
+- **Windows Path Patch**: Build processes running on Windows utilize a custom Vercel CLI cache patching script (`patch-vercel-builder.js`) that normalizes backslashes to forward slashes and strips Next.js route groups (`(hub)`/`(spokes)`) from lambda routing maps to prevent symlink conflicts (`EEXIST`).
 
 ### Testing
 ```bash

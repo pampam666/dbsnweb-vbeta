@@ -4,6 +4,8 @@ import { CACHE_TAGS } from '@/lib/api/sanity/client'
 import { getSanityEnv } from '@/lib/config/env'
 import { createHmac, timingSafeEqual } from 'crypto'
 
+export const runtime = 'edge'
+
 /**
  * Webhook payload from Sanity.
  */
