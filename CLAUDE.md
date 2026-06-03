@@ -22,7 +22,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 │  │                                  solarcell.sentradaya.com (Secure Tracking) │
 │  │                                  alatpetir.sentradaya.com                     │
 │  │                                  baterai.sentradaya.com                       │
-│  └───────────────────────────────────────────────────────────────────────────────────────┘ │
+│  └───────────────────────────────────────────────────────────────────────────────────────────────┘ │
 │                                                              │
 │  ┌───────────────────────────────────────────────────────────────────────────────────────────────┐ │
 │  │                                                │
@@ -50,6 +50,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | Transactional DB | Neon Postgres via Prisma ORM | Leads, users, tracking data, redirect mappings |
 | Authentication | Auth.js v5 | Session management, RBAC (`admin`, `viewer`, `client`) |
 | UI System | Tailwind CSS + Radix UI (shadcn/ui patterns) | Shared design tokens, accessible components |
+| State Management | Zustand (persist middleware) | Client-side state persistence (RFQ cart) |
 | Hosting | Cloudflare Pages | Edge delivery, CDN, middleware-based routing, 301 redirects |
 | Notifications | Resend (email) + Telegram Bot API | RFQ alerts, failure notifications |
 | Analytics | GA4 + GSC + Cloudflare Analytics | Unified telemetry |
@@ -93,12 +94,14 @@ src/
 │   └── (dashboard)/    # Client tracking portal
 ├── components/
 │   ├── ui/            # Radix UI primitives (Button, Dialog, etc.)
-│   ├── forms/          # RFQ forms (B2G, B2B variants)
+│   ├── forms/          # RFQ forms (B2G, B2B variants with multi-product cart)
 │   └── shared/        # Reusable patterns, utilities
 ├── lib/
 │   ├── api/            # API clients (Sanity, auth, database)
 │   ├── db/             # Prisma ORM clients
-│   └── config/          # Environment variables, feature flags
+│   ├── config/          # Environment variables, feature flags
+│   ├── schema/         # Zod validation schemas (rfq-schemas.ts)
+│   └── store/          # Zustand stores (rfq-cart-store.ts)
 └── styles/
     └── globals.css    # Shared Tailwind config (root-level, no local overrides)
 ```
@@ -163,11 +166,21 @@ pnpm prettier --check .
 - Dashboard users (`role=client`) can only read rows where their user ID is in `tracking_scope_ids`
 - Admin users (`role=admin` or `role=viewer`) have full system access
 
-### RFQ Fallback System
-- Primary submission via `/api/rfq` endpoint
-- On failure (5xx or timeout): retry up to 3 times with exponential backoff
-- If all retries fail: render WhatsApp fallback with pre-filled URL parameters
-- Send failure alerts via Telegram to sales team
+### RFQ Cart System
+- **State Management**: Zustand store (`src/lib/store/rfq-cart-store.ts`) with `persist` middleware (`dbsn-rfq-cart` localStorage key).
+  - Mutators: `addItem` (validates with `rfqCartItemSchema`, merges duplicate product+variant keys, and clamps quantity), `removeItem`, `updateQuantity`, `updateItemNotes`, and `clearCart`.
+  - Slice Selectors (optimizes renders): `selectItemCount`, `selectTotalQuantity`, `selectHasItem`, `selectCartItems`.
+- **SSR Hydration Guard**: Hydration hook (`src/hooks/use-rfq-cart.ts`) exports `useRfqCartHydrated()`. Returns `true` only after Zustand has loaded state from localStorage, preventing SSR hydration mismatches.
+- **Dynamic Forms Integration**: Checkout forms (`src/components/forms/RfqB2BForm.tsx`, `src/components/forms/RfqB2GForm.tsx`) use `react-hook-form` + `useFieldArray` bound to the cart `items` array.
+  - While hydrating: renders a loading skeleton (`aria-label="loading rfq form"`).
+  - If cart is empty: renders an Empty Cart view with a CTA to browse products.
+  - Actions (quantity updates, notes, removal) instantly trigger store mutations to keep Zustand and the form in sync.
+
+### RFQ Submission Flow
+- **REST Endpoint**: POST `/api/rfq` accepts flat composite JSON payloads validated against `rfqB2BSchema` or `rfqB2GSchema` (containing: `segment`, `contact_name`, `contact_email`, `contact_phone`, `company_name`, `project_scope`, `timeline`, `notes`, `source_domain`, `source_page_path`, `source_campaign_tag`, `utm_source`, `utm_medium`, `utm_campaign`, `items[]` array, plus B2G-specific fields `procurement_type` and `dipa_reference`).
+- **Cart Item Schema (`rfqCartItemSchema`)**: `{ product_id, product_name, quantity (1-100,000), variant?, item_notes? }`.
+- **Error Formatting**: Validation errors (422) map Zod issues to business-friendly codes (`required_field`, `invalid_format`, `validation_error`).
+- **Resilience Routing**: On failure (5xx or timeout), retries up to 3 times before rendering a pre-filled WhatsApp handoff CTA (`wa.me`) and triggering a Telegram alerts bot.
 
 ### Authentication Flow
 - NextAuth.js v5 for session management
@@ -184,6 +197,7 @@ pnpm prettier --check .
 | @next-auth/0 | ^21.0.0 | Auth.js v5, session management |
 | @prisma/client | ^5.20.0 | Prisma ORM, Neon Postgres client |
 | @sanity/client | ^3.35.0 | Sanity CMS client |
+| zustand | ^4.5.0 | State management with persist middleware |
 | @radix-ui/react-slot | ^1.0.3 | Radix UI primitives |
 | @radix-ui/react-dialog | ^1.0.3 | Radix UI dialog components |
 | @radix-ui/react-select | ^1.0.3 | Radix UI select components |
@@ -192,6 +206,7 @@ pnpm prettier --check .
 | @resend/node | ^3.0.0 | Email API client |
 | @supabase/mcp-server | ^0.8.1 | Neon Postgres MCP server |
 | @playwright/mcp | ^0.0.75 | Playwright E2E testing |
+| zod | ^3.23.0 | Schema validation |
 
 ---
 
@@ -239,5 +254,5 @@ This is a **hub-and-spoke architecture** — all subdomains run from a single Ne
 
 ---
 
-*Generated: 2026-05-13*
-*Status: Production Ready — Architecture documentation complete*
+*Generated: 2026-06-03*
+*Status: Production Ready — Architecture documentation complete, RFQ cart feature integrated*

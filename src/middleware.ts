@@ -65,7 +65,24 @@ export default function middleware(request: NextRequest) {
 
   // 4. Dashboard Domain Routing
   if (isDashboardDomain(cleanHost)) {
-    // TODO: Add Auth.js session verification guard in Phase 3
+    const isPublicRoute =
+      pathname === '/login' ||
+      pathname === '/lupa-kata-sandi' ||
+      pathname === '/konfirmasi-reset'
+
+    if (!isPublicRoute) {
+      const sessionToken =
+        request.cookies.get('next-auth.session-token')?.value ||
+        request.cookies.get('__Secure-next-auth.session-token')?.value ||
+        request.cookies.get('authjs.session-token')?.value ||
+        request.cookies.get('__Secure-authjs.session-token')?.value
+
+      if (!sessionToken) {
+        const loginUrl = new URL('/login', request.url)
+        return NextResponse.redirect(loginUrl)
+      }
+    }
+
     const url = new URL(`/dashboard${pathname}${search}`, request.url)
     const response = NextResponse.rewrite(url)
     response.headers.set('x-middleware-subdomain', 'dashboard')

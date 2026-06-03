@@ -41,9 +41,12 @@ describe('Subdomain Routing Middleware Integration', () => {
     expect(res.headers.get('x-middleware-matched-route')).toBe('/(hub)')
   })
 
-  it('should rewrite dashboard domain to /dashboard folder', async () => {
+  it('should rewrite dashboard domain to /dashboard folder when authenticated', async () => {
     const req = new NextRequest('http://dashboard.sentradaya.com/profile', {
-      headers: { host: 'dashboard.sentradaya.com' },
+      headers: {
+        host: 'dashboard.sentradaya.com',
+        cookie: 'next-auth.session-token=dummy-token-value',
+      },
     })
 
     const res = await middleware(req)
@@ -51,6 +54,27 @@ describe('Subdomain Routing Middleware Integration', () => {
     expect(res.headers.get('x-middleware-rewrite')).toContain('/dashboard/profile')
     expect(res.headers.get('x-middleware-subdomain')).toBe('dashboard')
     expect(res.headers.get('x-middleware-matched-route')).toBe('/dashboard')
+  })
+
+  it('should redirect dashboard domain to /login if unauthenticated', async () => {
+    const req = new NextRequest('http://dashboard.sentradaya.com/profile', {
+      headers: { host: 'dashboard.sentradaya.com' },
+    })
+
+    const res = await middleware(req)
+    expect(res).toBeDefined()
+    expect(res.status).toBe(307)
+    expect(res.headers.get('location')).toBe('http://dashboard.sentradaya.com/login')
+  })
+
+  it('should allow public dashboard routes to proceed without authentication', async () => {
+    const req = new NextRequest('http://dashboard.sentradaya.com/login', {
+      headers: { host: 'dashboard.sentradaya.com' },
+    })
+
+    const res = await middleware(req)
+    expect(res).toBeDefined()
+    expect(res.headers.get('x-middleware-rewrite')).toContain('/dashboard/login')
   })
 
   it('should rewrite valid spoke subdomain (pju) to /(spokes)/pju', async () => {
@@ -122,7 +146,10 @@ describe('Subdomain Routing Middleware Integration', () => {
 
   it('should short-circuit and set correct headers for already rewritten dashboard path', async () => {
     const req = new NextRequest('http://dashboard.sentradaya.com/dashboard/profile', {
-      headers: { host: 'dashboard.sentradaya.com' },
+      headers: {
+        host: 'dashboard.sentradaya.com',
+        cookie: 'next-auth.session-token=dummy-token-value',
+      },
     })
 
     const res = await middleware(req)

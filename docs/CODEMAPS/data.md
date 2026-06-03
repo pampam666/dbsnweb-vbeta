@@ -55,15 +55,14 @@ getArticleBySlug(slug) → Article | undefined
 
 ## Validation Schemas
 
-### RFQ (`src/lib/schema/rfq-schemas.ts`, ~80 lines)
-```
-contact_name, contact_email, contact_phone, company_name
-product_category, quantity, project_scope, timeline, notes
-segment: "B2G" | "B2B"
-procurement_type: Tender Langsung | Tender Umum | Penunjukan Langsung | E-Purchasing
-dipa_reference (B2G)
-source_domain, source_page_path, utm_source/medium/campaign
-```
+### RFQ (`src/lib/schema/rfq-schemas.ts`, 183 lines)
+Composite schemas built from atomic sub-schemas:
+- **`contactInfoSchema`**: contact details (`contact_name`, `contact_email`, `contact_phone` as +62 Indonesian format, `company_name`)
+- **`rfqMetaSchema`**: project metadata (`project_scope`, `timeline` as YYYY-MM-DD, `notes`)
+- **`rfqCartItemSchema`**: single cart item (`product_id` Sanity `_id`, `product_name`, `quantity` integer clamped [1, 100,000], optional `variant`, optional `item_notes` max 1000)
+- **`rfqItemsArraySchema`**: list of items (`items` array constrained to [1, 50] items to prevent empty/huge submissions)
+- **`rfqB2BSchema`** / **`rfqB2GSchema`**: final strict schemas composed using `.merge()`, containing all above fields plus `segment: "B2B"|"B2G"`, `sourceTrackingSchema` fields, and B2G specific fields (`procurement_type` enum, optional `dipa_reference`).
+
 
 ### Env (`src/lib/config/env.ts`)
 ```

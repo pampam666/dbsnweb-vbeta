@@ -334,6 +334,57 @@ describe('POST /api/revalidate', () => {
 
 ---
 
+## Testing RFQ Cart Features
+
+The multi-product RFQ Cart system introduces schema validation, a Zustand persist store, complex form rendering (react-hook-form + useFieldArray), and composite API route handling. Testing guidelines for each layer are detailed below:
+
+### 1. Zod Validation Schemas
+Unit tests for `src/lib/schema/rfq-schemas.ts` are located in `__tests__/rfq-schemas.test.ts`. 
+- **Validation limits**: Test happy path and error paths for text bounds (e.g. contact name limit of 255 chars, notes limit of 2000 chars).
+- **Phone validation**: Test Indonesian phone format constraints (+62 prefix).
+- **Cart constraints**: Test that cart items arrays block empty cart submissions (min 1) and restrict bulk submissions (max 50).
+- **Clamping bounds**: Verify that quantities are integers clamped between 1 and 100,000.
+- **Strict schemas**: Verify that additional/extraneous fields are rejected using strict validation (`.strict()`).
+
+### 2. Zustand Store
+Store tests for `src/lib/store/rfq-cart-store.ts` reside in `__tests__/rfq-cart-store.test.ts`.
+- **Store Mutations**: Test that `addItem`, `removeItem`, `updateQuantity`, `updateItemNotes`, and `clearCart` mutate items array as expected.
+- **Deduplication**: Assert that adding duplicate product+variant keys merges lines by incrementing quantity.
+- **Clamping**: Assert that quantity mutators clamp values to `[1, 100000]`.
+- **Boundary Validation**: Verify that `addItem` throws a Zod parsing error if given invalid item attributes.
+- **Selectors**: Validate selector helper outputs (`selectItemCount`, `selectTotalQuantity`, `selectHasItem`, `selectCartItems`).
+
+### 3. Dynamic React Forms (Zustand + Hydration Mocking)
+Checkout form tests (`RfqB2BForm.test.tsx`, `RfqB2GForm.test.tsx` in `src/components/forms/__tests__/`) must mock store hydration states:
+- **Mocking Hydration**: Use Jest mock definitions to mock hydration hook states:
+  ```typescript
+  jest.mock('@/hooks/use-rfq-cart', () => {
+    const actual = jest.requireActual('@/hooks/use-rfq-cart')
+    return {
+      ...actual,
+      useRfqCartHydrated: jest.fn(() => true),
+      useRfqCartStore: jest.fn((selector) => {
+        const mockState = { items: mockCartItems }
+        return selector ? selector(mockState) : mockState
+      }),
+    }
+  })
+  ```
+- **Loading Skeleton**: Set `useRfqCartHydrated` to return `false` to verify that the loading skeleton (`aria-label="loading rfq form"`) is rendered.
+- **Empty Cart state**: Set store items to an empty array to verify that the Empty Cart view and "Browse Products" CTA is rendered.
+- **In-Form Cart Actions**: Simulate user clicks on increment (`+`), decrement (`-`), and remove (trash icon) buttons, and check that the corresponding store action functions are called with correct params.
+- **Validation Errors**: Trigger form submissions with invalid fields (e.g. empty contact name) and assert that validation error text appears in the UI.
+- **Composite Submission**: Verify that a valid submission triggers `onSubmit` with a composite payload combining contact fields, metadata, source tracking, and the product `items[]` array.
+
+### 4. API Route Handlers
+API route tests (`route.test.ts` in `src/app/api/rfq/__tests__/`) test server-side request parsing:
+- **JSON integrity**: Request POST `/api/rfq` with malformed JSON and assert a `400` status.
+- **Segment guard**: Request POST `/api/rfq` with missing or invalid segment flag and assert a `400` status.
+- **Validation envelop parsing**: Request POST `/api/rfq` with invalid fields and verify that it returns `422` status and standard envelope error codes (e.g. mapping Zod errors to `validation_error`, `required_field`, and `invalid_format`).
+- **Success ingestion**: Request POST `/api/rfq` with complete, valid payloads (both B2B and B2G shapes) and verify that it returns `201` status, unique mock lead ID, and correct headers.
+
+---
+
 ## Coverage Targets
 
 **Minimum:** 80% overall (enforced by ECC rules).

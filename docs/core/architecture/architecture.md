@@ -421,11 +421,49 @@ erDiagram
    - Sentry: Error tracking, performance monitoring, release tracking
    - PostHog: Session replay, user behavior analytics, product insights
    - Both instruments to be added after Phase 1 stabilization
-   - Trigger: RFQ API/database failure
-   - Mechanism: serialized captured RFQ payload into pre-filled URL parameters
-   - UX requirement: explicit failure messaging and primary fallback CTA
 
 ## 5. Key Architectural Flows
+
+### Legacy Single-Item to Multi-Product RFQ Transition
+
+Previously, the system supported only a single-item RFQ submission where the user submitted an RFQ from a single product detail page. The submission payload had flat fields like `product_category` and `quantity`.
+
+With the introduction of the unified **RFQ Cart** feature:
+1. **Multi-Product Aggregation**: Users can browse the catalog across different subdomains, add multiple products (with varying quantities and custom specs/variants) to a persistent cart, and submit them all at once.
+2. **Schema Generalization**: The data structure has transitioned from flat single-product fields to a unified composite layout, where line-items are represented as an array (`items: RfqCartItem[]`).
+3. **Data Backwards Compatibility**: Legacy fields in type/schema definitions are deprecated but preserved (`sharedRfqFieldsSchema`) to prevent breaking existing integrations.
+
+### RFQ Cart Lifecycle & Data Flow
+
+The multi-product RFQ Cart architecture coordinates client-side persistence, React state synchronization, and server-side Zod validation. The complete pipeline runs as follows:
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant Page as Product Page / Catalog
+    participant Store as Zustand Persist Store (LocalStorage)
+    participant Form as RFQ Form (react-hook-form + useFieldArray)
+    participant Route as POST /api/rfq (Next.js Route)
+
+    User->>Page: Click "Add to Cart"
+    Page->>Store: addItem(newItem)
+    Note over Store: Validates with rfqCartItemSchema;<br/>Merges duplicate product_id + variant;<br/>Clamps quantity [1, 100000];<br/>Persists to dbsn-rfq-cart in localStorage
+
+    User->>Form: Navigate to RFQ checkout page
+    Note over Form: useRfqCartHydrated() checks hydration status;<br/>Renders skeleton if false;<br/>Renders Empty Cart View if items.length === 0
+    Store-->>Form: Hydrates default values (items[])
+    Form->>Form: Binds items[] to useFieldArray
+
+    User->>Form: Mutate item (change qty / add notes / delete)
+    Form->>Store: updateQuantity() / updateItemNotes() / removeItem()
+    Note over Store: Updates localStorage in real-time
+
+    User->>Form: Submit Form
+    Form->>Form: Appends attribution/UTM metadata
+    Form->>Route: POST flat JSON payload (includes items[] array)
+    Note over Route: safeParse against rfqB2BSchema / rfqB2GSchema;<br/>Maps errors to business-friendly codes
+    Route-->>Form: 201 Created (with generated lead ID)
+```
 
 ### RFQ Submission + Fallback Flow
 

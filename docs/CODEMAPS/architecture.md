@@ -47,6 +47,7 @@
 | `(spokes)/pju/` | Route Group | pju.sentradaya.com | |
 | `(spokes)/[spoke]/` | Route Group | *.sentradaya.com | Dynamic spokes |
 | `api/revalidate/` | API route | any | Sanity webhook ISR |
+| `api/rfq/` | API route | any | POST ingest multi-product RFQ |
 
 ## Middleware Routing Logic
 
@@ -69,6 +70,9 @@ Request → src/middleware.ts
 | `src/app/(hub)/page.tsx` | Hub homepage | ~95 |
 | `src/app/dashboard/layout.tsx` | Dashboard shell | ~30 |
 | `src/lib/api/sanity/client.ts` | Sanity client + CACHE_TAGS + ISR | 88 |
+| `src/lib/store/rfq-cart-store.ts` | Zustand RFQ cart persist store | 143 |
+| `src/hooks/use-rfq-cart.ts` | Zustand hydration hooks & selectors | 57 |
+| `src/app/api/rfq/route.ts` | REST API for B2B/B2G RFQ ingestion | 131 |
 
 ## Phase Status
 
