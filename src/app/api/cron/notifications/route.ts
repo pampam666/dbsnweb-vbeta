@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { NotificationQueue } from '@/lib/api/notifications/queue'
+import { NotificationQueue } from '../../../../lib/api/notifications/queue'
 
 export const dynamic = 'force-dynamic'
 

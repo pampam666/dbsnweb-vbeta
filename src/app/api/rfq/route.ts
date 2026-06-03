@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { rfqB2BSchema, rfqB2GSchema } from '@/lib/schema/rfq-schemas'
 import { prisma } from '@/lib/db/prisma'
 import { Segment, NotificationType } from '@prisma/client'
-import { NotificationQueue } from '@/lib/api/notifications/queue'
+import { NotificationQueue } from '../../../lib/api/notifications/queue'
 import { alertRfqFailure } from '@/lib/api/notifications/telegram'
 import { buildWhatsAppFallbackUrl } from '@/lib/api/notifications/whatsapp'
 
