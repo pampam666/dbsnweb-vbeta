@@ -1,11 +1,15 @@
 'use client'
 
-import { useForm } from 'react-hook-form'
+import { useEffect, useRef } from 'react'
+import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { rfqB2BSchema, RfqB2BInput } from '@/lib/schema/rfq-schemas'
 import { extractTrackingMetadata } from '@/lib/utils/tracking'
 import { TextField } from './TextField'
 import { TextareaField } from './TextareaField'
+import { useRfqCartStore, useRfqCartHydrated, selectCartItems } from '@/hooks/use-rfq-cart'
+import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react'
+import Link from 'next/link'
 
 interface RfqB2BFormProps {
   onSubmit: (data: RfqB2BInput) => void | Promise<void>
@@ -13,11 +17,16 @@ interface RfqB2BFormProps {
 
 export function RfqB2BForm({ onSubmit }: RfqB2BFormProps) {
   const trackingMetadata = extractTrackingMetadata()
+  const hydrated = useRfqCartHydrated()
+  const cartItems = useRfqCartStore(selectCartItems)
+  const isInitialized = useRef(false)
 
   const {
     register,
     control,
     handleSubmit,
+    setValue,
+    reset,
     formState: { errors },
   } = useForm<RfqB2BInput>({
     resolver: zodResolver(rfqB2BSchema),
@@ -33,13 +42,81 @@ export function RfqB2BForm({ onSubmit }: RfqB2BFormProps) {
       contact_email: '',
       contact_phone: undefined,
       company_name: undefined,
-      product_category: '',
-      quantity: 1,
+      items: [],
       project_scope: undefined,
       timeline: undefined,
       notes: undefined,
     },
   })
+
+  const { fields, remove } = useFieldArray({
+    control,
+    name: 'items',
+  })
+
+  // Hydrate form values from Zustand store exactly once upon successful store hydration
+  useEffect(() => {
+    if (hydrated && !isInitialized.current) {
+      reset((prev) => ({
+        ...prev,
+        items: cartItems,
+      }))
+      isInitialized.current = true
+    }
+  }, [hydrated, cartItems, reset])
+
+  const handleQuantityChange = (index: number, productId: string, qty: number, variant?: string) => {
+    const clamped = Math.max(1, Math.min(qty, 100000))
+    setValue(`items.${index}.quantity`, clamped, { shouldValidate: true })
+    useRfqCartStore.getState().updateQuantity(productId, clamped, variant)
+  }
+
+  const handleNotesChange = (index: number, productId: string, notes: string, variant?: string) => {
+    setValue(`items.${index}.item_notes`, notes, { shouldValidate: true })
+    useRfqCartStore.getState().updateItemNotes(productId, notes, variant)
+  }
+
+  const handleRemoveItem = (index: number, productId: string, variant?: string) => {
+    remove(index)
+    useRfqCartStore.getState().removeItem(productId, variant)
+  }
+
+  // Loading skeleton state prior to client-side hydration
+  if (!hydrated) {
+    return (
+      <div className="space-y-6 pb-20 animate-pulse" aria-label="Loading RFQ Form">
+        <div className="h-8 w-1/3 bg-slate-200 rounded"></div>
+        <div className="space-y-4">
+          <div className="h-10 bg-slate-200 rounded"></div>
+          <div className="h-10 bg-slate-200 rounded"></div>
+          <div className="h-10 bg-slate-200 rounded"></div>
+        </div>
+      </div>
+    )
+  }
+
+  // Premium empty cart view
+  if (fields.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 p-8 text-center bg-slate-50/50 my-8">
+        <div className="rounded-full bg-slate-100 p-3 text-slate-400 mb-4">
+          <ShoppingBag className="h-8 w-8" />
+        </div>
+        <h3 className="text-lg font-semibold text-slate-900">Your RFQ Cart is empty</h3>
+        <p className="mt-1 text-sm text-slate-500 max-w-sm">
+          Please add products to your RFQ cart before submitting a B2B quotation request.
+        </p>
+        <div className="mt-6">
+          <Link
+            href="/"
+            className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary/95 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+          >
+            Browse Products
+          </Link>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <form
@@ -98,28 +175,131 @@ export function RfqB2BForm({ onSubmit }: RfqB2BFormProps) {
         />
       </div>
 
-      {/* RFQ Details */}
+      {/* Selected Products */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+          <h2 className="text-lg font-semibold text-slate-900">Selected Products</h2>
+          <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
+            {fields.length} {fields.length === 1 ? 'item' : 'items'}
+          </span>
+        </div>
+
+        {errors.items?.root && (
+          <p className="text-sm text-red-500 mt-1">{errors.items.root.message}</p>
+        )}
+
+        <div className="space-y-3">
+          {fields.map((item, index) => (
+            <div
+              key={item.id}
+              className="relative rounded-lg border border-slate-200 p-4 bg-white shadow-sm transition-all hover:border-slate-300"
+            >
+              <input type="hidden" {...register(`items.${index}.product_id` as const)} />
+              <input type="hidden" {...register(`items.${index}.product_name` as const)} />
+              <input type="hidden" {...register(`items.${index}.variant` as const)} />
+
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-sm font-semibold text-slate-950 truncate">
+                    {item.product_name}
+                  </h3>
+                  {item.variant && (
+                    <span className="inline-flex items-center rounded bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 mt-1">
+                      {item.variant}
+                    </span>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleRemoveItem(index, item.product_id, item.variant)}
+                  className="text-slate-400 hover:text-red-500 transition-colors p-1 -m-1"
+                  aria-label={`Remove ${item.product_name}`}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Quantity */}
+                <div>
+                  <label htmlFor={`items.${index}.quantity`} className="block text-xs font-medium text-slate-500 mb-1">
+                    Quantity
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const currentVal = Number(item.quantity) || 1
+                        handleQuantityChange(index, item.product_id, currentVal - 1, item.variant)
+                      }}
+                      className="flex h-9 w-9 items-center justify-center rounded-md border border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-600 transition-colors disabled:opacity-50"
+                      disabled={(item.quantity || 1) <= 1}
+                      aria-label="Decrease quantity"
+                    >
+                      <Minus className="h-4 w-4" />
+                    </button>
+                    <input
+                      id={`items.${index}.quantity`}
+                      type="number"
+                      {...register(`items.${index}.quantity` as const, { valueAsNumber: true })}
+                      className="flex h-9 w-20 rounded-md border border-slate-300 bg-transparent px-3 py-1 text-center text-sm focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value, 10)
+                        if (!isNaN(val)) {
+                          handleQuantityChange(index, item.product_id, val, item.variant)
+                        }
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const currentVal = Number(item.quantity) || 1
+                        handleQuantityChange(index, item.product_id, currentVal + 1, item.variant)
+                      }}
+                      className="flex h-9 w-9 items-center justify-center rounded-md border border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-600 transition-colors disabled:opacity-50"
+                      disabled={(item.quantity || 1) >= 100000}
+                      aria-label="Increase quantity"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </button>
+                  </div>
+                  {errors.items?.[index]?.quantity && (
+                    <p className="text-xs text-red-500 mt-1">
+                      {errors.items[index]?.quantity?.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Item-level notes */}
+                <div>
+                  <label htmlFor={`items.${index}.item_notes`} className="block text-xs font-medium text-slate-500 mb-1">
+                    Special Specifications
+                  </label>
+                  <input
+                    id={`items.${index}.item_notes`}
+                    type="text"
+                    placeholder="e.g., custom cable length, customized color"
+                    {...register(`items.${index}.item_notes` as const)}
+                    className="flex h-9 w-full rounded-md border border-slate-300 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
+                    onChange={(e) => {
+                      handleNotesChange(index, item.product_id, e.target.value, item.variant)
+                    }}
+                  />
+                  {errors.items?.[index]?.item_notes && (
+                    <p className="text-xs text-red-500 mt-1">
+                      {errors.items[index]?.item_notes?.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* RFQ Details (Project level) */}
       <div className="space-y-4">
         <h2 className="text-lg font-semibold text-slate-900">RFQ Details</h2>
-
-        <TextField
-          name="product_category"
-          control={control}
-          label="Product Category"
-          placeholder="e.g., Solar Cell Module"
-          error={errors.product_category?.message}
-          rules={{ required: true }}
-        />
-
-        <TextField
-          name="quantity"
-          control={control}
-          label="Quantity"
-          placeholder="100"
-          type="number"
-          error={errors.quantity?.message}
-          rules={{ required: true }}
-        />
 
         <TextareaField
           name="project_scope"

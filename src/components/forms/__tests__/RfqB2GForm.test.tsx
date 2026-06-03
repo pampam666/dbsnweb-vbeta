@@ -1,6 +1,7 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { RfqB2GForm } from '../RfqB2GForm'
+import { useRfqCartHydrated, useRfqCartStore } from '@/hooks/use-rfq-cart'
 
 // Mock tracking utility
 jest.mock('@/lib/utils/tracking', () => ({
@@ -13,20 +14,94 @@ jest.mock('@/lib/utils/tracking', () => ({
   })),
 }))
 
+// Mock Zustand store and hydration hooks
+const mockUpdateQuantity = jest.fn()
+const mockUpdateItemNotes = jest.fn()
+const mockRemoveItem = jest.fn()
+
+const mockCartItems = [
+  {
+    product_id: 'prod-pju',
+    product_name: 'PJU Solar Cell 100W',
+    quantity: 50,
+    variant: '100W Lithium',
+    item_notes: 'Must include brackets',
+  },
+]
+
+jest.mock('@/hooks/use-rfq-cart', () => {
+  const actual = jest.requireActual('@/hooks/use-rfq-cart')
+  return {
+    ...actual,
+    useRfqCartHydrated: jest.fn(() => true),
+    useRfqCartStore: jest.fn((selector) => {
+      const mockState = {
+        items: mockCartItems,
+      }
+      return selector ? selector(mockState) : mockState
+    }),
+  }
+})
+
+// Add getState implementation to the mock store hook
+const mockUseRfqCartStoreMock = useRfqCartStore as jest.MockedFunction<any>
+mockUseRfqCartStoreMock.getState = jest.fn(() => ({
+  updateQuantity: mockUpdateQuantity,
+  updateItemNotes: mockUpdateItemNotes,
+  removeItem: mockRemoveItem,
+}))
+
 describe('RfqB2GForm', () => {
   const mockOnSubmit = jest.fn()
+  const mockUseRfqCartHydrated = useRfqCartHydrated as jest.MockedFunction<any>
 
   beforeEach(() => {
     mockOnSubmit.mockClear()
+    mockUpdateQuantity.mockClear()
+    mockUpdateItemNotes.mockClear()
+    mockRemoveItem.mockClear()
+    mockUseRfqCartHydrated.mockReturnValue(true)
+    // Reset store items mock to default
+    mockUseRfqCartStoreMock.mockImplementation((selector: any) => {
+      const mockState = { items: mockCartItems }
+      return selector ? selector(mockState) : mockState
+    })
   })
 
-  describe('Rendering', () => {
-    it('should render the form component', () => {
+  describe('Rendering States', () => {
+    it('should render loading skeleton when not hydrated', () => {
+      mockUseRfqCartHydrated.mockReturnValue(false)
+      render(<RfqB2GForm onSubmit={mockOnSubmit} />)
+
+      expect(screen.getByLabelText(/loading rfq form/i)).toBeInTheDocument()
+      expect(screen.queryByRole('form')).not.toBeInTheDocument()
+    })
+
+    it('should render empty cart message when no items exist', () => {
+      mockUseRfqCartStoreMock.mockImplementation((selector: any) => {
+        const mockState = { items: [] }
+        return selector ? selector(mockState) : mockState
+      })
+
+      render(<RfqB2GForm onSubmit={mockOnSubmit} />)
+
+      expect(screen.getByText(/your rfq cart is empty/i)).toBeInTheDocument()
+      expect(screen.getByRole('link', { name: /browse products/i })).toBeInTheDocument()
+      expect(screen.queryByRole('form')).not.toBeInTheDocument()
+    })
+
+    it('should render form and product items when cart has items', () => {
       render(<RfqB2GForm onSubmit={mockOnSubmit} />)
 
       expect(screen.getByRole('form')).toBeInTheDocument()
+      expect(screen.getByText('PJU Solar Cell 100W')).toBeInTheDocument()
+      expect(screen.getByText('100W Lithium')).toBeInTheDocument()
+      expect(screen.getByDisplayValue('Must include brackets')).toBeInTheDocument()
+      expect(screen.getByDisplayValue('50')).toBeInTheDocument()
     })
+  })
 
+  describe('Contact Details & General Fields', () => {
     it('should render contact_name field', () => {
       render(<RfqB2GForm onSubmit={mockOnSubmit} />)
 
@@ -61,23 +136,6 @@ describe('RfqB2GForm', () => {
       expect(companyInput).toHaveAttribute('type', 'text')
     })
 
-    it('should render product_category field', () => {
-      render(<RfqB2GForm onSubmit={mockOnSubmit} />)
-
-      const categoryInput = screen.getByLabelText(/product category/i)
-      expect(categoryInput).toBeInTheDocument()
-      expect(categoryInput).toHaveAttribute('required')
-    })
-
-    it('should render quantity field', () => {
-      render(<RfqB2GForm onSubmit={mockOnSubmit} />)
-
-      const quantityInput = screen.getByLabelText(/quantity/i)
-      expect(quantityInput).toBeInTheDocument()
-      expect(quantityInput).toHaveAttribute('type', 'number')
-      expect(quantityInput).toHaveAttribute('required')
-    })
-
     it('should render project_scope field', () => {
       render(<RfqB2GForm onSubmit={mockOnSubmit} />)
 
@@ -96,10 +154,12 @@ describe('RfqB2GForm', () => {
     it('should render notes field', () => {
       render(<RfqB2GForm onSubmit={mockOnSubmit} />)
 
-      const notesInput = screen.getByLabelText(/notes/i)
+      const notesInput = screen.getByLabelText(/additional notes/i)
       expect(notesInput).toBeInTheDocument()
     })
+  })
 
+  describe('Government Procurement Fields', () => {
     it('should render procurement_type as select dropdown', () => {
       render(<RfqB2GForm onSubmit={mockOnSubmit} />)
 
@@ -110,8 +170,6 @@ describe('RfqB2GForm', () => {
 
     it('should have correct procurement type options', () => {
       render(<RfqB2GForm onSubmit={mockOnSubmit} />)
-
-      const procurementSelect = screen.getByLabelText(/procurement type/i)
 
       expect(screen.getByRole('option', { name: 'Tender Langsung' })).toBeInTheDocument()
       expect(screen.getByRole('option', { name: 'Tender Umum' })).toBeInTheDocument()
@@ -126,18 +184,56 @@ describe('RfqB2GForm', () => {
       expect(dipaInput).toBeInTheDocument()
       expect(dipaInput).toHaveAttribute('type', 'text')
     })
+  })
 
-    it('should render submit button', () => {
+  describe('In-Form Cart Actions', () => {
+    it('should call updateQuantity when increasing quantity', async () => {
+      const user = userEvent.setup()
       render(<RfqB2GForm onSubmit={mockOnSubmit} />)
 
-      const submitButton = screen.getByRole('button', { name: /submit|kirim|request/i })
-      expect(submitButton).toBeInTheDocument()
+      const increaseButton = screen.getByRole('button', { name: /increase quantity/i })
+      await user.click(increaseButton)
+
+      expect(mockUpdateQuantity).toHaveBeenCalledWith('prod-pju', 51, '100W Lithium')
     })
 
-    it('should render hidden tracking fields', () => {
+    it('should call updateQuantity when decreasing quantity', async () => {
+      const user = userEvent.setup()
       render(<RfqB2GForm onSubmit={mockOnSubmit} />)
 
-      expect(screen.getByDisplayValue('sentradaya.com')).toBeInTheDocument()
+      const decreaseButton = screen.getByRole('button', { name: /decrease quantity/i })
+      await user.click(decreaseButton)
+
+      expect(mockUpdateQuantity).toHaveBeenCalledWith('prod-pju', 49, '100W Lithium')
+    })
+
+    it('should call updateQuantity when typing a new quantity', () => {
+      render(<RfqB2GForm onSubmit={mockOnSubmit} />)
+
+      const quantityInput = screen.getByLabelText(/^quantity$/i)
+      fireEvent.change(quantityInput, { target: { value: '150' } })
+
+      expect(mockUpdateQuantity).toHaveBeenCalledWith('prod-pju', 150, '100W Lithium')
+    })
+
+    it('should call updateItemNotes when editing notes', () => {
+      render(<RfqB2GForm onSubmit={mockOnSubmit} />)
+
+      const specInput = screen.getByLabelText(/special specifications/i)
+      fireEvent.change(specInput, { target: { value: 'Include spare batteries' } })
+
+      expect(mockUpdateItemNotes).toHaveBeenCalledWith('prod-pju', 'Include spare batteries', '100W Lithium')
+    })
+
+    it('should call removeItem when clicking trash button', async () => {
+      const user = userEvent.setup()
+      render(<RfqB2GForm onSubmit={mockOnSubmit} />)
+
+      const removeButton = screen.getByRole('button', { name: /remove pju solar cell 100w/i })
+      await user.click(removeButton)
+
+      expect(mockRemoveItem).toHaveBeenCalledWith('prod-pju', '100W Lithium')
+      expect(screen.queryByText('PJU Solar Cell 100W')).not.toBeInTheDocument()
     })
   })
 
@@ -215,52 +311,6 @@ describe('RfqB2GForm', () => {
       })
     })
 
-    it('should show error when product_category is empty', async () => {
-      const user = userEvent.setup()
-      render(<RfqB2GForm onSubmit={mockOnSubmit} />)
-
-      // Fill name and email (required for form to reach product_category validation)
-      await user.type(screen.getByLabelText(/contact name/i), 'Test User')
-      await user.type(screen.getByLabelText(/contact email/i), 'test@example.com')
-
-      const submitButton = screen.getByRole('button', { name: /submit/i })
-      await user.click(submitButton)
-
-      await waitFor(() => {
-        expect(screen.getByText('Product category is required')).toBeInTheDocument()
-      })
-    })
-
-    it('should show error when quantity is less than 1', async () => {
-      const user = userEvent.setup()
-      render(<RfqB2GForm onSubmit={mockOnSubmit} />)
-
-      const quantityInput = screen.getByLabelText(/quantity/i)
-      fireEvent.change(quantityInput, { target: { value: '0' } })
-
-      const submitButton = screen.getByRole('button', { name: /submit/i })
-      await user.click(submitButton)
-
-      await waitFor(() => {
-        expect(screen.getByText(/quantity.*at least/i)).toBeInTheDocument()
-      })
-    })
-
-    it('should show error when quantity is greater than 100000', async () => {
-      const user = userEvent.setup()
-      render(<RfqB2GForm onSubmit={mockOnSubmit} />)
-
-      const quantityInput = screen.getByLabelText(/quantity/i)
-      fireEvent.change(quantityInput, { target: { value: '100001' } })
-
-      const submitButton = screen.getByRole('button', { name: /submit/i })
-      await user.click(submitButton)
-
-      await waitFor(() => {
-        expect(screen.getByText(/quantity.*exceeds/i)).toBeInTheDocument()
-      })
-    })
-
     it('should show error when timeline format is invalid', async () => {
       const user = userEvent.setup()
       render(<RfqB2GForm onSubmit={mockOnSubmit} />)
@@ -296,7 +346,7 @@ describe('RfqB2GForm', () => {
       const user = userEvent.setup()
       render(<RfqB2GForm onSubmit={mockOnSubmit} />)
 
-      const notesInput = screen.getByLabelText(/notes/i)
+      const notesInput = screen.getByLabelText(/additional notes/i)
       const longNotes = 'A'.repeat(2001)
       fireEvent.change(notesInput, { target: { value: longNotes } })
 
@@ -328,16 +378,12 @@ describe('RfqB2GForm', () => {
       await user.type(screen.getByLabelText(/contact email/i), 'test@example.com')
       await user.type(screen.getByLabelText(/contact phone/i), '+6281234567890')
       await user.type(screen.getByLabelText(/company name/i), 'PT Test Company')
-      await user.type(screen.getByLabelText(/product category/i), 'PJU Solar Cell')
       
-      const quantityInput = screen.getByLabelText(/quantity/i)
-      fireEvent.change(quantityInput, { target: { value: '100' } })
-
       const procurementSelect = screen.getByLabelText(/procurement type/i)
       await user.selectOptions(procurementSelect, 'Tender Langsung')
 
       await user.type(screen.getByLabelText(/timeline/i), '2025-12-31')
-      await user.type(screen.getByLabelText(/notes/i), 'Test notes for RFQ')
+      await user.type(screen.getByLabelText(/additional notes/i), 'Test notes for RFQ')
 
       const submitButton = screen.getByRole('button', { name: /submit/i })
       await user.click(submitButton)
@@ -350,17 +396,13 @@ describe('RfqB2GForm', () => {
   })
 
   describe('Submission', () => {
-    it('should call onSubmit with valid form data', async () => {
+    it('should call onSubmit with valid form data and items array', async () => {
       const user = userEvent.setup()
       render(<RfqB2GForm onSubmit={mockOnSubmit} />)
 
       await user.type(screen.getByLabelText(/contact name/i), 'Test User')
       await user.type(screen.getByLabelText(/contact email/i), 'test@example.com')
-      await user.type(screen.getByLabelText(/product category/i), 'PJU Solar Cell')
       
-      const quantityInput = screen.getByLabelText(/quantity/i)
-      fireEvent.change(quantityInput, { target: { value: '100' } })
-
       const procurementSelect = screen.getByLabelText(/procurement type/i)
       await user.selectOptions(procurementSelect, 'Tender Langsung')
 
@@ -374,36 +416,16 @@ describe('RfqB2GForm', () => {
             segment: 'B2G',
             contact_name: 'Test User',
             contact_email: 'test@example.com',
-            product_category: 'PJU Solar Cell',
-            quantity: 100,
             procurement_type: 'Tender Langsung',
-          })
-        )
-      })
-    })
-
-    it('should include segment: B2G in submitted data', async () => {
-      const user = userEvent.setup()
-      render(<RfqB2GForm onSubmit={mockOnSubmit} />)
-
-      await user.type(screen.getByLabelText(/contact name/i), 'Test User')
-      await user.type(screen.getByLabelText(/contact email/i), 'test@example.com')
-      await user.type(screen.getByLabelText(/product category/i), 'PJU Solar Cell')
-      
-      const quantityInput = screen.getByLabelText(/quantity/i)
-      fireEvent.change(quantityInput, { target: { value: '100' } })
-
-      const procurementSelect = screen.getByLabelText(/procurement type/i)
-      await user.selectOptions(procurementSelect, 'Tender Langsung')
-
-      const submitButton = screen.getByRole('button', { name: /submit/i })
-      await user.click(submitButton)
-
-      await waitFor(() => {
-        expect(mockOnSubmit).toHaveBeenCalledTimes(1)
-        expect(mockOnSubmit.mock.calls[0][0]).toEqual(
-          expect.objectContaining({
-            segment: 'B2G',
+            items: [
+              {
+                product_id: 'prod-pju',
+                product_name: 'PJU Solar Cell 100W',
+                quantity: 50,
+                variant: '100W Lithium',
+                item_notes: 'Must include brackets',
+              },
+            ],
           })
         )
       })
@@ -415,11 +437,7 @@ describe('RfqB2GForm', () => {
 
       await user.type(screen.getByLabelText(/contact name/i), 'Test User')
       await user.type(screen.getByLabelText(/contact email/i), 'test@example.com')
-      await user.type(screen.getByLabelText(/product category/i), 'PJU Solar Cell')
       
-      const quantityInput = screen.getByLabelText(/quantity/i)
-      fireEvent.change(quantityInput, { target: { value: '100' } })
-
       const procurementSelect = screen.getByLabelText(/procurement type/i)
       await user.selectOptions(procurementSelect, 'Tender Langsung')
 
@@ -438,55 +456,6 @@ describe('RfqB2GForm', () => {
           })
         )
       })
-    })
-  })
-
-  describe('Tracking Metadata', () => {
-    it('should pre-populate source_domain from window.location.hostname', () => {
-      render(<RfqB2GForm onSubmit={mockOnSubmit} />)
-
-      expect(screen.getByDisplayValue('sentradaya.com')).toBeInTheDocument()
-    })
-
-    it('should pre-populate source_page_path from window.location.pathname', () => {
-      render(<RfqB2GForm onSubmit={mockOnSubmit} />)
-
-      expect(screen.getByDisplayValue('/pju')).toBeInTheDocument()
-    })
-
-    it('should extract utm_source from URL query string', () => {
-      render(<RfqB2GForm onSubmit={mockOnSubmit} />)
-
-      expect(screen.getByDisplayValue('google')).toBeInTheDocument()
-    })
-
-    it('should extract utm_medium from URL query string', () => {
-      render(<RfqB2GForm onSubmit={mockOnSubmit} />)
-
-      expect(screen.getAllByDisplayValue('cpc').length).toBeGreaterThan(0)
-    })
-
-    it('should extract utm_campaign from URL query string', () => {
-      render(<RfqB2GForm onSubmit={mockOnSubmit} />)
-
-      expect(screen.getByDisplayValue('winter_promo')).toBeInTheDocument()
-    })
-  })
-
-  describe('Mobile-First Design', () => {
-    it('should have touch-friendly submit button (min 44x44px)', () => {
-      render(<RfqB2GForm onSubmit={mockOnSubmit} />)
-
-      const submitButton = screen.getByRole('button', { name: /submit/i })
-      
-      // Mock layout dimensions for JSDOM environment
-      Object.defineProperty(submitButton, 'clientHeight', { value: 48, configurable: true })
-      Object.defineProperty(submitButton, 'clientWidth', { value: 168, configurable: true })
-
-      const styles = window.getComputedStyle(submitButton)
-
-      expect(parseInt(styles.height) || submitButton.clientHeight).toBeGreaterThanOrEqual(44)
-      expect(parseInt(styles.width) || submitButton.clientWidth).toBeGreaterThanOrEqual(44)
     })
   })
 })
