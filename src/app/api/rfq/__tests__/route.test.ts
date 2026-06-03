@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals'
 import { NextRequest } from 'next/server'
 import { prisma } from '../../../../lib/db/prisma'
-import { sendRfqAcknowledgment, sendInternalNotification } from '../../../../lib/api/notifications/resend'
-import { alertNewRfq, alertRfqFailure } from '../../../../lib/api/notifications/telegram'
+import { NotificationQueue } from '../../../../lib/api/notifications/queue'
+import { alertRfqFailure } from '../../../../lib/api/notifications/telegram'
 import { buildWhatsAppFallbackUrl } from '../../../../lib/api/notifications/whatsapp'
 
 const mockNextRequest = jest.fn()
@@ -21,14 +21,15 @@ jest.mock('../../../../lib/db/prisma', () => ({
   },
 }))
 
-// Mock Notification services
-jest.mock('../../../../lib/api/notifications/resend', () => ({
-  sendRfqAcknowledgment: jest.fn(),
-  sendInternalNotification: jest.fn(),
+// Mock Notification Queue
+jest.mock('../../../../lib/api/notifications/queue', () => ({
+  NotificationQueue: {
+    enqueue: jest.fn(),
+  },
 }))
 
+// Mock Notification services
 jest.mock('../../../../lib/api/notifications/telegram', () => ({
-  alertNewRfq: jest.fn(),
   alertRfqFailure: jest.fn(),
 }))
 
@@ -37,9 +38,7 @@ jest.mock('../../../../lib/api/notifications/whatsapp', () => ({
 }))
 
 const mockLeadCreate = prisma.lead.create as any
-const mockSendRfqAck = sendRfqAcknowledgment as any
-const mockSendInternalNotif = sendInternalNotification as any
-const mockAlertNew = alertNewRfq as any
+const mockEnqueue = NotificationQueue.enqueue as any
 const mockAlertFail = alertRfqFailure as any
 const mockBuildWaUrl = buildWhatsAppFallbackUrl as any
 
@@ -84,9 +83,7 @@ describe('POST /api/rfq', () => {
       dashboardAccessStatus: 'NOT_ELIGIBLE',
       createdAt: new Date(),
     })
-    mockSendRfqAck.mockResolvedValue(undefined)
-    mockSendInternalNotif.mockResolvedValue(undefined)
-    mockAlertNew.mockResolvedValue(undefined)
+    mockEnqueue.mockResolvedValue(undefined)
     mockAlertFail.mockResolvedValue(undefined)
     mockBuildWaUrl.mockReturnValue('https://wa.me/6281234567890?text=fallback-text')
 
@@ -165,9 +162,9 @@ describe('POST /api/rfq', () => {
       }),
     })
 
-    expect(mockSendRfqAck).toHaveBeenCalled()
-    expect(mockSendInternalNotif).toHaveBeenCalled()
-    expect(mockAlertNew).toHaveBeenCalled()
+    expect(mockEnqueue).toHaveBeenCalledWith('EMAIL_ACK', 'lead-db-123', null)
+    expect(mockEnqueue).toHaveBeenCalledWith('EMAIL_INTERNAL', 'lead-db-123', null)
+    expect(mockEnqueue).toHaveBeenCalledWith('TELEGRAM', 'lead-db-123', null)
 
     expect(mockNextResponse.json).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -282,7 +279,7 @@ describe('POST /api/rfq', () => {
     }
     const mockRequest = createMockRequest(payload)
 
-    mockSendRfqAck.mockRejectedValueOnce(new Error('Email failed'))
+    mockEnqueue.mockRejectedValueOnce(new Error('Email failed'))
 
     await POST(mockRequest)
 

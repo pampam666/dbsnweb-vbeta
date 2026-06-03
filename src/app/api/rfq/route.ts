@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { rfqB2BSchema, rfqB2GSchema } from '@/lib/schema/rfq-schemas'
 import { prisma } from '@/lib/db/prisma'
-import { Segment } from '@prisma/client'
-import { sendRfqAcknowledgment, sendInternalNotification } from '@/lib/api/notifications/resend'
-import { alertNewRfq, alertRfqFailure } from '@/lib/api/notifications/telegram'
+import { Segment, NotificationType } from '@prisma/client'
+import { NotificationQueue } from '@/lib/api/notifications/queue'
+import { alertRfqFailure } from '@/lib/api/notifications/telegram'
 import { buildWhatsAppFallbackUrl } from '@/lib/api/notifications/whatsapp'
 
 /**
@@ -104,13 +104,13 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // Fire-and-forget notifications (non-blocking)
+    // Enqueue notifications to database-backed queue for resilient processing
     void Promise.allSettled([
-      sendRfqAcknowledgment(lead),
-      sendInternalNotification(lead),
-      alertNewRfq(lead),
+      NotificationQueue.enqueue(NotificationType.EMAIL_ACK, lead.id, null),
+      NotificationQueue.enqueue(NotificationType.EMAIL_INTERNAL, lead.id, null),
+      NotificationQueue.enqueue(NotificationType.TELEGRAM, lead.id, null),
     ]).catch(err => {
-      console.error('Failed to trigger non-blocking notifications:', err)
+      console.error('Failed to enqueue notifications:', err)
     })
 
     return NextResponse.json(
