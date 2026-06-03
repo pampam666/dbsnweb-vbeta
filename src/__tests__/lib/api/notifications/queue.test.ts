@@ -219,6 +219,13 @@ describe('NotificationQueue', () => {
         attempts: 3,
       })
 
+      // Final failure update
+      mockJobUpdate.mockResolvedValueOnce({
+        ...mockJob,
+        status: 'FAILED',
+        attempts: 3,
+      })
+
       const error = new Error('Fatal API Error')
       mockSendRfqAck.mockRejectedValue(error)
 
