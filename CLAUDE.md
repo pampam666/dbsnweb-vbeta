@@ -229,7 +229,7 @@ When integrating new features or third-party services, follow these integration 
 1. **CMS Integration** — Use Prisma `Sanity` client with proper GROQ queries
 2. **API Integration** — Implement proper error handling and retry logic
 3. **Analytics Integration** — Use GA4 event naming consistent with PRD v3.1
-4. **Notification Integration** — Wire both Resend (email) and Telegram for all critical events
+4. **Notification Integration** — Use the database-backed `NotificationQueue` (`src/lib/api/notifications/queue.ts`) to enqueue jobs (`EMAIL_ACK`, `EMAIL_INTERNAL`, `TELEGRAM`) for resilient delivery with exponential backoff and terminal failure Telegram admin alerts.
 5. **WhatsApp Fallback Engine** — Serialize captured RFQ fields to wa.me prefill format
 6. **Authentication Integration** — Wire NextAuth route handlers with proper RBAC enforcement
 7. **Phase 2 Monitoring** — Integrate Sentry for error tracking and PostHog for session replay
