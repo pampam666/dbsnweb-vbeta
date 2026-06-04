@@ -196,6 +196,14 @@ npm run lint
 - **Location**: `src/lib/db/prisma.ts` exports the active `prisma` client.
 - **Pattern**: Implements a global client wrapper (`globalThis.__prisma`) in non-production environments to prevent creating multiple connections during Next.js hot-reloading.
 
+### 301 Redirect Engine
+- **Engine Location**: `src/lib/middleware/redirect-engine.ts` exports `lookupRedirect(pathname, spoke)`.
+- **Database Model**: Stores mappings in Postgres using the `RedirectMap` Prisma model (fields: `legacyUrl` (ID), `targetUrl`, `spoke`, `hitCount`).
+- **Caching**: Features an in-memory LRU cache (limit 500 entries) with a 5-minute TTL and negative caching for misses to protect DB performance.
+- **Asynchronous Tracking**: Increments `hitCount` on matching redirects asynchronously without blocking the hot path response.
+- **Middleware Integration**: Intercepts requests in `src/middleware.ts` before subdomain routing, preserving search parameters (e.g., `?ref=...`).
+- **Admin Management API**: CRUD API route at `src/app/api/admin/redirects/route.ts` secured with `requireAuth('ADMIN')` for listing, creating, and deleting mappings, which automatically flushes the engine's cache on mutation.
+
 ---
 
 ## Key Dependencies
