@@ -13,6 +13,8 @@ import {
   CheckCircle2, MessageSquare, Check, X,
 } from "lucide-react";
 import ScrollReveal from "@/components/shared/ScrollReveal";
+import { useTrackEvent } from "@/hooks/use-analytics";
+import { AnalyticsEvent } from "@/lib/analytics/gtag";
 
 function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -24,6 +26,7 @@ function isValidPhone(phone: string): boolean {
 }
 
 export default function ContactSection() {
+  const trackEvent = useTrackEvent();
   const [form, setForm] = useState({ name: "", email: "", phone: "", subject: "", message: "" });
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -104,6 +107,7 @@ export default function ContactSection() {
                 </div>
                 <div className="pt-4 border-t border-emerald-100 dark:border-emerald-800/50">
                   <a href="https://wa.me/6283112345678?text=Halo%20DBSN%20Sentradaya" target="_blank" rel="noopener noreferrer"
+                    onClick={() => trackEvent(AnalyticsEvent.CONTACT_CLICK, { contact_type: 'whatsapp', location: 'contact_info_box' })}
                     className="flex items-center gap-3 p-3 rounded-xl bg-green-50 hover:bg-green-100 transition-colors group min-h-[44px]">
                     <MessageSquare className="w-5 h-5 text-green-600" />
                     <div>
@@ -181,7 +185,11 @@ export default function ContactSection() {
                       {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
                       Kirim Pesan
                     </Button>
-                    <Button type="button" variant="outline" className="w-full border-green-300 text-green-700 hover:bg-green-50 gap-2 min-h-[48px]" onClick={() => window.open(WA_URL, "_blank")}>
+                    <Button type="button" variant="outline" className="w-full border-green-300 text-green-700 hover:bg-green-50 gap-2 min-h-[48px]"
+                      onClick={() => {
+                        trackEvent(AnalyticsEvent.CONTACT_CLICK, { contact_type: 'whatsapp', location: 'contact_form_fallback' });
+                        window.open(WA_URL, "_blank");
+                      }}>
                       <MessageSquare className="w-5 h-5" />Kirim via WhatsApp
                     </Button>
                     <p className="text-xs text-gray-400 text-center">Rata-rata respon dalam 24 jam</p>

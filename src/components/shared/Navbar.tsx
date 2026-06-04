@@ -7,6 +7,8 @@ import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import ThemeToggle from "@/components/shared/ThemeToggle";
 import { FileText, Menu, X } from "lucide-react";
+import { useTrackEvent } from "@/hooks/use-analytics";
+import { AnalyticsEvent } from "@/lib/analytics/gtag";
 
 const navLinks = [
   { label: "Beranda", href: "#beranda" },
@@ -18,6 +20,7 @@ const navLinks = [
 ];
 
 export default function Navbar() {
+  const trackEvent = useTrackEvent();
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
@@ -87,6 +90,7 @@ export default function Navbar() {
             <Link
               href={isHome ? "#permintaan-penawaran" : "/#permintaan-penawaran"}
               onClick={(e) => {
+                trackEvent(AnalyticsEvent.CONTACT_CLICK, { contact_type: 'rfq_button', location: 'navbar' });
                 if (isHome) {
                   e.preventDefault();
                   document.getElementById("permintaan-penawaran")?.scrollIntoView({ behavior: "smooth" });
@@ -125,6 +129,7 @@ export default function Navbar() {
           <Link
             href={isHome ? "#permintaan-penawaran" : "/#permintaan-penawaran"}
             onClick={(e) => {
+              trackEvent(AnalyticsEvent.CONTACT_CLICK, { contact_type: 'rfq_button', location: 'mobile_nav' });
               setIsOpen(false);
               if (isHome) {
                 e.preventDefault();

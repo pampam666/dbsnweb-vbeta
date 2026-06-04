@@ -8,6 +8,9 @@ import type { Metadata } from 'next'
 
 import { createSpokeProductMetadata } from '@/lib/seo/metadata'
 import { createProductSchema, createBreadcrumbSchema } from '@/lib/seo/json-ld'
+import ProductViewTracker from '@/components/shared/ProductViewTracker'
+import AnalyticsDownloadLink from '@/components/shared/AnalyticsDownloadLink'
+import AnalyticsLink from '@/components/shared/AnalyticsLink'
 
 export const revalidate = 3600 // Revalidate hourly
 
@@ -63,19 +66,20 @@ export default async function ProductDetailPage({
         <header className="border-b border-slate-200 bg-white shadow-sm sticky top-0 z-50">
           <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
             <div className="flex items-center gap-2">
-              <Link href="/" className="font-bold text-slate-800 hover:text-blue-600">DBSN Hub</Link>
+              <AnalyticsLink href="/" spoke="hub" source="product_detail_header" className="font-bold text-slate-800 hover:text-blue-600">DBSN Hub</AnalyticsLink>
               <span className="text-slate-300">&bull;</span>
-              <Link href={`/${spoke}`} className="font-extrabold capitalize hover:opacity-85" style={{ color: primaryColor }}>
+              <AnalyticsLink href={`/${spoke}`} spoke={spoke} source="product_detail_header" className="font-extrabold capitalize hover:opacity-85" style={{ color: primaryColor }}>
                 {config.name}
-              </Link>
+              </AnalyticsLink>
             </div>
-            <Link href={`/${spoke}`} className="text-sm font-semibold hover:underline" style={{ color: primaryColor }}>
+            <AnalyticsLink href={`/${spoke}`} spoke={spoke} source="product_detail_header" className="text-sm font-semibold hover:underline" style={{ color: primaryColor }}>
               &larr; Kembali ke Spoke
-            </Link>
+            </AnalyticsLink>
           </nav>
         </header>
 
         <main className="container mx-auto px-6 py-12 max-w-6xl">
+          <ProductViewTracker productName={product.title} spoke={spoke} />
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
@@ -149,15 +153,17 @@ export default async function ProductDetailPage({
 
                   <div className="flex flex-wrap gap-3">
                     {product.datasheetUrl && (
-                      <a
+                      <AnalyticsDownloadLink
                         href={product.datasheetUrl}
+                        fileName={product.title}
+                        fileType="pdf"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex-1 text-center py-3.5 rounded-2xl font-bold text-sm text-white hover:opacity-90 transition"
                         style={{ backgroundColor: primaryColor }}
                       >
                         Unduh Datasheet (PDF)
-                      </a>
+                      </AnalyticsDownloadLink>
                     )}
                     <a
                       href={`https://wa.me/62XXXXXXXXX?text=Halo%20DBSN,%20saya%20tertarik%20dengan%20produk%20${encodeURIComponent(product.title)}`}

@@ -4,6 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Mail, Phone, MapPin, ExternalLink } from "lucide-react";
+import { useTrackEvent } from "@/hooks/use-analytics";
+import { AnalyticsEvent } from "@/lib/analytics/gtag";
 
 const footerLinks = [
   {
@@ -33,6 +35,7 @@ const contactInfo = [
 ];
 
 export default function Footer() {
+  const trackEvent = useTrackEvent();
   const pathname = usePathname();
   const isHome = pathname === "/";
 
@@ -97,6 +100,7 @@ export default function Footer() {
               ))}
             </ul>
             <a href="https://wa.me/6283112345678" target="_blank" rel="noopener noreferrer"
+              onClick={() => trackEvent(AnalyticsEvent.CONTACT_CLICK, { contact_type: 'whatsapp', location: 'footer' })}
               className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-green-600/80 hover:bg-green-600 text-white text-sm font-medium transition-colors">
               <ExternalLink className="w-3.5 h-3.5" />Chat WhatsApp
             </a>

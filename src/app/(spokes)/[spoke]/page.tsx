@@ -2,6 +2,7 @@ import { getSpokeConfig, getProductsBySpoke, getAllSpokeConfigs } from '@/lib/ap
 import { getOptimizedImageUrl } from '@/lib/api/sanity/image'
 import Image from 'next/image'
 import Link from 'next/link'
+import AnalyticsLink from '@/components/shared/AnalyticsLink'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 
@@ -54,15 +55,17 @@ export default async function SpokeHomePage({
         <header className="border-b border-slate-200 bg-white shadow-sm sticky top-0 z-50">
           <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
             <div className="flex items-center gap-2">
-              <Link href="/" className="font-bold text-slate-800 hover:text-blue-600">DBSN Hub</Link>
+              <AnalyticsLink href="/" spoke="hub" source="spoke_home_header" className="font-bold text-slate-800 hover:text-blue-600">DBSN Hub</AnalyticsLink>
               <span className="text-slate-300">&bull;</span>
-              <Link
+              <AnalyticsLink
                 href={`/${spoke}`}
+                spoke={spoke}
+                source="spoke_home_header"
                 className="font-extrabold capitalize hover:opacity-85"
                 style={{ color: primaryColor }}
               >
                 {config.name}
-              </Link>
+              </AnalyticsLink>
             </div>
             <a
               href="#products"

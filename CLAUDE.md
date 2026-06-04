@@ -251,7 +251,13 @@ When integrating new features or third-party services, follow these integration 
 
 1. **CMS Integration** — Use Prisma `Sanity` client with proper GROQ queries
 2. **API Integration** — Implement proper error handling and retry logic
-3. **Analytics Integration** — Use GA4 event naming consistent with PRD v3.1
+3. **Analytics Integration** — Use GA4 event naming consistent with PRD v3.1. Standardized taxonomy:
+   - `RFQ_SUBMIT`: Fired on successful RFQ submission (parameters: `segment`, `spoke`, `item_count`).
+   - `RFQ_FALLBACK_WHATSAPP`: Fired when user clicks the WhatsApp fallback link after a failed RFQ submission (parameters: `spoke`).
+   - `PRODUCT_VIEW`: Fired when a product page is viewed (parameters: `product_name`, `spoke`).
+   - `FILE_DOWNLOAD`: Fired when clicking a product datasheet download link (parameters: `file_name`, `file_type`).
+   - `CONTACT_CLICK`: Fired when clicking contact or WhatsApp CTA links/buttons (parameters: `contact_type`, `location`).
+   - `SPOKE_NAVIGATION`: Fired when navigating between the hub and spokes or spoke subdomains (parameters: `spoke`, `source`).
 4. **Notification Integration** — Use the database-backed `NotificationQueue` (`src/lib/api/notifications/queue.ts`) to enqueue jobs (`EMAIL_ACK`, `EMAIL_INTERNAL`, `TELEGRAM`) for resilient delivery with exponential backoff and terminal failure Telegram admin alerts.
 5. **WhatsApp Fallback Engine** — Serialize captured RFQ fields to wa.me prefill format
 6. **Authentication Integration** — Wire NextAuth route handlers with proper RBAC enforcement

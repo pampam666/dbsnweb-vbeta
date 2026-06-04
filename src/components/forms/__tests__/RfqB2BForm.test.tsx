@@ -14,10 +14,23 @@ jest.mock('@/lib/utils/tracking', () => ({
   })),
 }))
 
+// Mock analytics hook
+jest.mock('@/hooks/use-analytics', () => ({
+  useTrackEvent: jest.fn(() => jest.fn()),
+}))
+
+jest.mock('@/lib/analytics/gtag', () => ({
+  AnalyticsEvent: {
+    RFQ_SUBMIT: 'rfq_submit',
+    RFQ_FALLBACK_WHATSAPP: 'rfq_fallback_whatsapp',
+  },
+}))
+
 // Mock Zustand store and hydration hooks
 const mockUpdateQuantity = jest.fn()
 const mockUpdateItemNotes = jest.fn()
 const mockRemoveItem = jest.fn()
+const mockClearCart = jest.fn()
 
 const mockCartItems = [
   {
@@ -49,6 +62,7 @@ mockUseRfqCartStoreMock.getState = jest.fn(() => ({
   updateQuantity: mockUpdateQuantity,
   updateItemNotes: mockUpdateItemNotes,
   removeItem: mockRemoveItem,
+  clearCart: mockClearCart,
 }))
 
 describe('RfqB2BForm', () => {

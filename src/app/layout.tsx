@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { ThemeProvider } from 'next-themes'
+import GoogleAnalytics from '@/components/shared/GoogleAnalytics'
 import './globals.css'
 
 export const runtime = 'edge'
@@ -28,6 +29,7 @@ export default function RootLayout({
           enableSystem={false}
           disableTransitionOnChange
         >
+          <GoogleAnalytics />
           {children}
         </ThemeProvider>
       </body>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { rfqB2GSchema, RfqB2GInput, PROCUREMENT_TYPES } from '@/lib/schema/rfq-schemas'
@@ -9,7 +9,9 @@ import { TextField } from './TextField'
 import { SelectField } from './SelectField'
 import { TextareaField } from './TextareaField'
 import { useRfqCartStore, useRfqCartHydrated, selectCartItems } from '@/hooks/use-rfq-cart'
-import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react'
+import { Trash2, Plus, Minus, ShoppingBag, Loader2, CheckCircle2 } from 'lucide-react'
+import { useTrackEvent } from '@/hooks/use-analytics'
+import { AnalyticsEvent } from '@/lib/analytics/gtag'
 import Link from 'next/link'
 
 interface RfqB2GFormProps {
@@ -21,6 +23,11 @@ export function RfqB2GForm({ onSubmit }: RfqB2GFormProps) {
   const hydrated = useRfqCartHydrated()
   const cartItems = useRfqCartStore(selectCartItems)
   const isInitialized = useRef(false)
+
+  const trackEvent = useTrackEvent()
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false)
+  const [submitError, setSubmitError] = useState<{ message: string; fallbackUrl?: string } | null>(null)
 
   const {
     register,
@@ -121,9 +128,52 @@ export function RfqB2GForm({ onSubmit }: RfqB2GFormProps) {
     )
   }
 
+  const handleFormSubmit = async (data: RfqB2GInput) => {
+    setSubmitError(null)
+    setIsSubmitting(true)
+    try {
+      await Promise.resolve(onSubmit(data))
+      setIsSuccess(true)
+      
+      const spoke = trackingMetadata.source_domain ? trackingMetadata.source_domain.split('.')[0] : ''
+      trackEvent(AnalyticsEvent.RFQ_SUBMIT, {
+        segment: 'B2G',
+        spoke,
+        item_count: data.items.length
+      })
+      
+      // Clear cart on success
+      useRfqCartStore.getState().clearCart()
+    } catch (err: any) {
+      console.error('RFQ B2G Submission failed:', err)
+      const fallbackUrl = err.fallback_url || err.response?.data?.error?.fallback_url || err.error?.fallback_url
+      setSubmitError({
+        message: err.message || 'Terjadi kesalahan sistem saat mengirim RFQ.',
+        fallbackUrl
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  // Success view
+  if (isSuccess) {
+    return (
+      <div className="flex flex-col items-center justify-center rounded-xl border border-emerald-200 p-8 text-center bg-emerald-50/50 my-8">
+        <div className="rounded-full bg-emerald-100 p-3 text-emerald-600 mb-4">
+          <CheckCircle2 className="h-8 w-8" />
+        </div>
+        <h3 className="text-lg font-semibold text-emerald-950">RFQ Berhasil Dikirim!</h3>
+        <p className="mt-2 text-sm text-emerald-800 max-w-sm">
+          Permintaan penawaran harga Anda telah kami terima. Tim sales kami akan segera menghubungi Anda.
+        </p>
+      </div>
+    )
+  }
+
   return (
     <form
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={handleSubmit(handleFormSubmit)}
       className="space-y-6 pb-20"
       aria-label="B2G RFQ Form"
       noValidate
@@ -354,12 +404,41 @@ export function RfqB2GForm({ onSubmit }: RfqB2GFormProps) {
         />
       </div>
 
+      {/* Error Message and Fallback Button */}
+      {submitError && (
+        <div className="rounded-lg bg-red-50 p-4 border border-red-100 space-y-3">
+          <p className="text-sm text-red-800">{submitError.message}</p>
+          {submitError.fallbackUrl && (
+            <a
+              href={submitError.fallbackUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => {
+                const spoke = trackingMetadata.source_domain ? trackingMetadata.source_domain.split('.')[0] : ''
+                trackEvent(AnalyticsEvent.RFQ_FALLBACK_WHATSAPP, { spoke })
+              }}
+              className="inline-flex items-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-700 focus:outline-none cursor-pointer"
+            >
+              Kirim via WhatsApp
+            </a>
+          )}
+        </div>
+      )}
+
       {/* Submit Button */}
       <button
         type="submit"
-        className="h-12 min-w-[168px] rounded-md bg-primary px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+        disabled={isSubmitting}
+        className="h-12 min-w-[168px] rounded-md bg-primary px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
       >
-        Submit RFQ
+        {isSubmitting ? (
+          <>
+            <Loader2 className="h-4.5 w-4.5 animate-spin" />
+            Mengirim...
+          </>
+        ) : (
+          'Submit RFQ'
+        )}
       </button>
     </form>
   )
