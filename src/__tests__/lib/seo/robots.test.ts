@@ -50,7 +50,7 @@ describe('Robots.txt Generator', () => {
   it('returns subdomain sitemap url for spoke domain', async () => {
     const mockHeaders = {
       get: (key: string) => {
-        if (key.toLowerCase() === 'host') return 'pju.sentradaya.com'
+        if (key.toLowerCase() === 'host') return 'pju.lvh.me'
         return null
       },
     }

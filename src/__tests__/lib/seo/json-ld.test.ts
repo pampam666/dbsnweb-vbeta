@@ -1,4 +1,9 @@
-import { describe, it, expect } from '@jest/globals'
+import { describe, it, expect, jest } from '@jest/globals'
+
+jest.mock('../../../lib/api/sanity/image', () => ({
+  getOptimizedImageUrl: jest.fn(() => 'https://mocked-sanity-image.url'),
+}))
+
 import {
   createOrganizationSchema,
   createProductSchema,

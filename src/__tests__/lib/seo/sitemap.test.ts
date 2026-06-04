@@ -54,7 +54,7 @@ describe('Sitemap.xml Generator', () => {
   it('returns spoke-specific sitemap when host is a spoke subdomain', async () => {
     const mockHeaders = {
       get: (key: string) => {
-        if (key.toLowerCase() === 'host') return 'pju.sentradaya.com'
+        if (key.toLowerCase() === 'host') return 'pju.lvh.me'
         return null
       },
     }
@@ -84,7 +84,7 @@ describe('Sitemap.xml Generator', () => {
   it('handles empty/null products list from Sanity gracefully', async () => {
     const mockHeaders = {
       get: (key: string) => {
-        if (key.toLowerCase() === 'host') return 'pju.sentradaya.com'
+        if (key.toLowerCase() === 'host') return 'pju.lvh.me'
         return null
       },
     }

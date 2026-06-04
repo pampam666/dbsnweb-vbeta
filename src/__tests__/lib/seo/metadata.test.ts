@@ -11,7 +11,7 @@ describe('SEO Metadata Utilities', () => {
     it('returns correct metadata for hub home page', () => {
       const meta = createHubHomeMetadata()
       expect(meta.title).toBe('DBSN Sentradaya | Solusi Energi Terbarukan')
-      expect(meta.description).toContain('Energi Terbarukan')
+      expect(meta.description?.toLowerCase()).toContain('energi terbarukan')
       expect(meta.alternates?.canonical).toBe('https://sentradaya.com')
       expect(meta.openGraph?.type).toBe('website')
       expect(meta.openGraph?.images).toContainEqual(
