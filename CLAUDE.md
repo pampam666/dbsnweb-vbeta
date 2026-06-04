@@ -204,6 +204,10 @@ npm run lint
 - **Middleware Integration**: Intercepts requests in `src/middleware.ts` before subdomain routing, preserving search parameters (e.g., `?ref=...`).
 - **Admin Management API**: CRUD API route at `src/app/api/admin/redirects/route.ts` secured with `requireAuth('ADMIN')` for listing, creating, and deleting mappings, which automatically flushes the engine's cache on mutation.
 
+### Google Search Console (GSC) Verification & Sitemap Submission
+- **Verification Support**: Supports domain-wide property verification via DNS TXT record. For URL-prefix fallbacks, the platform dynamically generates a verification file (`public/google{code}.html` generated during build/dev initialization via `next.config.ts`) and renders a fallback `<meta name="google-site-verification" ... />` tag in the root layout `<head>`.
+- **Sitemap Submitter**: Operational script at `scripts/gsc-submit-sitemap.ts` uses native Node.js cryptography (`crypto` module) to sign Google OAuth2 JWT assertions. It programmatically registers sitemaps for the Domain Property (`sc-domain:sentradaya.com`) and individual spoke URL prefixes. Run via `npx tsx scripts/gsc-submit-sitemap.ts`.
+
 ---
 
 ## Key Dependencies
@@ -275,5 +279,5 @@ This is a **hub-and-spoke architecture** — all subdomains run from a single Ne
 
 ---
 
-*Generated: 2026-06-03*
-*Status: Production Ready — Phase 2 features (Neon Postgres database, Auth.js v5, and RFQ API flow) completed and fully documented*
+*Generated: 2026-06-04*
+*Status: Production Ready — Phase 3 features (Notification Queue, Cloudflare Pages Deployment, 301 Redirect Engine, SEO Migration, GA4 event tracking, and GSC verification) completed and fully documented*

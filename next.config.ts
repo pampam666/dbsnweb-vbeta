@@ -1,4 +1,8 @@
 import type { NextConfig } from "next";
+import { writeHtmlVerificationFile } from "./src/lib/seo/gsc-verify";
+
+// Trigger HTML verification file creation
+writeHtmlVerificationFile();
 
 const nextConfig: NextConfig = {
   typescript: {
