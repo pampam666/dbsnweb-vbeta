@@ -11,10 +11,18 @@ import ProcessSection from '@/components/sections/ProcessSection'
 import TestimonialsSection from '@/components/sections/TestimonialsSection'
 import ArticlesSection from '@/components/sections/ArticlesSection'
 import FAQSection from '@/components/sections/FAQSection'
+import { createHubHomeMetadata } from '@/lib/seo/metadata'
+import { createOrganizationSchema } from '@/lib/seo/json-ld'
 
 export const dynamic = 'force-dynamic'
 
+export function generateMetadata() {
+  return createHubHomeMetadata()
+}
+
 export default async function HubHomePage() {
+  const organizationSchema = createOrganizationSchema()
+
   const [rawCerts, rawPortfolio] = await Promise.all([
     getCertifications().catch(() => null),
     getPortfolioEntries().catch(() => null),
@@ -47,6 +55,10 @@ export default async function HubHomePage() {
 
   return (
     <main>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+      />
       {/* Hero */}
       <HeroSection />
 

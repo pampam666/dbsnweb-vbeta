@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 
+import { createSpokeHomeMetadata } from '@/lib/seo/metadata'
+
 export const revalidate = 3600 // Revalidate hourly
 
 export async function generateStaticParams() {
@@ -23,10 +25,10 @@ export async function generateMetadata({
   const { spoke } = await params
   const config = await getSpokeConfig(spoke)
   if (!config) return {}
-  return {
-    title: `${config.seoDefaults?.title || config.name} - DBSN`,
-    description: config.seoDefaults?.description || config.tagline,
-  }
+  return createSpokeHomeMetadata(spoke, {
+    name: config.seoDefaults?.title || config.name,
+    tagline: config.seoDefaults?.description || config.tagline,
+  })
 }
 
 export default async function SpokeHomePage({

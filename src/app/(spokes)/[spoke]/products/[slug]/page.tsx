@@ -6,6 +6,9 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 
+import { createSpokeProductMetadata } from '@/lib/seo/metadata'
+import { createProductSchema, createBreadcrumbSchema } from '@/lib/seo/json-ld'
+
 export const revalidate = 3600 // Revalidate hourly
 
 export async function generateStaticParams() {
@@ -22,13 +25,10 @@ export async function generateMetadata({
 }: {
   params: Promise<{ spoke: string; slug: string }>
 }): Promise<Metadata> {
-  const { slug } = await params
+  const { spoke, slug } = await params
   const product = await getProductBySlug(slug)
   if (!product) return {}
-  return {
-    title: `${product.seoMeta?.title || product.title} - DBSN`,
-    description: product.seoMeta?.description || product.shortDescription,
-  }
+  return createSpokeProductMetadata(spoke, product)
 }
 
 
@@ -50,6 +50,13 @@ export default async function ProductDetailPage({
 
   const primaryColor = config.primaryColor || '#2563eb'
 
+  const productSchema = createProductSchema(product, spoke)
+  const breadcrumbSchema = createBreadcrumbSchema([
+    { name: 'DBSN Hub', url: 'https://sentradaya.com' },
+    { name: config.name, url: `https://${spoke}.sentradaya.com` },
+    { name: product.title, url: `https://${spoke}.sentradaya.com/products/${slug}` },
+  ])
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col justify-between">
       <div>
@@ -69,6 +76,14 @@ export default async function ProductDetailPage({
         </header>
 
         <main className="container mx-auto px-6 py-12 max-w-6xl">
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+          />
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+          />
           <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden p-6 md:p-10 space-y-10">
             
             {/* Product Header & Images */}
