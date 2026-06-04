@@ -33,10 +33,17 @@ describe('gtag utility', () => {
 
     beforeEach(() => {
       mockGtag = jest.fn()
-      global.window = {
-        gtag: mockGtag,
-        dataLayer: [],
-      } as unknown as typeof global.window
+      if (global.window) {
+        global.window.gtag = mockGtag
+        global.window.dataLayer = []
+      }
+    })
+
+    afterEach(() => {
+      if (global.window) {
+        delete global.window.gtag
+        delete global.window.dataLayer
+      }
     })
 
     it('pageview should call window.gtag with config and correct URL', async () => {
@@ -64,7 +71,7 @@ describe('gtag utility', () => {
     beforeEach(() => {
       // Ensure window is undefined (like on server)
       // @ts-ignore
-      delete global.window
+      global.window = undefined
     })
 
     it('pageview should not throw on the server', async () => {

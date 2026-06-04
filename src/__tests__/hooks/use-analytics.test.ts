@@ -36,7 +36,7 @@ describe('useTrackEvent Hook', () => {
   it('should be SSR safe and work when window is undefined', async () => {
     const originalWindow = global.window
     // @ts-ignore
-    delete global.window
+    global.window = undefined
 
     const { useTrackEvent } = await import('@/hooks/use-analytics')
     const { result } = renderHook(() => useTrackEvent())
