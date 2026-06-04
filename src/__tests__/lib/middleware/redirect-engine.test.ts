@@ -67,9 +67,6 @@ describe('Redirect Engine', () => {
       const result = await lookupRedirect('/about-legacy', null)
       expect(result).toBe('/about')
       
-      // Wait for async update promise to resolve
-      await new Promise(resolve => setImmediate(resolve))
-      
       expect(mockUpdate).toHaveBeenCalledWith({
         where: { legacyUrl: '/about-legacy' },
         data: { hitCount: { increment: 1 } },
@@ -190,6 +187,9 @@ describe('Redirect Engine', () => {
         hitCount: 0,
       })
       await lookupRedirect('/item-500', null)
+      
+      // Clear the mock call history to verify that item-0 retrieval does not query the DB
+      mockFindFirst.mockClear()
       
       // Accessing item-0 (should still be in cache since it was refreshed)
       await lookupRedirect('/item-0', null)

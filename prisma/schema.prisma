@@ -158,6 +158,7 @@ model RedirectMap {
   legacyUrl String @id @map("legacy_url") @db.VarChar(1024)
   targetUrl String @map("target_url") @db.VarChar(1024)
   spoke     String @map("spoke") @db.VarChar(100)
+  hitCount  Int    @default(0) @map("hit_count")
   
   @@index([legacyUrl])
   @@map("redirect_map")
