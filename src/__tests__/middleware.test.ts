@@ -1,12 +1,21 @@
 import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals'
 import { NextRequest, NextResponse } from 'next/server'
 
+jest.mock('../lib/middleware/redirect-engine', () => ({
+  lookupRedirect: jest.fn(() => Promise.resolve(null)),
+}))
+
 describe('Subdomain Routing Middleware Integration', () => {
   const originalEnv = process.env
   let middleware: (request: NextRequest) => NextResponse | Promise<NextResponse>
+  let mockLookupRedirect: any
 
   beforeEach(async () => {
     jest.resetModules()
+    const { lookupRedirect } = await import('../lib/middleware/redirect-engine')
+    mockLookupRedirect = lookupRedirect
+    mockLookupRedirect.mockReset()
+    mockLookupRedirect.mockResolvedValue(null)
     process.env = { ...originalEnv }
     process.env.NEXT_PUBLIC_ROOT_DOMAIN = 'sentradaya.com'
     const mwModule = await import('../middleware')
@@ -179,5 +188,30 @@ describe('Subdomain Routing Middleware Integration', () => {
     const res = await middleware(req)
     expect(res).toBeDefined()
     expect(res.headers.get('x-middleware-rewrite')).toContain('/404')
+  })
+
+  it('should redirect permanently (301) when a redirect match is found, preserving query parameters', async () => {
+    mockLookupRedirect.mockResolvedValue('/products/solar-panel')
+    const req = new NextRequest('http://solarcell.sentradaya.com/old-panel?ref=promo', {
+      headers: { host: 'solarcell.sentradaya.com' },
+    })
+
+    const res = await middleware(req)
+    expect(res).toBeDefined()
+    expect(res.status).toBe(301)
+    expect(res.headers.get('location')).toBe('http://solarcell.sentradaya.com/products/solar-panel?ref=promo')
+    expect(mockLookupRedirect).toHaveBeenCalledWith('/old-panel', 'solarcell')
+  })
+
+  it('should not redirect if no match is found, executing normal middleware routing', async () => {
+    mockLookupRedirect.mockResolvedValue(null)
+    const req = new NextRequest('http://sentradaya.com/normal-page', {
+      headers: { host: 'sentradaya.com' },
+    })
+
+    const res = await middleware(req)
+    expect(res).toBeDefined()
+    expect(res.status).toBe(200)
+    expect(res.headers.get('x-middleware-subdomain')).toBe('hub')
   })
 })

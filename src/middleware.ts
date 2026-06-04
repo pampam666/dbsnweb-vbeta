@@ -6,6 +6,7 @@ import {
   isSpokeDomain,
   SPOKE_SUBDOMAINS,
 } from './lib/middleware/config'
+import { lookupRedirect } from './lib/middleware/redirect-engine'
 
 /**
  * DBSN Subdomain Middleware Routing.
@@ -16,7 +17,7 @@ import {
  * 
  * Runs on the V8 Edge Runtime.
  */
-export default function middleware(request: NextRequest) {
+export default async function middleware(request: NextRequest) {
   const { pathname, search } = request.nextUrl
   const hostname = request.headers.get('host')
 
@@ -29,10 +30,18 @@ export default function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // 2. Short-circuit for already rewritten paths (to prevent infinite loops)
   const cleanHost = cleanHostname(hostname)
-  const isDash = isDashboardDomain(cleanHost)
   const spoke = isSpokeDomain(cleanHost)
+
+  // Look up redirection mapping from legacy URLs
+  const redirectTarget = await lookupRedirect(pathname, spoke)
+  if (redirectTarget) {
+    const redirectUrl = new URL(redirectTarget + search, request.url)
+    return NextResponse.redirect(redirectUrl, 301)
+  }
+
+  // 2. Short-circuit for already rewritten paths (to prevent infinite loops)
+  const isDash = isDashboardDomain(cleanHost)
 
   if (
     (pathname.startsWith('/dashboard') && isDash) ||
