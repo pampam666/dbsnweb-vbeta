@@ -54,9 +54,10 @@ export async function POST(request: NextRequest) {
       const details = parseResult.error.issues.map((issue) => {
         let code: string = issue.code
         // Map common Zod codes to business-friendly codes
-        if (issue.code === 'invalid_type' && issue.received === 'undefined') {
+        const issueAny = issue as any
+        if (issueAny.code === 'invalid_type' && issueAny.received === 'undefined') {
           code = 'required_field'
-        } else if (issue.code === 'invalid_string' && (issue as any).validation === 'email') {
+        } else if (issueAny.code === 'invalid_string' && issueAny.validation === 'email') {
           code = 'invalid_format'
         }
         return {

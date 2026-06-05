@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import { writeHtmlVerificationFile } from "./src/lib/seo/gsc-verify";
+import { withSentryConfig } from "@sentry/nextjs";
 
 // Trigger HTML verification file creation
 writeHtmlVerificationFile();
@@ -29,4 +30,19 @@ const nextConfig: NextConfig = {
   ],
 };
 
-export default nextConfig;
+// Sentry configuration
+export default withSentryConfig(
+  nextConfig,
+  {
+    org: process.env.SENTRY_ORG || "pt-daya-berkah-sentosa-nusanta",
+    project: process.env.SENTRY_PROJECT || "javascript-nextjs",
+    authToken: process.env.SENTRY_AUTH_TOKEN,
+    silent: !process.env.CI,
+    sourcemaps: {
+      disable: process.env.NODE_ENV === "development",
+    },
+    // SDK options
+    widenClientFileUpload: true,
+    tunnelRoute: "/api/monitoring",
+  }
+);

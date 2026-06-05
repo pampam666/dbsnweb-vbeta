@@ -13,7 +13,7 @@ describe('SEO Metadata Utilities', () => {
       expect(meta.title).toBe('DBSN Sentradaya | Solusi Energi Terbarukan')
       expect(meta.description?.toLowerCase()).toContain('energi terbarukan')
       expect(meta.alternates?.canonical).toBe('https://sentradaya.com')
-      expect(meta.openGraph?.type).toBe('website')
+      expect((meta.openGraph as any)?.type).toBe('website')
       expect(meta.openGraph?.images).toContainEqual(
         expect.objectContaining({
           url: 'https://sentradaya.com/og-default.png',
@@ -53,7 +53,7 @@ describe('SEO Metadata Utilities', () => {
       expect(meta.title).toBe('PJU Tenaga Surya | DBSN Sentradaya')
       expect(meta.description).toBe('Penerangan Jalan Umum hemat energi')
       expect(meta.alternates?.canonical).toBe('https://pju.sentradaya.com')
-      expect(meta.openGraph?.type).toBe('website')
+      expect((meta.openGraph as any)?.type).toBe('website')
     })
   })
 
@@ -71,7 +71,7 @@ describe('SEO Metadata Utilities', () => {
       expect(meta.title).toBe('Custom Product Title')
       expect(meta.description).toBe('Custom description')
       expect(meta.alternates?.canonical).toBe('https://solarcell.sentradaya.com/products/solar-panel-100wp')
-      expect(meta.openGraph?.type).toBe('article')
+      expect((meta.openGraph as any)?.type).toBe('article')
     })
 
     it('uses fallback product title and description if seoMeta is missing', () => {
