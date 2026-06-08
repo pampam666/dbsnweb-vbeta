@@ -49,6 +49,7 @@ export const CACHE_TAGS = {
   certification: (id?: string) =>
     id ? `sanity:certification:${id}` : 'sanity:certification',
   portfolio: (id?: string) => (id ? `sanity:portfolio:${id}` : 'sanity:portfolio'),
+  article: (id?: string) => (id ? `sanity:article:${id}` : 'sanity:article'),
   spoke: (subdomain: string) => `sanity:spoke:${subdomain}`,
   spokeConfig: (id?: string) =>
     id ? `sanity:spokeConfig:${id}` : 'sanity:spokeConfig',

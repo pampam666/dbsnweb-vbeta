@@ -2,7 +2,6 @@ import { revalidateTag } from 'next/cache'
 import { NextRequest, NextResponse } from 'next/server'
 import { CACHE_TAGS } from '@/lib/api/sanity/client'
 import { getSanityEnv } from '@/lib/config/env'
-import { createHmac, timingSafeEqual } from 'crypto'
 
 export const runtime = 'edge'
 
@@ -16,6 +15,52 @@ interface SanityWebhookPayload {
     current: string
   }
   operation: 'create' | 'update' | 'delete'
+}
+
+/**
+ * Verify Sanity webhook signature using Web Crypto API (Edge compatible).
+ * 
+ * @param body - Raw request body
+ * @param signature - Signature from 'sanity-webhook-signature' header
+ * @param secret - Webhook secret
+ * @returns True if signature is valid
+ */
+async function isValidSignature(
+  body: string,
+  signature: string,
+  secret: string,
+): Promise<boolean> {
+  try {
+    const encoder = new TextEncoder()
+    const key = await crypto.subtle.importKey(
+      'raw',
+      encoder.encode(secret),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['verify'],
+    )
+
+    const parts = signature.split('=')
+    if (parts.length !== 2 || parts[0] !== 'sha256') return false
+    const signatureHash = parts[1]
+
+    // Convert hex string to Uint8Array
+    const hexMatch = signatureHash.match(/.{1,2}/g)
+    if (!hexMatch) return false
+    
+    const sigBytes = new Uint8Array(
+      hexMatch.map(byte => parseInt(byte, 16)),
+    )
+
+    return await crypto.subtle.verify(
+      'HMAC',
+      key,
+      sigBytes,
+      encoder.encode(body),
+    )
+  } catch {
+    return false
+  }
 }
 
 /**
@@ -49,15 +94,9 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      const computedSignature = 'sha256=' + createHmac('sha256', secret).update(rawBody).digest('hex')
+      const isValid = await isValidSignature(rawBody, signature, secret)
 
-      const signatureBuffer = Buffer.from(signature)
-      const computedSignatureBuffer = Buffer.from(computedSignature)
-
-      if (
-        signatureBuffer.length !== computedSignatureBuffer.length ||
-        !timingSafeEqual(signatureBuffer, computedSignatureBuffer)
-      ) {
+      if (!isValid) {
         return NextResponse.json(
           { error: 'Invalid signature' },
           { status: 401 },

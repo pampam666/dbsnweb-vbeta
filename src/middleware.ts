@@ -45,6 +45,7 @@ export default async function middleware(request: NextRequest) {
 
   if (
     (pathname.startsWith('/dashboard') && isDash) ||
+    pathname.startsWith('/(hub)') ||
     pathname.startsWith('/404') ||
     (spoke && pathname.startsWith(`/${spoke}`))
   ) {
@@ -52,6 +53,9 @@ export default async function middleware(request: NextRequest) {
     if (isDash) {
       response.headers.set('x-middleware-subdomain', 'dashboard')
       response.headers.set('x-middleware-matched-route', '/dashboard')
+    } else if (pathname.startsWith('/(hub)')) {
+      response.headers.set('x-middleware-subdomain', 'hub')
+      response.headers.set('x-middleware-matched-route', '/(hub)')
     } else if (spoke) {
       response.headers.set('x-middleware-subdomain', spoke)
       response.headers.set('x-middleware-matched-route', `/(spokes)/${spoke}`)
@@ -66,7 +70,9 @@ export default async function middleware(request: NextRequest) {
       const url = new URL(`/404`, request.url)
       return NextResponse.rewrite(url)
     }
-    const response = NextResponse.next()
+
+    const url = new URL(`/(hub)${pathname}${search}`, request.url)
+    const response = NextResponse.rewrite(url)
     response.headers.set('x-middleware-subdomain', 'hub')
     response.headers.set('x-middleware-matched-route', '/(hub)')
     return response

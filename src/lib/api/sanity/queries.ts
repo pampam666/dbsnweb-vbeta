@@ -7,6 +7,8 @@ import type {
   SpokeConfig,
   SpokeConfigWithProducts,
   PageWithSpoke,
+  Article,
+  ArticleWithRelations,
 } from './types'
 
 /**
@@ -423,6 +425,79 @@ export async function getPageBySlug(
       { slug, subdomain: spokeSubdomain },
       fetchOptions,
     )
+  } catch {
+    return null
+  }
+}
+
+// ============================================================================
+// Article Queries
+// ============================================================================
+
+const articleFields = groq`
+  _id,
+  _type,
+  title,
+  "slug": slug.current,
+  category,
+  excerpt,
+  content,
+  author,
+  publishedAt,
+  readingTime,
+  seoMeta
+`
+
+/**
+ * Fetch all articles from Sanity CMS.
+ *
+ * @returns Array of articles, or null
+ */
+export async function getArticles(): Promise<ArticleWithRelations[] | null> {
+  const query = defineQuery(groq`
+    *[_type == "article"]{
+      ${articleFields}
+    }|order(publishedAt desc)
+  `)
+
+  const fetchOptions: FetchOptions = {
+    next: {
+      revalidate: 3600,
+      tags: [CACHE_TAGS.article()],
+    },
+  }
+
+  try {
+    return await client.fetch(query, {}, fetchOptions)
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Fetch a single article by slug.
+ *
+ * @param slug - Article slug
+ * @returns Article with relations, or null
+ */
+export async function getArticleBySlug(
+  slug: string,
+): Promise<ArticleWithRelations | null> {
+  const query = defineQuery(groq`
+    *[_type == "article" && slug.current == $slug][0]{
+      ${articleFields}
+    }
+  `)
+
+  const fetchOptions: FetchOptions = {
+    next: {
+      revalidate: 3600,
+      tags: [CACHE_TAGS.article()],
+    },
+  }
+
+  try {
+    return await client.fetch(query, { slug }, fetchOptions)
   } catch {
     return null
   }
