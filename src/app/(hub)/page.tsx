@@ -1,5 +1,6 @@
 import { getCertifications, getPortfolioEntries } from '@/lib/api/sanity/queries'
 import { getOptimizedImageUrl } from '@/lib/api/sanity/image'
+import Script from 'next/script'
 import HeroSection from '@/components/sections/HeroSection'
 import AboutSection from '@/components/sections/AboutSection'
 import ProductsSection from '@/components/sections/ProductsSection'
@@ -55,9 +56,11 @@ export default async function HubHomePage() {
 
   return (
     <main>
-      <script
+      <Script
+        id="organization-schema"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        strategy="afterInteractive"
       />
       {/* Hero */}
       <HeroSection />

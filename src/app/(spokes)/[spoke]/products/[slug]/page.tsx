@@ -3,6 +3,7 @@ import { getOptimizedImageUrl } from '@/lib/api/sanity/image'
 import { PortableText } from '@/components/shared/PortableText'
 import Image from 'next/image'
 import Link from 'next/link'
+import Script from 'next/script'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 
@@ -80,13 +81,17 @@ export default async function ProductDetailPage({
 
         <main className="container mx-auto px-6 py-12 max-w-6xl">
           <ProductViewTracker productName={product.title} spoke={spoke} />
-          <script
+          <Script
+            id="product-schema"
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+            strategy="afterInteractive"
           />
-          <script
+          <Script
+            id="breadcrumb-schema"
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+            strategy="afterInteractive"
           />
           <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden p-6 md:p-10 space-y-10">
             

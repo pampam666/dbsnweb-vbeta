@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger,
 } from "@/components/ui/accordion";
+import Script from "next/script";
 import ScrollReveal from "@/components/shared/ScrollReveal";
 import { HelpCircle, Search } from "lucide-react";
 
@@ -46,7 +47,14 @@ function FAQJsonLd() {
     "@type": "FAQPage",
     mainEntity: allFaqs.map((faq) => ({ "@type": "Question", name: faq.question, acceptedAnswer: { "@type": "Answer", text: faq.answer } })),
   };
-  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />;
+  return (
+    <Script
+      id="faq-json-ld"
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      strategy="afterInteractive"
+    />
+  );
 }
 
 export default function FAQSection() {
