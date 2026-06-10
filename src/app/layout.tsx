@@ -3,8 +3,6 @@ import { ThemeProvider } from 'next-themes'
 import GoogleAnalytics from '@/components/shared/GoogleAnalytics'
 import './globals.css'
 
-export const runtime = 'edge'
-
 export const metadata: Metadata = {
   title: 'DBSN Digital Ecosystem',
   description: 'Solusi Energi Terbarukan untuk Masa Depan Indonesia',
