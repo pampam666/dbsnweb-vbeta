@@ -17,6 +17,8 @@ describe('Middleware Config Resolution Utilities', () => {
     expect(cleanHostname('lvh.me:3000')).toBe('lvh.me')
     expect(cleanHostname('sentradaya.com:8080')).toBe('sentradaya.com')
     expect(cleanHostname('pju.lvh.me')).toBe('pju.lvh.me')
+    expect(cleanHostname('[::1]:3000')).toBe('::1')
+    expect(cleanHostname('::1')).toBe('::1')
     expect(cleanHostname(null)).toBe('')
     expect(cleanHostname(undefined)).toBe('')
     expect(cleanHostname('')).toBe('')
@@ -56,6 +58,8 @@ describe('Middleware Config Resolution Utilities', () => {
     expect(extractSubdomain('')).toBeNull()
     expect(extractSubdomain('127.0.0.1')).toBeNull()
     expect(extractSubdomain('localhost')).toBeNull()
+    expect(extractSubdomain('::1')).toBeNull()
+    expect(extractSubdomain('[::1]:3000')).toBeNull()
     expect(extractSubdomain('foo.bar.sentradaya.com')).toBe('foo.bar')
   })
 
@@ -69,6 +73,8 @@ describe('Middleware Config Resolution Utilities', () => {
     expect(isHubDomain('pju.lvh.me:3000')).toBe(false)
     expect(isHubDomain('localhost')).toBe(true)
     expect(isHubDomain('127.0.0.1')).toBe(true)
+    expect(isHubDomain('::1')).toBe(true)
+    expect(isHubDomain('[::1]:3000')).toBe(true)
 
     // Production hub
     expect(isHubDomain('sentradaya.com')).toBe(true)

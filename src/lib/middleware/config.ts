@@ -7,8 +7,28 @@ export const SPOKE_SUBDOMAINS = ['pju', 'solarcell', 'alatpetir', 'baterai'] as 
  */
 export function cleanHostname(host: string | null | undefined): string {
   if (!host) return ''
-  const [hostname] = host.split(':')
-  return hostname
+
+  // Handle bracketed IPv6: e.g. "[::1]:3000" or "[::1]" -> "::1"
+  if (host.startsWith('[')) {
+    const end = host.indexOf(']')
+    if (end !== -1) {
+      return host.substring(1, end)
+    }
+  }
+
+  // Handle standard IPv6 without brackets (no port allowed here)
+  // or standard hostname with port.
+  if (host.includes(':')) {
+    const parts = host.split(':')
+    // If there are more than 2 parts, it's an IPv6 address (e.g. "::1")
+    if (parts.length > 2) {
+      return host
+    }
+    // Otherwise it's hostname:port
+    return parts[0]
+  }
+
+  return host
 }
 
 /**
@@ -25,7 +45,7 @@ export function isLocalDevelopment(hostname: string): boolean {
 export function extractSubdomain(hostname: string): string | null {
   if (!hostname) return null
   const clean = cleanHostname(hostname)
-  if (!clean || clean === 'localhost' || clean === '127.0.0.1') return null
+  if (!clean || clean === 'localhost' || clean === '127.0.0.1' || clean === '::1' || clean === '[::1]') return null
 
   const isLocal = isLocalDevelopment(clean)
   const isVercel = clean.endsWith('.vercel.app')
@@ -65,7 +85,7 @@ export function extractSubdomain(hostname: string): string | null {
  */
 export function isHubDomain(hostname: string): boolean {
   const clean = cleanHostname(hostname)
-  if (clean === 'localhost' || clean === '127.0.0.1') {
+  if (clean === 'localhost' || clean === '127.0.0.1' || clean === '::1' || clean === '[::1]') {
     return true
   }
   
