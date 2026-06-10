@@ -1,5 +1,10 @@
 # Cloudflare Pages Deployment Guide
 
+<!-- AUTO-GENERATED START -->
+> [!IMPORTANT]
+> This deployment configuration is for the **Production Phase (Phase B)**. The project is currently in **Development Phase (Phase A)** hosted on Vercel at `dbsn-test01.vercel.app`. This guide will become active when the migration to Cloudflare Pages is triggered.
+<!-- AUTO-GENERATED END -->
+
 This guide details the deployment pipeline, custom domain routing, and environment configurations for the DBSN central Next.js application on Cloudflare Pages.
 
 ## Deployment Architecture

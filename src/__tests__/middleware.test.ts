@@ -33,7 +33,7 @@ describe('Subdomain Routing Middleware Integration', () => {
 
     const res = await middleware(req)
     expect(res).toBeDefined()
-    expect(res.headers.get('x-middleware-rewrite')).toBeNull()
+    expect(res.headers.get('x-middleware-rewrite')).toContain('/(hub)/about?test=1')
     expect(res.headers.get('x-middleware-subdomain')).toBe('hub')
     expect(res.headers.get('x-middleware-matched-route')).toBe('/(hub)')
   })
@@ -45,7 +45,7 @@ describe('Subdomain Routing Middleware Integration', () => {
 
     const res = await middleware(req)
     expect(res).toBeDefined()
-    expect(res.headers.get('x-middleware-rewrite')).toBeNull()
+    expect(res.headers.get('x-middleware-rewrite')).toContain('/(hub)/contact')
     expect(res.headers.get('x-middleware-subdomain')).toBe('hub')
     expect(res.headers.get('x-middleware-matched-route')).toBe('/(hub)')
   })
@@ -117,7 +117,7 @@ describe('Subdomain Routing Middleware Integration', () => {
 
     const res = await middleware(req)
     expect(res).toBeDefined()
-    expect(res.headers.get('x-middleware-rewrite')).toBeNull()
+    expect(res.headers.get('x-middleware-rewrite')).toContain('/(hub)/')
     expect(res.headers.get('x-middleware-subdomain')).toBe('hub')
     expect(res.headers.get('x-middleware-matched-route')).toBe('/(hub)')
   })

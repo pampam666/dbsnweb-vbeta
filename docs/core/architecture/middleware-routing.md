@@ -71,8 +71,8 @@ Request: Host: pju.lvh.me:3000
 
 | Input hostname | `cleanHostname` | `extractSubdomain` | `isHubDomain` | `isDashboardDomain` | `isSpokeDomain` | Decision |
 |---|---|---|---|---|---|---|
-| `sentradaya.com` | `sentradaya.com` | `null` | `true` | `false` | `null` | Hub (next) |
-| `lvh.me:3000` | `lvh.me` | `null` | `true` | `false` | `null` | Hub (next) |
+| `sentradaya.com` | `sentradaya.com` | `null` | `true` | `false` | `null` | Hub rewrite |
+| `lvh.me:3000` | `lvh.me` | `null` | `true` | `false` | `null` | Hub rewrite |
 | `dashboard.sentradaya.com` | `dashboard.sentradaya.com` | `"dashboard"` | `false` | `true` | `null` | Dashboard rewrite |
 | `pju.lvh.me:3000` | `pju.lvh.me` | `"pju"` | `false` | `false` | `"pju"` | Spoke rewrite |
 | `unknown.example.com` | `unknown.example.com` | `null` | `false` | `false` | `null` | 404 rewrite |
@@ -161,7 +161,7 @@ The middleware runs 6 sequential checks and sets response headers on every path:
 | 1 | Path starts with `/api`, `/_next`, or contains `.` | `NextResponse.next()` — short-circuit | None |
 | 2 | Path already matches the rewritten route | `NextResponse.next()` — prevent loop | `x-middleware-subdomain`, `x-middleware-matched-route` |
 | 3 | `isHubDomain()` — and path is a spoke path | `NextResponse.rewrite(/404)` | None |
-| 3 | `isHubDomain()` — hub page | `NextResponse.next()` | `x-middleware-subdomain: hub`, `x-middleware-matched-route: /(hub)` |
+| 3 | `isHubDomain()` — hub page | `NextResponse.rewrite(/(hub){path})` | `x-middleware-subdomain: hub`, `x-middleware-matched-route: /(hub)` |
 | 4 | `isDashboardDomain()` | `NextResponse.rewrite(/dashboard{path})` | `x-middleware-subdomain: dashboard`, `x-middleware-matched-route: /dashboard` |
 | 5 | `isSpokeDomain()` returns spoke key | `NextResponse.rewrite(/{spoke}{path})` | `x-middleware-subdomain: {spoke}`, `x-middleware-matched-route: /(spokes)/{spoke}` |
 | 6 | No match | `NextResponse.rewrite(/404)` | None |

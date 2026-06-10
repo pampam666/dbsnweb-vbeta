@@ -15,7 +15,7 @@ The platform acts as a multi-tenant gateway, serving different sites (hub, spoke
 
 ```mermaid
 graph TD
-    User([Incoming Request]) --> CF[Cloudflare / Vercel Edge Router]
+    User([Incoming Request]) --> CF[Vercel Edge — Development Phase]
     CF --> MW{Next.js Middleware}
     
     %% Hostname Routing
@@ -30,6 +30,11 @@ graph TD
     Hub & Spoke1 & Spoke2 & Spoke3 & Spoke4 -->|Content Fetch| Sanity[(Sanity CMS)]
     Dash -->|Auth & Tracking Data| DB[(Neon Postgres via Prisma)]
 ```
+
+<!-- AUTO-GENERATED START -->
+> **Current Deployment:** `dbsn-test01.vercel.app` (Vercel — Development Phase)
+> **Planned Production:** `sentradaya.com` (Cloudflare Pages — pending migration)
+<!-- AUTO-GENERATED END -->
 
 ---
 

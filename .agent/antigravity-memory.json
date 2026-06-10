@@ -38,10 +38,10 @@
     }
   ],
   "workspace_tech_stack": {
-    "framework": "Next.js 15 (App Router)",
+    "framework": "Next.js 16 (App Router)",
     "orm": "Prisma ORM",
     "database": "Neon Postgres (Serverless)",
-    "package_manager": "pnpm"
+    "package_manager": "npm"
   },
-  "last_updated": "2026-05-20"
+  "last_updated": "2026-06-09"
 }

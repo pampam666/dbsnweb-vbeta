@@ -11,12 +11,12 @@ import { useTrackEvent } from "@/hooks/use-analytics";
 import { AnalyticsEvent } from "@/lib/analytics/gtag";
 
 const navLinks = [
-  { label: "Beranda", href: "#beranda" },
-  { label: "Tentang", href: "#tentang-kami" },
-  { label: "Produk", href: "#produk" },
-  { label: "Portofolio", href: "#portofolio" },
-  { label: "Sertifikasi", href: "#sertifikasi" },
-  { label: "Kontak", href: "#hubungi-kami" },
+  { label: "Beranda", href: "/", anchor: "beranda" },
+  { label: "Tentang", href: "/about", anchor: "tentang-kami" },
+  { label: "Produk", href: "/#produk", anchor: "produk" },
+  { label: "Portofolio", href: "/#portofolio", anchor: "portofolio" },
+  { label: "Sertifikasi", href: "/certifications", anchor: "sertifikasi" },
+  { label: "Kontak", href: "/contact", anchor: "hubungi-kami" },
 ];
 
 export default function Navbar() {
@@ -32,14 +32,14 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const handleNavClick = (href: string, e: React.MouseEvent<HTMLAnchorElement>) => {
-    if (isHome) {
-      e.preventDefault();
-      setIsOpen(false);
-      const id = href.replace("#", "");
-      document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-    } else {
-      setIsOpen(false);
+  const handleNavClick = (link: typeof navLinks[0], e: React.MouseEvent<HTMLAnchorElement>) => {
+    setIsOpen(false);
+    if (isHome && link.anchor) {
+      const el = document.getElementById(link.anchor);
+      if (el) {
+        e.preventDefault();
+        el.scrollIntoView({ behavior: "smooth" });
+      }
     }
   };
 
@@ -71,8 +71,8 @@ export default function Navbar() {
             {navLinks.map((link) => (
               <Link
                 key={link.label}
-                href={isHome ? link.href : `/${link.href}`}
-                onClick={(e) => handleNavClick(link.href, e)}
+                href={isHome && link.anchor ? `#${link.anchor}` : link.href}
+                onClick={(e) => handleNavClick(link, e)}
                 className={`px-3 py-2 text-sm rounded-lg transition-all duration-200 font-medium ${
                   isSolid
                     ? "text-gray-600 dark:text-gray-300 hover:text-emerald-700 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
@@ -88,12 +88,12 @@ export default function Navbar() {
           <div className="flex items-center gap-2">
             <ThemeToggle className={isSolid ? "min-h-[44px] min-w-[44px] w-11 h-11 text-emerald-700 dark:text-amber-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors duration-200" : "min-h-[44px] min-w-[44px] w-11 h-11 text-white/90 hover:text-white hover:bg-white/10 transition-colors duration-200"} />
             <Link
-              href={isHome ? "#permintaan-penawaran" : "/#permintaan-penawaran"}
+              href={isHome ? "#hubungi-kami" : "/contact"}
               onClick={(e) => {
                 trackEvent(AnalyticsEvent.CONTACT_CLICK, { contact_type: 'rfq_button', location: 'navbar' });
                 if (isHome) {
                   e.preventDefault();
-                  document.getElementById("permintaan-penawaran")?.scrollIntoView({ behavior: "smooth" });
+                  document.getElementById("hubungi-kami")?.scrollIntoView({ behavior: "smooth" });
                 }
               }}
               className="hidden sm:flex items-center justify-center h-9 px-4 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white gap-1.5 shadow-sm text-sm font-semibold transition"
@@ -119,21 +119,21 @@ export default function Navbar() {
           {navLinks.map((link) => (
             <Link
               key={link.label}
-              href={isHome ? link.href : `/${link.href}`}
-              onClick={(e) => handleNavClick(link.href, e)}
+              href={isHome && link.anchor ? `#${link.anchor}` : link.href}
+              onClick={(e) => handleNavClick(link, e)}
               className="block w-full text-left px-3 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors font-medium"
             >
               {link.label}
             </Link>
           ))}
           <Link
-            href={isHome ? "#permintaan-penawaran" : "/#permintaan-penawaran"}
+            href={isHome ? "#hubungi-kami" : "/contact"}
             onClick={(e) => {
               trackEvent(AnalyticsEvent.CONTACT_CLICK, { contact_type: 'rfq_button', location: 'mobile_nav' });
               setIsOpen(false);
               if (isHome) {
                 e.preventDefault();
-                document.getElementById("permintaan-penawaran")?.scrollIntoView({ behavior: "smooth" });
+                document.getElementById("hubungi-kami")?.scrollIntoView({ behavior: "smooth" });
               }
             }}
             className="flex items-center justify-center w-full bg-emerald-700 hover:bg-emerald-800 text-white gap-2 mt-2 h-10 rounded-lg text-sm font-semibold transition"

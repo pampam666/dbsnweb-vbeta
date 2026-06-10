@@ -29,16 +29,19 @@ export function extractSubdomain(hostname: string): string | null {
 
   const isLocal = isLocalDevelopment(clean)
   const isVercel = clean.endsWith('.vercel.app')
+  
   let rootDomain: string
 
   if (isLocal) {
     rootDomain = 'lvh.me'
   } else if (isVercel) {
-    const parts = clean.split('.')
-    if (parts.length >= 3) {
-      rootDomain = parts.slice(-3).join('.')
+    // Support testing Spoke subdomains on a specific Vercel preview root.
+    // If it's not the designated test root, treat it as a Hub domain (return null).
+    const testRoot = 'dbsn-test01.vercel.app'
+    if (clean === testRoot || clean.endsWith('.' + testRoot)) {
+      rootDomain = testRoot
     } else {
-      rootDomain = clean
+      return null
     }
   } else {
     try {
@@ -48,7 +51,7 @@ export function extractSubdomain(hostname: string): string | null {
     }
   }
 
-  if (clean === rootDomain) return null
+  if (clean === rootDomain || clean === `www.${rootDomain}`) return null
   if (!clean.endsWith('.' + rootDomain)) return null
 
   const subdomain = clean.slice(0, -(rootDomain.length + 1))
@@ -65,19 +68,22 @@ export function isHubDomain(hostname: string): boolean {
   if (clean === 'localhost' || clean === '127.0.0.1') {
     return true
   }
+  
+  if (clean.endsWith('.vercel.app')) {
+    const testRoot = 'dbsn-test01.vercel.app'
+    // It's a Hub domain if it's the test root exactly (or www)
+    // or if it's some other Vercel preview (which we treat as Hub only).
+    if (clean.includes(testRoot)) {
+      return clean === testRoot || clean === `www.${testRoot}`
+    }
+    return true
+  }
+
   const isLocal = isLocalDevelopment(clean)
-  const isVercel = clean.endsWith('.vercel.app')
   let rootDomain: string
 
   if (isLocal) {
     rootDomain = 'lvh.me'
-  } else if (isVercel) {
-    const parts = clean.split('.')
-    if (parts.length >= 3) {
-      rootDomain = parts.slice(-3).join('.')
-    } else {
-      rootDomain = clean
-    }
   } else {
     try {
       rootDomain = getMiddlewareEnv().NEXT_PUBLIC_ROOT_DOMAIN

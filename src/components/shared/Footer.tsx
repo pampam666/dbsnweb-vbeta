@@ -11,19 +11,20 @@ const footerLinks = [
   {
     title: "Produk",
     links: [
-      { label: "Penerangan Jalan Umum", href: "#produk", page: "/products" },
-      { label: "Panel Surya",           href: "#produk", page: "/products" },
-      { label: "Penangkal Petir",       href: "#produk", page: "/products" },
-      { label: "Baterai & Storage",     href: "#produk", page: "/products" },
+      { label: "Penerangan Jalan Umum", href: "/#produk" },
+      { label: "Panel Surya",           href: "/#produk" },
+      { label: "Penangkal Petir",       href: "/#produk" },
+      { label: "Baterai & Storage",     href: "/#produk" },
     ],
   },
   {
     title: "Perusahaan",
     links: [
-      { label: "Tentang Kami",      href: "#tentang-kami", page: "/about"          },
-      { label: "Portofolio Proyek", href: "#portofolio",   page: "/portfolio"      },
-      { label: "Sertifikasi",       href: "#sertifikasi",  page: "/certifications" },
-      { label: "Hubungi Kami",      href: "#hubungi-kami", page: "/contact"        },
+      { label: "Tentang Kami",      href: "/about"          },
+      { label: "Portofolio Proyek", href: "/portfolio"      },
+      { label: "Sertifikasi",       href: "/certifications" },
+      { label: "Hubungi Kami",      href: "/contact"        },
+      { label: "Tanya Jawab (FAQ)", href: "/faq"            },
     ],
   },
 ];
@@ -74,7 +75,7 @@ export default function Footer() {
                 {group.links.map((link) => (
                   <li key={link.label}>
                     <Link
-                      href={isHome ? link.href : link.page}
+                      href={link.href}
                       className="text-emerald-300 hover:text-white text-sm transition-colors duration-200 flex items-center gap-1.5 group"
                     >
                       <span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span>

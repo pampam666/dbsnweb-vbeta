@@ -32,7 +32,7 @@ export async function generateMetadata({
   })
 }
 
-export default async function SpokeHomePage({
+export default async function SpokeHome({
   params,
 }: {
   params: Promise<{ spoke: string }>

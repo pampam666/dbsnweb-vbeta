@@ -15,7 +15,17 @@ This roadmap tracks the implementation of the DBSN Centralized Digital Ecosystem
 - **Hub:** `sentradaya.com` — Corporate trust center
 - **Spokes:** `pju.sentradaya.com`, `solarcell.sentradaya.com`, `alatpetir.sentradaya.com`, `baterai.sentradaya.com`
 - **Dashboard:** `dashboard.sentradaya.com` — Client tracking portal
-- **Tech Stack:** Next.js 16, Sanity.io, Neon Postgres + Prisma, Auth.js v5, Cloudflare Pages
+- **Tech Stack:** Next.js 16, Sanity.io, Neon Postgres + Prisma, Auth.js v5, Vercel (Dev) → Cloudflare Pages (Prod)
+
+---
+
+<!-- AUTO-GENERATED START -->
+## Deployment Phase Status
+
+- **Current Phase**: Development Phase — deployed on Vercel (`dbsn-test01.vercel.app`)
+- **Target Phase**: Production — Cloudflare Pages (`sentradaya.com`)
+- **Migration Trigger**: All Phase 4 Quality Gates passed + stakeholder approval
+<!-- AUTO-GENERATED END -->
 
 ---
 

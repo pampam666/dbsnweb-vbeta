@@ -1,0 +1,50 @@
+{
+  "mcpServers": {
+    "memory": {
+      "command": "npx.cmd",
+      "args": ["-y", "@modelcontextprotocol/server-memory"]
+    },
+    "sequential-thinking": {
+      "command": "npx.cmd",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+    },
+    "context7": {
+      "command": "npx.cmd",
+      "args": ["-y", "@upstash/context7-mcp@latest"]
+    },
+    "playwright": {
+      "command": "npx.cmd",
+      "args": ["-y", "@playwright/mcp", "--browser", "chrome"]
+    },
+    "neon": {
+      "type": "http",
+      "url": "https://mcp.neon.tech/mcp",
+      "headers": {
+        "Authorization": "Bearer napi_YOUR_NEON_API_KEY"
+      }
+    },
+    "github": {
+      "command": "npx.cmd",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "ghp_YOUR_GITHUB_PERSONAL_ACCESS_TOKEN"
+      }
+    },
+    "cloudflare-docs": {
+      "type": "http",
+      "url": "https://docs.mcp.cloudflare.com/mcp"
+    },
+    "vercel": {
+      "type": "http",
+      "url": "https://mcp.vercel.com"
+    },
+    "magic": {
+      "command": "npx.cmd",
+      "args": ["-y", "@magicuidesign/mcp@latest"]
+    },
+    "devfleet": {
+      "type": "http",
+      "url": "http://localhost:18801/mcp"
+    }
+  }
+}

@@ -270,3 +270,27 @@ export interface PageWithSpoke extends Omit<Page, 'targetSpoke' | 'slug'> {
     name: string
   } | null
 }
+
+// ============================================================================
+// Article
+// ============================================================================
+
+export interface Article {
+  _id: string
+  _type: 'article'
+  title: string
+  slug: {
+    current: string
+  }
+  category: string
+  excerpt: string
+  content: PortableTextBlock[]
+  author: string | null
+  publishedAt: string
+  readingTime: number
+  seoMeta?: SeoMeta
+}
+
+export interface ArticleWithRelations extends Omit<Article, 'slug'> {
+  slug: string
+}

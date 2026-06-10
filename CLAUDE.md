@@ -51,7 +51,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | Authentication | Auth.js v5 | Session management, RBAC (`admin`, `viewer`, `client`) |
 | UI System | Tailwind CSS + Radix UI (shadcn/ui patterns) | Shared design tokens, accessible components |
 | State Management | Zustand (persist middleware) | Client-side state persistence (RFQ cart) |
-| Hosting | Cloudflare Pages | Edge delivery, CDN, middleware-based routing, 301 redirects |
+| Hosting | Vercel (Dev) / Cloudflare Pages (Prod) | Current: Vercel (Development/Staging) — dbsn-test01.vercel.app<br>Production (Planned): Cloudflare Pages — sentradaya.com + spoke subdomains |
 | Notifications | Resend (email) + Telegram Bot API + WhatsApp Fallback | RFQ alerts, failure notifications |
 | Analytics | GA4 + GSC + Cloudflare Analytics | Unified telemetry |
 | Phase 2 | Sentry (errors) + PostHog (session replay) | Error tracking, user behavior analytics |
@@ -137,6 +137,23 @@ npm run pages:deploy
 - **Edge Runtime**: All dynamic routes, API endpoints, and root layout must export `const runtime = 'edge'` to render correctly on Cloudflare Workers edge.
 - **Windows Path Patch**: Build processes running on Windows utilize a custom Vercel CLI cache patching script (`patch-vercel-builder.js`) that normalizes backslashes to forward slashes and strips Next.js route groups (`(hub)`/`(spokes)`) from lambda routing maps to prevent symlink conflicts (`EEXIST`).
 
+<!-- AUTO-GENERATED START -->
+## Deployment Phases
+
+- **Phase A — Development & Staging (Development Phase — CURRENT)**: Hosted on Vercel at `dbsn-test01.vercel.app`. Subdomains tested via `pju.dbsn-test01.vercel.app`, `dashboard.dbsn-test01.vercel.app`, etc. Environment variables set on Vercel Dashboard. Uses `npm run build` and `npm run dev` for development.
+- **Phase B — Production (PLANNED)**: Migrate to Cloudflare Pages project `dbsn-website`. Custom domains `sentradaya.com`, `pju.sentradaya.com`, etc. configured via Cloudflare DNS CNAME records. Uses `npm run pages:build` and `npm run pages:deploy`. Environment variables migrated to Cloudflare Pages Dashboard (Variables and Secrets).
+
+### Migration Checklist (Phase A → Phase B)
+1. Run `npm run pages:build` and verify the compilation completes without errors.
+2. Deploy the static assets to Cloudflare Pages using `npm run pages:deploy`.
+3. Set all environment variables and encrypted secrets in the Cloudflare Pages Dashboard.
+4. Configure custom domains and DNS CNAME records in Cloudflare DNS.
+5. Update `NEXTAUTH_URL` to `https://sentradaya.com` in variables.
+6. Update OAuth callback URLs in third-party provider dashboards (if applicable).
+7. Run the GSC sitemap submission script (`npx tsx scripts/gsc-submit-sitemap.ts`).
+8. Verify subdomain routing and redirects resolve correctly on the production domain.
+<!-- AUTO-GENERATED END -->
+
 ### Testing
 ```bash
 # Run tests
@@ -160,6 +177,16 @@ npm run lint
 - Route groups: `(hub)`, `(spokes)`, `(dashboard)`
 - Spokes share same route structure and UI components
 - Dashboard uses separate route group with authentication guards
+
+### Multi-Segment RFQ & Informational Routing
+- Navigation links route dynamically: fallback smooth-scroll when navigating on `/` home page (intercepted via client hooks), and normal page transition when navigating from other sub-pages.
+- Products catalog index page (`/products`) aggregates the 4 main product segments (PJUTS, Modul Panel Surya, Proteksi Penangkal Petir, Baterai Storage) and includes a comparative specifications matrix and feature checklists.
+- Dynamic subdomain routing compiles target spoke domains using `buildSpokeUrl` (`src/lib/utils/url.ts`) according to environment context (localhost using `.lvh.me:3000`, Vercel staging `dbsn-test01.vercel.app`, or production `.sentradaya.com`) to guide users from the hub product catalog to domain-specific spokes.
+- Portfolios (`/portfolio`) and Articles (`/articles`) indices and detailed pages fetch content directly from Sanity CMS and render content blocks using `<PortableText />`.
+- Client components manage the category filter bar for portfolios, while articles support search keyword queries matching title/excerpt content and save items dynamically in `localStorage`.
+- Detail templates render project image galleries via `<GalleryCarousel />` (Embla Carousel) and social sharing panels via `<ShareButtons />` using custom inline brand SVGs.
+- Interactive contact hub consolidates B2B and B2G RFQ forms (linked directly with Zustand store cart items) alongside a general message submission form.
+- Certification list fetches metadata from Sanity CMS and leverages a client-side certifications grid with filter tags and a Radix-based click-to-enlarge modal document viewer (PDF/Image).
 
 ### Content Federation (Sanity)
 - All product and portfolio data stored in Sanity CMS

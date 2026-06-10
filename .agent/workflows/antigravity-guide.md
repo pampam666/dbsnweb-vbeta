@@ -1,86 +1,81 @@
 ---
-description: Guide for running cooperative tasks using Antigravity (IDE) and Claude Code (Terminal) running ECC combined with Prompt Architect and specialized ECC Agents.
+description: Advanced Protocol for ECC Cooperative Tasks. Defines the logical sequential flow from Context Coordination to Execution.
 ---
 
 # /antigravity-guide
 
-Use this guide to coordinate tasks between the Antigravity IDE agent (acting as the Architect/Planner) and the Claude Code terminal agent (acting as the Executor).
+This guide defines the **ECC Orchestration Protocol** for Gemini CLI. It ensures a logical, sequential transition from high-level "Context Coordination" (Planning) to low-level "Execution" (TDD).
 
-## Usage
+## 1. The ECC Orchestration Pipeline
 
-```text
-/antigravity-guide
-/antigravity-guide prepare: <description of task>
-/antigravity-guide status
+Gemini CLI must move through these states in order:
+
+### State 0: Clarification (Natural Language Gate)
+*   **Action**: If the user's request is underspecified, the assistant MUST ask follow-up questions.
+*   **Goal**: Ensure 100% alignment on "Definition of Done" before any tool use.
+
+### State 1: Coordination (Antigravity Assistant)
+*   **Action**: Translate casual intent into a precise **Execution Blueprint**. Discover experts from 64 agents and 261 skills.
+*   **Goal**: Provide context and goals without dictating implementation details.
+*   **Output**: A structured TIDD-EC prompt.
+
+### State 2: Planning (Planner Agent)
+*   **Action**: Activate `planner.md` or `architect.md`.
+*   **Goal**: Break the blueprint into a task-by-task implementation plan.
+*   **Output**: `Implementation Plan` document.
+
+### State 3: Execution (Domain Agents & TDD)
+*   **Action**: Activate `tdd-guide.md` PLUS dynamically discovered domain agents (e.g., `database-reviewer.md`, `frontend-patterns`).
+*   **Goal**: Implementation via Red-Green-Refactor using domain-specific ECC skills.
+*   **Output**: Verified code with 80%+ coverage.
+
+### State 4: Shield & Review (AgentShield & Quality Gate)
+*   **Action**: Activate `code-reviewer.md` and `security-reviewer.md` (AgentShield).
+*   **Goal**: Quality assurance and strict security audit.
+*   **Output**: Final verification report via terminal evidence.
+
+### State 5: Evolution (Continuous Learning)
+*   **Action**: Activate `continuous-learning-v2` skill.
+*   **Goal**: Extract patterns, instincts, and workflow improvements from the session.
+*   **Output**: Updates to `.agent/antigravity-memory.json` or new project skills.
+
+## 2. Operating Procedures
+
+### A. Context Anchoring
+Every task MUST start with an exhaustive ECC context anchor block:
+```markdown
+# ECC CONTEXT ANCHORS
+- Primary Agent: [agent-name.md](file:///...)
+- Domain Skills: [skill-folder/SKILL.md](file:///...), [skill-folder2/SKILL.md](file:///...)
+- Rule Sets: [rule-file.md](file:///...)
+- Target Files: [file-1.tsx](file:///...), [file-2.test.tsx](file:///...)
 ```
 
-## Operating Rules
+### B. Sequential Logic Enforcement
+The Execution Engine MUST NOT jump to State 3 (Execution) without completing State 2 (Planning) for any task involving >2 files.
 
-1.  **Read-Only Preparation**: Antigravity must perform all initial analysis (file mapping, dependency check, rule extraction) in read-only mode.
-2.  **Explicit Context Linking**: All generated prompts must explicitly anchor files using `file:///` URLs.
-3.  **Command & Framework Translation**: Translate the user's task description into a specific ECC command line (e.g., `/plan`, `/tdd-workflow`, `/build-fix`) AND structure the description utilizing a selected **Prompt Architect framework** (like TIDD-EC, BAB, or RISEN) based on the task intent.
-4.  **ECC Agent Integration**: Link the instruction file of the relevant specialized ECC agent (e.g., [tdd-guide.md](file:///d:/CLAUDE-PROJECT/website/.agent/skills/tdd-guide.md) or [build-error-resolver.md](file:///d:/CLAUDE-PROJECT/website/.agent/skills/build-error-resolver.md)) in the prompt's context to instruct the terminal agent to adopt that persona.
-5.  **Validation & Review**: Direct the terminal agent to perform post-implementation reviews using quality gate agents (e.g. `code-reviewer.md` and `security-reviewer.md`).
-6.  **No Action Duplication**: Antigravity must never attempt to compile, run tests, or modify source code during the preparation phase.
-7.  **MCP Integration**: Direct Claude Code to use its connected MCP servers (`playwright` for browser tests, `context7` for Next.js/Tailwind/Prisma docs, `sequential-thinking` for systemic logic, and `memory` for entity persistence).
-8.  **Knowledge Capture Policy**: Remind the terminal agent to save session-specific debug info to memory (via the `memory` MCP server) and project-wide design patterns to the docs structure.
+### C. Evidence-Based Verification
+No task is "Complete" without terminal output evidence:
+- `npm test` (Unit/Integration)
+- `npx playwright test` (E2E)
+- `npm run lint` (Standards)
+- `npm run build` (System integrity)
 
-## Environment Information
+## 3. Command Usage
 
-*   **Claude Code version**: `2.1.138 (Native win32-x64)`
-*   **Active MCP servers**:
-    *   `sequential-thinking` (Connected)
-    *   `playwright` (Connected)
-    *   `context7` (Connected)
-    *   `exa` (Connected)
-    *   `github` (Connected)
-    *   `memory` (Connected)
+*   `/antigravity prepare: <task>`: Invokes the **Antigravity Assistant** to generate the blueprint.
+*   `/antigravity plan: <blueprint>`: Invokes the **Planner Agent** to create the implementation plan.
+*   `/antigravity execute: <plan>`: Invokes the **TDD Guide** to start implementation.
+*   `/antigravity review`: Invokes the **Reviewer Agents** to close the session.
 
-## The Cooperative Workflow
+## 4. MCP Directives
 
-```mermaid
-sequenceDiagram
-    actor User
-    participant Antigravity as Antigravity (IDE Agent)
-    participant ClaudeCode as Claude Code (Terminal Agent)
+*   **Documentation**: Use `context7` for Next.js 15, Tailwind, and Prisma.
+*   **Testing**: Use `playwright` for all E2E user journeys.
+*   **Reasoning**: Use `sequential-thinking` for complex data flow mapping.
+*   **Persistence**: Use `memory` to track entities across sub-tasks.
 
-    User->>Antigravity: Ask to prepare prompt for: "Task description"
-    Note over Antigravity: Detects intent category (Create, Transform, Reason, Critique, Recover)
-    Note over Antigravity: Selects Prompt Architect Framework & maps specialized ECC Agent
-    Note over Antigravity: Scans workspace context and active MCP maps
-    Antigravity->>User: Returns prompt block (ECC Command + Agent File Link + framework task structure)
-    User->>ClaudeCode: Pastes prompt in terminal
-    Note over ClaudeCode: Adopts Agent persona and runs red-green-refactor or build-fix
-    Note over ClaudeCode: Invokes code-reviewer/security-reviewer and captures knowledge
-    ClaudeCode->>User: Task completed, reviewed, and verified
-```
+---
 
-### Step 1: Request Prompt Preparation
-Ask Antigravity in the IDE chat to prepare a prompt for your task.
-For example:
-> "Prepare a prompt for implementing the RFQ fallback button."
-
-### Step 2: Workspace, Intent, and Agent Exploration
-Antigravity scans the repository and prompt context to identify:
-*   **Target Framework**: Analyzes the intent to map to the best prompt engineering framework (e.g., TIDD-EC, BAB).
-*   **Specialized Agent Persona**: Identifies which ECC Agent should execute this (e.g. `tdd-guide.md` for new logic).
-*   **Relevant Code**: Locates source files and test files.
-*   **Active MCP mappings**: Detects which tools/MCP servers are needed.
-
-### Step 3: Copy and Paste
-Antigravity outputs a formatted block. Copy the prompt block and paste it directly into your Claude Code terminal.
-
-### Step 4: Execution, Review, and Verification
-Claude Code receives the highly structured prompt, adopts the linked specialized agent persona, carries out the changes safely, runs reviews with validation agents, and captures knowledge in the right place before closing.
-
-## Response Patterns
-
-### No Arguments
-Provide a quick menu explaining the division of labor, followed by instructions on how to use `prepare: <task>`.
-
-### For `prepare: <task>`
-1.  **Analyze & Categorize**: Classify the request intent, choose a prompt framework from `prompt-architect`, and select the target specialized ECC agent.
-2.  **Verify target files**: Ensure paths exist.
-3.  **Draft prompt**: Output a markdown code block starting with the correct ECC command (e.g., `/tdd-workflow`), linking the target specialized agent file, and formatted using the selected framework's template.
-4.  **Confirm**: Remind the user to paste this block into the Claude Code terminal.
-5.  **MCP directives**: Include clear guidelines for MCP server invocation.
+*Protocol Version: 2.1.0*
+*Status: ECC Sequential Orchestration Mandatory.*

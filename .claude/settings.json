@@ -35,39 +35,5 @@
       "description": "Browser automation and E2E testing"
     }
   },
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "npx -y tsc --noEmit"
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node -e \"const fs=require('fs');const path=require('path');const tsconfigPath=path.join(process.cwd(),'tsconfig.json');if(fs.existsSync(tsconfigPath)){try{const config=JSON.parse(fs.readFileSync(tsconfigPath,'utf8'));const rootDir=config.compilerOptions?.rootDir||process.cwd();const isProjectRootDir=!!config.compilerOptions?.rootDir;for(const key of Object.keys(config)){if(key!=='compilerOptions'&&key!=='include'&&key!=='exclude'&&key!=='references'&&key!=='watch'){config[key]=null;}}const finalConfig=JSON.stringify(config,null,2);fs.writeFileSync(tsconfigPath,finalConfig);}catch(e){}}\""
-          }
-        ]
-      }
-    ],
-    "SessionStart": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node -e \"const fs=require('fs');const p=require('path');const sessionFile=p.join(process.cwd(),'.claude','session-last.json');if(fs.existsSync(sessionFile)){const session=JSON.parse(fs.readFileSync(sessionFile,'utf8'));console.log(JSON.stringify({lastSessionPath:session.sessionPath,lastContextChars:session.contextStats?.totalChars,lastToolCalls:session.lastToolCount}));}\""
-          }
-        ]
-      }
-    ]
-  }
+  "hooks": {}
 }
