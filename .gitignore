@@ -44,3 +44,6 @@ next-env.d.ts
 /extracted_workspace/
 /everything-claude-code/
 
+# Gemini settings & setup keys
+.gemini/settings.json
+SETUP_API_KEYS.md
