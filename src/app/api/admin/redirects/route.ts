@@ -4,6 +4,9 @@ import { prisma } from '@/lib/db/prisma'
 import { clearCache } from '@/lib/middleware/redirect-engine'
 import { z } from 'zod'
 
+export const runtime = 'nodejs' // Prisma client exceeds Edge 1MB bundle limit
+
+
 const redirectSchema = z.object({
   legacyUrl: z.string().min(1, 'Legacy URL is required').max(1024),
   targetUrl: z.string().min(1, 'Target URL is required').max(1024),

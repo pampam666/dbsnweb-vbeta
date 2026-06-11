@@ -154,7 +154,33 @@ npm run pages:deploy
 8. Verify subdomain routing and redirects resolve correctly on the production domain.
 <!-- AUTO-GENERATED END -->
 
-### Testing
+## Vercel Deployment Notes
+
+### Architectural Decision: Hub Subdomain Routing
+- **Decision**: Avoid explicit rewrites to parenthesized route groups like `/(hub)` for Hub domain requests. Instead, return `NextResponse.next()` and set custom request/response headers (e.g. `x-middleware-subdomain: hub`).
+- **Rationale**: Vercel compiles away route groups during the production build. Rewriting to `/(hub)/path` triggers a 404 in production, whereas the local Next.js environment resolves it correctly.
+- **Negative Testing**: Requests for spoke sub-pages directly on the Hub domain (e.g., `sentradaya.com/pju`) must be blocked using `new NextResponse(null, { status: 404 })` inside middleware to prevent them from leaking into the dynamic root route `/[spoke]`.
+
+### Edge Function Size Optimization
+- Do **NOT** dynamically import or invoke `prisma` inside the Edge middleware (`src/middleware.ts` or its dependencies). Doing so bundles database binaries and exceeds Vercel's `1MB` Edge limit (causing deployment build failures).
+- Always offload database-driven lookups to a standard Node.js serverless route (such as `/api/redirects/lookup`) and make a lightweight loopback `fetch()` inside the middleware instead.
+
+### Dev Server Deadlock Prevention
+- Single-threaded local Next.js development servers (`npm run dev`) will deadlock when making loopback `fetch()` calls inside the middleware.
+- Always wrap the middleware `fetch()` in an `AbortController` timeout (limit to 2000ms) to ensure it fails fast and allows the page to load if the loopback server is blocked.
+
+### Vercel Tooling & Scripts Configuration
+- **Vercel API Token & ID**: Configured via local environment or verified through scratch/verification scripts (Team ID: `team_tiNO6Bk8YYS2sc32UAbaxMjv`, Project ID: `prj_V8PzkGIisHdXmdMgwuIMRmsCnCKA`).
+- **Live Verification**: Use the custom script `verify_vercel.js` to poll deployment state via Vercel's REST API and run live HTTP checks against the target deployment URL.
+
+### Pre-Deployment Checklist
+1. Verify all unit tests pass: `npm test`
+2. Verify local Next.js production build completes: `npm run build`
+3. Run local Playwright E2E smoke tests: `npx playwright test tests/e2e/hub-routing.spec.ts`
+4. Deploy preview to Vercel: `npx vercel deploy --yes --scope pampam666s-projects`
+5. Run the live Vercel deployment verification script: `node verify_vercel.js`
+
+## Testing
 ```bash
 # Run tests
 npm test

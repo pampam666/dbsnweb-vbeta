@@ -47,3 +47,5 @@ next-env.d.ts
 # Gemini settings & setup keys
 .gemini/settings.json
 SETUP_API_KEYS.md
+
+.vercel

@@ -26,26 +26,26 @@ describe('Subdomain Routing Middleware Integration', () => {
     process.env = originalEnv
   })
 
-  it('should rewrite hub domain (sentradaya.com) to /(hub) group', async () => {
+  it('should pass through hub domain (sentradaya.com) with hub headers', async () => {
     const req = new NextRequest('http://sentradaya.com/about?test=1', {
       headers: { host: 'sentradaya.com' },
     })
 
     const res = await middleware(req)
     expect(res).toBeDefined()
-    expect(res.headers.get('x-middleware-rewrite')).toContain('/(hub)/about?test=1')
+    expect(res.headers.get('x-middleware-rewrite')).toBeNull()
     expect(res.headers.get('x-middleware-subdomain')).toBe('hub')
     expect(res.headers.get('x-middleware-matched-route')).toBe('/(hub)')
   })
 
-  it('should rewrite hub domain with www to /(hub) group', async () => {
+  it('should pass through hub domain with www with hub headers', async () => {
     const req = new NextRequest('http://www.sentradaya.com/contact', {
       headers: { host: 'www.sentradaya.com' },
     })
 
     const res = await middleware(req)
     expect(res).toBeDefined()
-    expect(res.headers.get('x-middleware-rewrite')).toContain('/(hub)/contact')
+    expect(res.headers.get('x-middleware-rewrite')).toBeNull()
     expect(res.headers.get('x-middleware-subdomain')).toBe('hub')
     expect(res.headers.get('x-middleware-matched-route')).toBe('/(hub)')
   })
@@ -110,26 +110,26 @@ describe('Subdomain Routing Middleware Integration', () => {
     expect(res.headers.get('x-middleware-matched-route')).toBe('/(spokes)/solarcell')
   })
 
-  it('should rewrite local dev hub (lvh.me:3000) to /(hub) group', async () => {
+  it('should pass through local dev hub (lvh.me:3000) with hub headers', async () => {
     const req = new NextRequest('http://lvh.me:3000/', {
       headers: { host: 'lvh.me:3000' },
     })
 
     const res = await middleware(req)
     expect(res).toBeDefined()
-    expect(res.headers.get('x-middleware-rewrite')).toContain('/(hub)/')
+    expect(res.headers.get('x-middleware-rewrite')).toBeNull()
     expect(res.headers.get('x-middleware-subdomain')).toBe('hub')
     expect(res.headers.get('x-middleware-matched-route')).toBe('/(hub)')
   })
 
-  it('should rewrite unknown subdomains to /404 page', async () => {
+  it('should return 404 for unknown subdomains', async () => {
     const req = new NextRequest('http://invalid.sentradaya.com/some-path', {
       headers: { host: 'invalid.sentradaya.com' },
     })
 
     const res = await middleware(req)
     expect(res).toBeDefined()
-    expect(res.headers.get('x-middleware-rewrite')).toContain('/404')
+    expect(res.status).toBe(404)
   })
 
   it('should short-circuit and do nothing for API routes', async () => {
@@ -180,14 +180,14 @@ describe('Subdomain Routing Middleware Integration', () => {
     expect(res.headers.get('x-middleware-matched-route')).toBe('/(spokes)/pju')
   })
 
-  it('should rewrite to 404 if direct spoke path is requested on hub domain', async () => {
+  it('should return 404 if direct spoke path is requested on hub domain', async () => {
     const req = new NextRequest('http://sentradaya.com/pju/products/led', {
       headers: { host: 'sentradaya.com' },
     })
 
     const res = await middleware(req)
     expect(res).toBeDefined()
-    expect(res.headers.get('x-middleware-rewrite')).toContain('/404')
+    expect(res.status).toBe(404)
   })
 
   it('should redirect permanently (301) when a redirect match is found, preserving query parameters', async () => {
@@ -200,7 +200,7 @@ describe('Subdomain Routing Middleware Integration', () => {
     expect(res).toBeDefined()
     expect(res.status).toBe(301)
     expect(res.headers.get('location')).toBe('http://solarcell.sentradaya.com/products/solar-panel?ref=promo')
-    expect(mockLookupRedirect).toHaveBeenCalledWith('/old-panel', 'solarcell')
+    expect(mockLookupRedirect).toHaveBeenCalledWith('/old-panel', 'solarcell', 'http://solarcell.sentradaya.com')
   })
 
   it('should not redirect if no match is found, executing normal middleware routing', async () => {

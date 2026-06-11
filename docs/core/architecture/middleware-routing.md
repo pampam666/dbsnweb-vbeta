@@ -1,267 +1,97 @@
-# Middleware Routing Reference
+# Subdomain Routing & Middleware Architecture
 
-**Purpose:** Complete reference for the Edge middleware that maps hostnames to Next.js route groups  
-**Source:** `src/middleware.ts`, `src/lib/middleware/config.ts`, `src/lib/middleware/dev-hosts.ts`
-
----
-
-## Overview
-
-The DBSN platform uses a single Next.js 16 app to serve multiple domains via **hostname-based middleware routing**. At request time, the Edge middleware inspects the `Host` header, resolves the domain class, and either allows the request to pass through (hub) or rewrites the URL to the correct internal route group (dashboard, spokes).
-
-Key properties:
-
-- **Runtime:** V8 Edge Runtime (not Node.js)
-- **Trigger:** Every non-static, non-API page request (controlled by the matcher)
-- **Source file:** [`src/middleware.ts`](../../../src/middleware.ts)
-- **Config helpers:** [`src/lib/middleware/config.ts`](../../../src/lib/middleware/config.ts)
+This document describes the subdomain-based routing architecture for the DBSN platform, how it maps request hostnames to Next.js route groups internally, and the Vercel-specific deployment patterns and lessons learned.
 
 ---
 
-## Domain Map
+## 1. Subdomain Mapping System
 
-| Production Domain | Local (lvh.me) | Vercel Preview | Internal Route | Domain Class |
-|---|---|---|---|---|
-| `sentradaya.com` | `lvh.me:3000` | `{deploy}.vercel.app` | `/(hub)` | Hub |
-| `www.sentradaya.com` | `www.lvh.me:3000` | — | `/(hub)` | Hub |
-| `pju.sentradaya.com` | `pju.lvh.me:3000` | `pju.{deploy}.vercel.app` | `/(spokes)/pju` | Spoke |
-| `solarcell.sentradaya.com` | `solarcell.lvh.me:3000` | `solarcell.{deploy}.vercel.app` | `/(spokes)/solarcell` | Spoke |
-| `alatpetir.sentradaya.com` | `alatpetir.lvh.me:3000` | `alatpetir.{deploy}.vercel.app` | `/(spokes)/alatpetir` | Spoke |
-| `baterai.sentradaya.com` | `baterai.lvh.me:3000` | `baterai.{deploy}.vercel.app` | `/(spokes)/baterai` | Spoke |
-| `dashboard.sentradaya.com` | `dashboard.lvh.me:3000` | `dashboard.{deploy}.vercel.app` | `/dashboard` (flat route) | Dashboard |
+PT Sentra Daya Sinergi uses a multi-tenant hub-and-spoke domain routing model. The routing logic runs inside the Next.js Middleware (on the V8 Edge Runtime) and maps hostnames to internal Next.js Route Groups as follows:
 
-> **Note:** `localhost` and `127.0.0.1` are treated as hub domains.
+| Hostname Variation | Clean Domain Class | Target Route Group / Path | Subdomain Header |
+|--------------------|--------------------|---------------------------|------------------|
+| `sentradaya.com` / `www.sentradaya.com` | Hub Domain | `(hub)` (Transparent Root) | `hub` |
+| `dashboard.sentradaya.com` | Dashboard Subdomain | `/dashboard` | `dashboard` |
+| `[spoke].sentradaya.com` | Spoke Subdomain | `/(spokes)/[spoke]` (Dynamic Route) | `[spoke]` |
 
 ---
 
-## Hostname Resolution Flow
+## 2. Route Groups & Folder Structure
 
-Every incoming request follows this resolution chain:
+The `src/app` directory is structured to isolate these three domain zones while sharing common UI components, hooks, and types:
 
 ```
-Request: Host: pju.lvh.me:3000
-              │
-              ▼
-  cleanHostname("pju.lvh.me:3000")
-    → strips port → "pju.lvh.me"
-              │
-              ▼
-  isLocalDevelopment("pju.lvh.me")
-    → ends with .lvh.me → true
-    → rootDomain = "lvh.me"
-              │
-              ▼
-  extractSubdomain("pju.lvh.me")
-    → "pju.lvh.me".slice(0, -(6+1)) = "pju"
-    → subdomain = "pju"
-              │
-              ▼
-  isSpokeDomain("pju.lvh.me")
-    → SPOKE_SUBDOMAINS.includes("pju") → true
-    → returns "pju"
-              │
-              ▼
-  middleware: rewrite → /pju{pathname}{search}
-              │
-              ▼
-  App Router resolves /pju/** → /(spokes)/pju/**
-```
-
-**Step-by-step for all domain classes:**
-
-| Input hostname | `cleanHostname` | `extractSubdomain` | `isHubDomain` | `isDashboardDomain` | `isSpokeDomain` | Decision |
-|---|---|---|---|---|---|---|
-| `sentradaya.com` | `sentradaya.com` | `null` | `true` | `false` | `null` | Hub rewrite |
-| `lvh.me:3000` | `lvh.me` | `null` | `true` | `false` | `null` | Hub rewrite |
-| `dashboard.sentradaya.com` | `dashboard.sentradaya.com` | `"dashboard"` | `false` | `true` | `null` | Dashboard rewrite |
-| `pju.lvh.me:3000` | `pju.lvh.me` | `"pju"` | `false` | `false` | `"pju"` | Spoke rewrite |
-| `unknown.example.com` | `unknown.example.com` | `null` | `false` | `false` | `null` | 404 rewrite |
-
----
-
-## Config Abstraction (`config.ts`)
-
-All domain logic is in [`src/lib/middleware/config.ts`](../../../src/lib/middleware/config.ts). Import from there — never inline hostname logic in middleware.
-
-### Constants
-
-```typescript
-import { SPOKE_SUBDOMAINS } from '@/lib/middleware/config'
-// → ['pju', 'solarcell', 'alatpetir', 'baterai'] as const
-```
-
-### Function Reference
-
-| Function | Signature | Returns | Notes |
-|---|---|---|---|
-| `cleanHostname` | `(host: string \| null \| undefined) => string` | Hostname without port | Safe for null/undefined |
-| `isLocalDevelopment` | `(hostname: string) => boolean` | `true` if ends with `.lvh.me` | Also matches bare `lvh.me` |
-| `extractSubdomain` | `(hostname: string) => string \| null` | Subdomain string or `null` | Handles local, Vercel, prod; strips `www` |
-| `isHubDomain` | `(hostname: string) => boolean` | `true` if root/www/localhost | Reads `NEXT_PUBLIC_ROOT_DOMAIN` via `getMiddlewareEnv()` |
-| `isDashboardDomain` | `(hostname: string) => boolean` | `true` if subdomain is `"dashboard"` | Delegates to `extractSubdomain` |
-| `isSpokeDomain` | `(hostname: string) => string \| null` | Spoke key (`"pju"`) or `null` | Returns the spoke name, not a boolean |
-
-#### Usage example:
-
-```typescript
-import { cleanHostname, isHubDomain, isDashboardDomain, isSpokeDomain } from '@/lib/middleware/config'
-
-const cleanHost = cleanHostname(request.headers.get('host'))
-const spoke = isSpokeDomain(cleanHost)
-
-if (isHubDomain(cleanHost)) { /* hub */ }
-if (isDashboardDomain(cleanHost)) { /* dashboard */ }
-if (spoke) { /* spoke = "pju" | "solarcell" | "alatpetir" | "baterai" */ }
-```
-
-### Environment Dependencies
-
-`config.ts` reads env vars via `getMiddlewareEnv()` from `src/lib/config/env.ts`:
-
-| Variable | Default (dev) | Default (prod) | Purpose |
-|---|---|---|---|
-| `NEXT_PUBLIC_ROOT_DOMAIN` | `lvh.me` | `sentradaya.com` | Root domain for subdomain extraction |
-| `NEXT_PUBLIC_SITE_URL` | `http://lvh.me:3000` | `https://sentradaya.com` | Base URL for absolute links |
-
----
-
-## Dev Hostname Map (`dev-hosts.ts`)
-
-[`src/lib/middleware/dev-hosts.ts`](../../../src/lib/middleware/dev-hosts.ts) is a **test utility only** — it is not imported at runtime. It provides `DEV_HOSTNAMES` for test assertions and the `getExpectedRoute()` helper.
-
-```typescript
-export const DEV_HOSTNAMES = {
-  'lvh.me':              '(hub)',
-  'www.lvh.me':          '(hub)',
-  'dashboard.lvh.me':    '/dashboard',
-  'pju.lvh.me':          '(spokes)/pju',
-  'solarcell.lvh.me':    '(spokes)/solarcell',
-  'alatpetir.lvh.me':    '(spokes)/alatpetir',
-  'baterai.lvh.me':      '(spokes)/baterai',
-} as const
-```
-
-Usage in tests:
-
-```typescript
-import { getExpectedRoute } from '@/lib/middleware/dev-hosts'
-
-expect(getExpectedRoute('pju.lvh.me:3000')).toBe('(spokes)/pju')
-expect(getExpectedRoute('unknown.lvh.me')).toBeNull()
+src/app/
+├── (hub)/                  # Transparent route group for the main hub pages
+│   ├── page.tsx            # Hub Homepage (sentradaya.com/)
+│   ├── about/              # Hub About (sentradaya.com/about)
+│   ├── contact/            # Hub Contact (sentradaya.com/contact)
+│   ├── products/           # Hub Products
+│   ├── certifications/     # Hub Certifications
+│   ├── faq/                # Hub FAQ
+│   ├── portfolio/          # Hub Portfolio
+│   └── articles/           # Hub Articles
+├── (spokes)/               # Route group for individual spoke pages
+│   └── [spoke]/            # Dynamic route segment matching spoke name (e.g. pju, solarcell)
+│       ├── page.tsx        # Spoke Homepage (pju.sentradaya.com/)
+│       ├── products/       # Spoke Products Catalog
+│       └── portfolio/      # Spoke Portfolio
+├── dashboard/              # Route group for admin dashboard pages
+│   ├── page.tsx            # Dashboard home (dashboard.sentradaya.com/)
+│   └── login/              # Login pages
+├── layout.tsx              # Root HTML layout (shared)
+└── globals.css             # Global styles
 ```
 
 ---
 
-## Routing Outcomes
+## 3. Redirect Engine & Edge Runtime Offloading
 
-The middleware runs 6 sequential checks and sets response headers on every path:
-
-| Step | Condition | Action | Headers set |
-|---|---|---|---|
-| 1 | Path starts with `/api`, `/_next`, or contains `.` | `NextResponse.next()` — short-circuit | None |
-| 2 | Path already matches the rewritten route | `NextResponse.next()` — prevent loop | `x-middleware-subdomain`, `x-middleware-matched-route` |
-| 3 | `isHubDomain()` — and path is a spoke path | `NextResponse.rewrite(/404)` | None |
-| 3 | `isHubDomain()` — hub page | `NextResponse.rewrite(/(hub){path})` | `x-middleware-subdomain: hub`, `x-middleware-matched-route: /(hub)` |
-| 4 | `isDashboardDomain()` | `NextResponse.rewrite(/dashboard{path})` | `x-middleware-subdomain: dashboard`, `x-middleware-matched-route: /dashboard` |
-| 5 | `isSpokeDomain()` returns spoke key | `NextResponse.rewrite(/{spoke}{path})` | `x-middleware-subdomain: {spoke}`, `x-middleware-matched-route: /(spokes)/{spoke}` |
-| 6 | No match | `NextResponse.rewrite(/404)` | None |
-
----
-
-## Debug Headers
-
-Every middleware response includes two diagnostic headers. Read them in browser DevTools → Network tab → Response Headers.
-
-| Header | Example Value | Meaning |
-|---|---|---|
-| `x-middleware-subdomain` | `hub` | Resolved domain class (`hub`, `dashboard`, `pju`, `solarcell`, `alatpetir`, `baterai`) |
-| `x-middleware-matched-route` | `/(spokes)/pju` | Internal Next.js route group path the request resolves to |
-
-Use these in middleware tests:
-
-```typescript
-const response = await middleware(makeRequest('pju.lvh.me:3000', '/products'))
-expect(response.headers.get('x-middleware-subdomain')).toBe('pju')
-expect(response.headers.get('x-middleware-matched-route')).toBe('/(spokes)/pju')
-```
-
----
-
-## Supported Domain Classes
-
-### Production (`sentradaya.com`)
-
-Detected when `cleanHostname` matches or ends with `NEXT_PUBLIC_ROOT_DOMAIN`. Requires env var to be set — defaults to `sentradaya.com` in production.
-
-### Local Development (`lvh.me`)
-
-`lvh.me` and all subdomains resolve to `127.0.0.1` (no hosts file edits needed). Detected by `isLocalDevelopment()` which checks for `.lvh.me` suffix.
-
-### Vercel Preview (`.vercel.app`)
-
-Hostnames ending in `.vercel.app` are auto-detected. The root domain is derived as the last 3 parts of the hostname (`{hash}-{team}.vercel.app`). No env var changes needed between deployments.
-
----
-
-## Matcher Configuration
-
-The matcher limits middleware to page requests only:
-
-```typescript
-// src/middleware.ts
-export const config = {
-  matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml).*)',
-  ],
-}
-```
-
-| Excluded Pattern | Reason |
-|---|---|
-| `api` | API routes handle their own auth/routing |
-| `_next/static` | Build artifacts — no middleware needed |
-| `_next/image` | Next.js image optimization — bypass middleware |
-| `favicon.ico` | Static file |
-| `robots.txt` | Static file served from `public/` |
-| `sitemap.xml` | Static or dynamic sitemap — no host rewriting needed |
-
-The middleware also has an early-exit guard (Step 1 above) for paths with file extensions (`.css`, `.js`, `.png`, etc.).
-
----
-
-## How to Add a New Spoke
-
-1. **Add to `SPOKE_SUBDOMAINS`** in [`src/lib/middleware/config.ts`](../../../src/lib/middleware/config.ts):
+To ensure high performance and comply with the **1 MB Vercel Edge Function limit**:
+1. **No Direct Database Queries in Middleware**: Importing the Prisma client in middleware causes the bundler to compile all Prisma database engines into the Edge Function bundle, bloating its size to over `1.08 MB` and failing Vercel deployments.
+2. **Serverless API Loopback**: We offload all database-driven redirect lookups to a standard Node.js serverless route at `/api/redirects/lookup`. The Edge middleware fetches the redirect target from this API route via `fetch()`, keeping the Edge Function bundle size under `100 KB`.
+3. **Deadlock Prevention (AbortController)**: When running Next.js locally in development mode (which operates single-threaded), a loopback `fetch()` inside the middleware can cause a deadlock. We prevent this by enforcing a **2-second timeout** using `AbortController`:
    ```typescript
-   export const SPOKE_SUBDOMAINS = ['pju', 'solarcell', 'alatpetir', 'baterai', 'newspoke'] as const
+   const controller = new AbortController()
+   const timeoutId = setTimeout(() => controller.abort(), 2000)
+   const response = await fetch(url, { signal: controller.signal })
+   clearTimeout(timeoutId)
    ```
-
-2. **Add to `DEV_HOSTNAMES`** in [`src/lib/middleware/dev-hosts.ts`](../../../src/lib/middleware/dev-hosts.ts):
-   ```typescript
-   'newspoke.lvh.me': '(spokes)/newspoke',
-   ```
-
-3. **Create the route group directory:**
-   ```
-   src/app/(spokes)/newspoke/
-   └── page.tsx
-   ```
-
-4. **Add to the domain map table** in this document.
-
-No changes to `middleware.ts` are needed — `isSpokeDomain()` is data-driven.
 
 ---
 
-## Related Documentation
+## 4. Vercel Edge Routing Caveats & Anti-Patterns
 
-- [`src/middleware.ts`](../../../src/middleware.ts) — Active middleware implementation
-- [`src/lib/middleware/config.ts`](../../../src/lib/middleware/config.ts) — Domain resolution helpers
-- [`src/lib/middleware/dev-hosts.ts`](../../../src/lib/middleware/dev-hosts.ts) — Development hostname map
-- [Architecture Overview](./architecture.md) — System architecture and domain topology
-- [Local Setup](../development/local-setup.md) — How to test routing locally
-- [TDD v1](./tdd-v1.md) — Middleware test strategy
+### ❌ Anti-Pattern: Explicit Rewrites to Transparent Route Groups
+Rewriting requests on the Hub domain explicitly to their route group folder (e.g. `NextResponse.rewrite(new URL('/(hub)/about', request.url))`) is an **anti-pattern**.
+- **Reason**: Next.js route groups (parentheses directories like `(hub)`) are transparent. During `next build`, they are compiled away from the routing manifests. Explicitly rewriting to `/(hub)` causes Vercel's Router to return a `404 Not Found` in production.
+- **Solution**: Return `NextResponse.next()` for Hub domain requests. Next.js will naturally and transparently map the request path (e.g., `/about`) to `(hub)/about/page.tsx`. Custom metadata headers (such as `x-middleware-subdomain`) can be attached directly to the pass-through response.
+
+### ❌ Anti-Pattern: Loose 404 Rewrites
+Rewriting directly to `/404` inside the middleware when a nonexistent path or spoke path is requested on the Hub domain (e.g., `sentradaya.com/pju`) is an **anti-pattern**.
+- **Reason**: Because Next.js contains a root-level dynamic route `/[spoke]`, rewriting to `/404` matches the dynamic segment, resolving to `/[spoke]` (with `spoke = '404'`) and returning a `200 OK` page instead of a `404 Not Found` status.
+- **Solution**: Return `new NextResponse(null, { status: 404 })` directly from the middleware to short-circuit the routing tree and immediately return a true `404` HTTP status.
 
 ---
 
-*Last modified: 2026-05-26*
+## 5. Troubleshooting Deployment Issues
+
+### ⚠️ Issue: `ERR_PNPM_OUTDATED_LOCKFILE` during Vercel Build
+- **Symptom**: Vercel build fails with the error message indicating `pnpm-lock.yaml` is not up-to-date with `package.json`.
+- **Cause**: Project dependencies were added or updated in `package.json` without updating the lockfile, or there is a lockfile mismatch between workspaces.
+- **Resolution**: Run `pnpm install` (or `npm install` if using npm) locally to update the lockfile, verify changes with git, and commit the updated lockfile before pushing.
+
+### ⚠️ Issue: Vercel Edge Function Limit Exceeded (Bundle Size > 1 MB)
+- **Symptom**: Vercel deployment fails at the build stage with an error stating the Edge function bundle size limit of 1 MB has been exceeded.
+- **Cause**: Standard Node.js packages (specifically Prisma or other heavy database/native libraries) are imported inside `src/middleware.ts` or its dependencies.
+- **Resolution**: Move all database-centric logic to standard serverless route API handlers (e.g., `/api/redirects/lookup`) and make a loopback `fetch()` from the middleware.
+
+### ⚠️ Issue: Local Development Dev Server Deadlocks
+- **Symptom**: Running `npm run dev` causes the local server to hang indefinitely when loading page routes.
+- **Cause**: Next.js development server is single-threaded; calling a local API route using `fetch()` from inside the middleware blocks the single thread, resulting in a deadlock.
+- **Resolution**: Enforce a short timeout (maximum 2000ms) on all loopback requests using `AbortController` signal to allow graceful fallback when the target API handler is blocked.
+
+### ⚠️ Issue: 404 Page Not Found on Hub Domain pages in Production
+- **Symptom**: The homepage (`/`) or hub pages (`/about`, `/contact`) load correctly locally but return 404 on Vercel preview/production domains.
+- **Cause**: Middleware is explicitly rewriting the path to the internal route group `/(hub)` (e.g. `NextResponse.rewrite('/(hub)/about')`). Since route groups are transparent, they do not exist in Vercel's production routing table.
+- **Resolution**: Change the middleware return value to `NextResponse.next()` for the Hub domain. Let Next.js handle the transparent route group mapping naturally.

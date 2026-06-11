@@ -34,7 +34,7 @@ export default async function middleware(request: NextRequest) {
   const spoke = isSpokeDomain(cleanHost)
 
   // Look up redirection mapping from legacy URLs
-  const redirectTarget = await lookupRedirect(pathname, spoke)
+  const redirectTarget = await lookupRedirect(pathname, spoke, request.nextUrl.origin)
   if (redirectTarget) {
     const redirectUrl = new URL(redirectTarget + search, request.url)
     return NextResponse.redirect(redirectUrl, 301)
@@ -67,14 +67,11 @@ export default async function middleware(request: NextRequest) {
   if (isHubDomain(cleanHost)) {
     // If requesting a spoke path directly on the Hub domain, return 404
     if (SPOKE_SUBDOMAINS.some(spoke => pathname.startsWith(`/${spoke}`))) {
-      const url = new URL(`/404`, request.url)
-      return NextResponse.rewrite(url)
+      return new NextResponse(null, { status: 404 })
     }
 
-    // Hub is transparent, so we rewrite it internally to the (hub) group
     console.log(`[Middleware] Hub domain detected: ${pathname}`)
-    const url = new URL(`/(hub)${pathname}${search}`, request.url)
-    const response = NextResponse.rewrite(url)
+    const response = NextResponse.next()
     response.headers.set('x-middleware-subdomain', 'hub')
     response.headers.set('x-middleware-matched-route', '/(hub)')
     return response
@@ -116,9 +113,8 @@ export default async function middleware(request: NextRequest) {
     return response
   }
 
-  // 6. Fallback: unknown domains rewrite to 404
-  const url = new URL(`/404`, request.url)
-  return NextResponse.rewrite(url)
+  // 6. Fallback: unknown domains return 404
+  return new NextResponse(null, { status: 404 })
 }
 
 // Limit the middleware to run only on page requests (exclude static assets, api, etc.)

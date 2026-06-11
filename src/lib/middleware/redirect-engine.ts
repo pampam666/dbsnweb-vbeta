@@ -49,7 +49,11 @@ function normalizePath(pathname: string): string {
   return pathname.endsWith('/') ? pathname.slice(0, -1) : pathname
 }
 
-export async function lookupRedirect(pathname: string, spoke: string | null): Promise<string | null> {
+export async function lookupRedirect(
+  pathname: string,
+  spoke: string | null,
+  origin: string,
+): Promise<string | null> {
   const normalizedPath = normalizePath(pathname)
   const legacyUrl = spoke ? `/${spoke}${normalizedPath}` : normalizedPath
 
@@ -59,44 +63,35 @@ export async function lookupRedirect(pathname: string, spoke: string | null): Pr
     return cachedValue
   }
 
-  // 2. Query database using absolute and relative variations
-  const host = spoke ? `${spoke}.sentradaya.com` : 'sentradaya.com'
-  const variations = [
-    legacyUrl,
-    `http://${host}${normalizedPath}`,
-    `https://${host}${normalizedPath}`,
-  ]
+  // 2. Query lookup API endpoint
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 2000)
 
   try {
-    const { prisma } = await import('../db/prisma')
-    const record = await prisma.redirectMap.findFirst({
-      where: {
-        OR: variations.map((url) => ({ legacyUrl: url })),
-      },
-    })
+    const url = new URL(`${origin}/api/redirects/lookup`)
+    url.searchParams.set('pathname', pathname)
+    if (spoke) {
+      url.searchParams.set('spoke', spoke)
+    }
 
-    if (record) {
-      // Increment hitCount asynchronously without blocking response
-      const updatePromise = prisma.redirectMap.update({
-        where: { legacyUrl: record.legacyUrl },
-        data: { hitCount: { increment: 1 } },
-      })
-      
-      if (updatePromise && typeof updatePromise.catch === 'function') {
-        updatePromise.catch((err) => {
-          console.error('Failed to increment hitCount:', err)
-        })
-      }
+    const response = await fetch(url.toString(), { signal: controller.signal })
+    clearTimeout(timeoutId)
 
-      setToCache(legacyUrl, record.targetUrl)
-      return record.targetUrl
+    if (!response.ok) {
+      throw new Error(`HTTP error ${response.status}`)
+    }
+
+    const data = await response.json()
+    if (data && data.success) {
+      setToCache(legacyUrl, data.targetUrl)
+      return data.targetUrl
     } else {
-      // Cache misses (negative caching)
       setToCache(legacyUrl, null)
       return null
     }
   } catch (error) {
-    console.error('Redirect lookup database query failed:', error)
+    clearTimeout(timeoutId)
+    console.error('Redirect lookup API request failed:', error)
     return null
   }
 }

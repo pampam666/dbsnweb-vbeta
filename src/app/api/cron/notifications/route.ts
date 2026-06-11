@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { NotificationQueue } from '../../../../lib/api/notifications/queue'
 
 export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs' // Prisma client exceeds Edge 1MB bundle limit
+
 
 export async function GET() {
   try {

@@ -34,56 +34,59 @@ describe('Hub Routing Tests', () => {
   })
 
   describe('middleware() - Hub Resolution', () => {
-    it('should rewrite dbsn-test01.vercel.app/about to /(hub)/about', async () => {
+    it('should pass through dbsn-test01.vercel.app/about with hub headers', async () => {
       const req = new NextRequest('https://dbsn-test01.vercel.app/about', {
         headers: { host: 'dbsn-test01.vercel.app' },
       })
       const res = await middleware(req)
       expect(res).toBeDefined()
-      const rewriteHeader = res.headers.get('x-middleware-rewrite')
-      expect(rewriteHeader).toContain('/(hub)/about')
-      expect(rewriteHeader).not.toContain('/404')
+      expect(res.headers.get('x-middleware-rewrite')).toBeNull()
+      expect(res.headers.get('x-middleware-subdomain')).toBe('hub')
+      expect(res.headers.get('x-middleware-matched-route')).toBe('/(hub)')
     })
 
-    it('should rewrite dbsn-test01.vercel.app/products to /(hub)/products', async () => {
+    it('should pass through dbsn-test01.vercel.app/products with hub headers', async () => {
       const req = new NextRequest('https://dbsn-test01.vercel.app/products', {
         headers: { host: 'dbsn-test01.vercel.app' },
       })
       const res = await middleware(req)
       expect(res).toBeDefined()
-      const rewriteHeader = res.headers.get('x-middleware-rewrite')
-      expect(rewriteHeader).toContain('/(hub)/products')
-      expect(rewriteHeader).not.toContain('/404')
+      expect(res.headers.get('x-middleware-rewrite')).toBeNull()
+      expect(res.headers.get('x-middleware-subdomain')).toBe('hub')
+      expect(res.headers.get('x-middleware-matched-route')).toBe('/(hub)')
     })
 
-    it('should rewrite dbsn-test01.vercel.app/certifications to /(hub)/certifications', async () => {
+    it('should pass through dbsn-test01.vercel.app/certifications with hub headers', async () => {
       const req = new NextRequest('https://dbsn-test01.vercel.app/certifications', {
         headers: { host: 'dbsn-test01.vercel.app' },
       })
       const res = await middleware(req)
       expect(res).toBeDefined()
-      const rewriteHeader = res.headers.get('x-middleware-rewrite')
-      expect(rewriteHeader).toContain('/(hub)/certifications')
+      expect(res.headers.get('x-middleware-rewrite')).toBeNull()
+      expect(res.headers.get('x-middleware-subdomain')).toBe('hub')
+      expect(res.headers.get('x-middleware-matched-route')).toBe('/(hub)')
     })
 
-    it('should rewrite dbsn-test01.vercel.app/portfolio/test-slug to /(hub)/portfolio/test-slug', async () => {
+    it('should pass through dbsn-test01.vercel.app/portfolio/test-slug with hub headers', async () => {
       const req = new NextRequest('https://dbsn-test01.vercel.app/portfolio/test-slug', {
         headers: { host: 'dbsn-test01.vercel.app' },
       })
       const res = await middleware(req)
       expect(res).toBeDefined()
-      const rewriteHeader = res.headers.get('x-middleware-rewrite')
-      expect(rewriteHeader).toContain('/(hub)/portfolio/test-slug')
+      expect(res.headers.get('x-middleware-rewrite')).toBeNull()
+      expect(res.headers.get('x-middleware-subdomain')).toBe('hub')
+      expect(res.headers.get('x-middleware-matched-route')).toBe('/(hub)')
     })
 
-    it('should rewrite dbsn-test01.vercel.app/articles/test-article to /(hub)/articles/test-article', async () => {
+    it('should pass through dbsn-test01.vercel.app/articles/test-article with hub headers', async () => {
       const req = new NextRequest('https://dbsn-test01.vercel.app/articles/test-article', {
         headers: { host: 'dbsn-test01.vercel.app' },
       })
       const res = await middleware(req)
       expect(res).toBeDefined()
-      const rewriteHeader = res.headers.get('x-middleware-rewrite')
-      expect(rewriteHeader).toContain('/(hub)/articles/test-article')
+      expect(res.headers.get('x-middleware-rewrite')).toBeNull()
+      expect(res.headers.get('x-middleware-subdomain')).toBe('hub')
+      expect(res.headers.get('x-middleware-matched-route')).toBe('/(hub)')
     })
   })
 
@@ -94,18 +97,18 @@ describe('Hub Routing Tests', () => {
       })
       const res = await middleware(req)
       expect(res).toBeDefined()
-      const rewriteHeader = res.headers.get('x-middleware-rewrite')
-      expect(rewriteHeader).toContain('/404')
+      expect(res.status).toBe(404)
     })
 
-    it('should pass through (rewrite to /(hub)/nonexistent) and let Next.js handle 404 for nonexistent pages', async () => {
+    it('should pass through dbsn-test01.vercel.app/nonexistent and let Next.js handle 404 for nonexistent pages', async () => {
       const req = new NextRequest('https://dbsn-test01.vercel.app/nonexistent', {
         headers: { host: 'dbsn-test01.vercel.app' },
       })
       const res = await middleware(req)
       expect(res).toBeDefined()
-      const rewriteHeader = res.headers.get('x-middleware-rewrite')
-      expect(rewriteHeader).toContain('/(hub)/nonexistent')
+      expect(res.headers.get('x-middleware-rewrite')).toBeNull()
+      expect(res.headers.get('x-middleware-subdomain')).toBe('hub')
+      expect(res.headers.get('x-middleware-matched-route')).toBe('/(hub)')
     })
   })
 
