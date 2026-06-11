@@ -41,7 +41,19 @@
     "framework": "Next.js 16 (App Router)",
     "orm": "Prisma ORM",
     "database": "Neon Postgres (Serverless)",
-    "package_manager": "npm"
+    "package_manager": "pnpm"
   },
-  "last_updated": "2026-06-09"
+  "vercel_learned_patterns": {
+    "dual_lockfile_conflict": {
+      "detection": "Presence of both package-lock.json and pnpm-lock.yaml in the root directory",
+      "impact": "Vercel auto-detection defaults to pnpm, leading to ERR_PNPM_OUTDATED_LOCKFILE if pnpm is stale or not fully configured",
+      "resolution": "Enforce single package manager: delete package-lock.json and configure packages list ['.'] in pnpm-workspace.yaml if working with a single root repository"
+    },
+    "edge_function_size_limit": {
+      "detection": "NOW_SANDBOX_WORKER_MAX_MIDDLEWARE_SIZE error on Vercel Hobby tier (exceeding 1MB)",
+      "impact": "Prisma client usage in Next.js App Router API routes defaults to Edge runtime compilation when undefined",
+      "resolution": "Explicitly define 'export const runtime = \"nodejs\"' for all routes importing Prisma Client to force execution on Serverless Node.js runtime"
+    }
+  },
+  "last_updated": "2026-06-11"
 }
