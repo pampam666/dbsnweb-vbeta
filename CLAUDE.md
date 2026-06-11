@@ -161,7 +161,20 @@ npm test
 
 # Test coverage report
 npm run test:coverage
+
+# Run E2E tests
+npm run test:e2e
 ```
+
+## Onboarding & Reference
+- **Onboarding Guide**: `docs/ONBOARDING.md` — Detailed architectural deep-dive and first-day guide.
+- **Conventions**:
+  - File Naming: `kebab-case` for all files/folders.
+  - Components: PascalCase React components.
+  - Patterns: TDD-first approach, 80%+ coverage goal.
+  - Error Handling: Use `try/catch` with descriptive errors; validate inputs with Zod.
+  - Environment: All variables validated at runtime via `src/lib/config/env.ts`.
+
 
 ### Linting & Code Quality
 ```bash
