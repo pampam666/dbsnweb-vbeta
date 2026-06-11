@@ -3,8 +3,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { CACHE_TAGS } from '@/lib/api/sanity/client'
 import { getSanityEnv } from '@/lib/config/env'
 
-export const runtime = 'edge'
-
 /**
  * Webhook payload from Sanity.
  */

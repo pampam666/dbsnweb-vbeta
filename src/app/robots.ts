@@ -2,8 +2,6 @@ import { MetadataRoute } from 'next'
 import { headers } from 'next/headers'
 import { extractSubdomain, isSpokeDomain } from '../lib/middleware/config'
 
-export const runtime = 'edge'
-
 export default async function robots(): Promise<MetadataRoute.Robots> {
   const headersList = await headers()
   const host = headersList.get('host') || 'sentradaya.com'
