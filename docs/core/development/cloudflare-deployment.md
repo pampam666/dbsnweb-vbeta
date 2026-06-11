@@ -96,20 +96,20 @@ Before shipping changes, build and run previews locally using `wrangler`.
 ### A. Local Build Step
 Compiles Next.js app to Pages-compatible format:
 ```bash
-npm run pages:build
+pnpm pages:build
 ```
 *Outputs compiled assets to `.vercel/output/static`.*
 
 ### B. Local Preview Step
 Spawns a mock wrangler server simulating Pages edge environment:
 ```bash
-npm run pages:preview
+pnpm pages:preview
 ```
 *Served at `http://localhost:8788`. You can test subdomains by editing your local `/etc/hosts` file (e.g. mapping `pju.lvh.me` to `127.0.0.1` and loading `http://pju.lvh.me:8788`).*
 
 ### C. Manual Deployment Step
 Deploys the static assets directly using wrangler:
 ```bash
-npm run pages:deploy
+pnpm pages:deploy
 ```
 *Uploads `.vercel/output/static` directly to Cloudflare Pages.*

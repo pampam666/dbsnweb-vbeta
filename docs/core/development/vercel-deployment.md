@@ -40,7 +40,7 @@ target: Cloudflare Pages at `sentradaya.com`.
 
 ### Manual (Vercel CLI)
 ```bash
-npx vercel --prod
+pnpm exec vercel --prod
 ```
 
 ---
@@ -102,7 +102,7 @@ for the production deployment guide.
 - [ ] Custom domain `sentradaya.com` configured on Cloudflare
 - [ ] DNS CNAME records for all subdomains
 - [ ] Environment variables migrated to Cloudflare Dashboard
-- [ ] `npm run pages:build` succeeds with `@cloudflare/next-on-pages`
+- [ ] `pnpm pages:build` succeeds with `@cloudflare/next-on-pages`
 - [ ] Edge Runtime compatibility verified
 
 ---

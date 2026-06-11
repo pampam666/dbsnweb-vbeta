@@ -152,7 +152,7 @@ Create tests to verify that:
 
 - [ ] **Step 2: Run tests**
 ```bash
-npm test src/__tests__/middleware.test.ts
+pnpm test src/__tests__/middleware.test.ts
 ```
 
 - [ ] **Step 3: Commit**

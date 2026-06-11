@@ -79,7 +79,7 @@ Rewriting directly to `/404` inside the middleware when a nonexistent path or sp
 ### ⚠️ Issue: `ERR_PNPM_OUTDATED_LOCKFILE` during Vercel Build
 - **Symptom**: Vercel build fails with the error message indicating `pnpm-lock.yaml` is not up-to-date with `package.json`.
 - **Cause**: Project dependencies were added or updated in `package.json` without updating the lockfile, or there is a lockfile mismatch between workspaces.
-- **Resolution**: Run `pnpm install` (or `npm install` if using npm) locally to update the lockfile, verify changes with git, and commit the updated lockfile before pushing.
+- **Resolution**: Run `pnpm install` locally to update the lockfile, verify changes with git, and commit the updated lockfile before pushing.
 
 ### ⚠️ Issue: Vercel Edge Function Limit Exceeded (Bundle Size > 1 MB)
 - **Symptom**: Vercel deployment fails at the build stage with an error stating the Edge function bundle size limit of 1 MB has been exceeded.
@@ -87,7 +87,7 @@ Rewriting directly to `/404` inside the middleware when a nonexistent path or sp
 - **Resolution**: Move all database-centric logic to standard serverless route API handlers (e.g., `/api/redirects/lookup`) and make a loopback `fetch()` from the middleware.
 
 ### ⚠️ Issue: Local Development Dev Server Deadlocks
-- **Symptom**: Running `npm run dev` causes the local server to hang indefinitely when loading page routes.
+- **Symptom**: Running `pnpm dev` causes the local server to hang indefinitely when loading page routes.
 - **Cause**: Next.js development server is single-threaded; calling a local API route using `fetch()` from inside the middleware blocks the single thread, resulting in a deadlock.
 - **Resolution**: Enforce a short timeout (maximum 2000ms) on all loopback requests using `AbortController` signal to allow graceful fallback when the target API handler is blocked.
 

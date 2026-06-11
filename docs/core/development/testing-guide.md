@@ -21,30 +21,30 @@ For **test strategy and coverage targets per feature**, see [TDD v1](../architec
 
 | Command | Purpose |
 |---|---|
-| `npm test` | Run all tests once |
-| `npm run test:watch` | Run tests in watch mode (re-runs on file change) |
-| `npm run test:coverage` | Run tests with coverage report |
+| `pnpm test` | Run all tests once |
+| `pnpm test:watch` | Run tests in watch mode (re-runs on file change) |
+| `pnpm test:coverage` | Run tests with coverage report |
 
 ### Running a Subset
 
 ```bash
 # Run a single test file
-npm test -- src/lib/api/sanity/__tests__/queries.test.ts
+pnpm test -- src/lib/api/sanity/__tests__/queries.test.ts
 
 # Run tests matching a pattern
-npm test -- --testPathPattern="sanity|middleware"
+pnpm test -- --testPathPattern="sanity|middleware"
 
 # Run a single describe/it block
-npm test -- --testNamePattern="getProductsBySpoke"
+pnpm test -- --testNamePattern="getProductsBySpoke"
 
 # Run with verbose output
-npm test -- --verbose
+pnpm test -- --verbose
 ```
 
 ### Coverage Report
 
 ```bash
-npm run test:coverage
+pnpm test:coverage
 ```
 
 Output is written to `coverage/lcov-report/index.html`. Open in a browser for a line-level breakdown.
@@ -402,7 +402,7 @@ API route tests (`route.test.ts` in `src/app/api/rfq/__tests__/`) test server-si
 ### Checking coverage
 
 ```bash
-npm run test:coverage
+pnpm test:coverage
 
 # Summary appears in terminal:
 # Statements : 82.5%

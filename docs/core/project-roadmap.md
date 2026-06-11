@@ -42,7 +42,7 @@ Establish the project foundation with Next.js 16, TypeScript, and shared design 
 | Task | Status | Date Completed |
 |------|--------|----------------|
 | Initialize Next.js 16 with TypeScript | ✅ | 2026-05-13 |
-| Configure npm package manager | ✅ | 2026-05-13 |
+| Configure pnpm package manager | ✅ | 2026-05-13 |
 | Set up Tailwind CSS 4 + design tokens | ✅ | 2026-05-13 |
 | Configure Radix UI + shadcn/ui patterns | ✅ | 2026-05-13 |
 | Set up Prisma ORM configuration | ✅ | 2026-05-13 |
@@ -51,7 +51,7 @@ Establish the project foundation with Next.js 16, TypeScript, and shared design 
 
 ### Success Criteria
 
-- ✅ Next.js app runs locally on `npm run dev`
+- ✅ Next.js app runs locally on `pnpm dev`
 - ✅ Tailwind CSS configured with DBSN design tokens
 - ✅ Jest runs with 80% coverage threshold
 - ✅ TypeScript strict mode enabled

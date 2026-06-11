@@ -45,7 +45,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | Layer | Technology | Purpose |
 |--------|-----------|---------|
 | Runtime | Next.js 16.2.6 (App Router) | Application framework, routing, middleware |
-| Package Manager | npm | Dependency management |
+| Package Manager | pnpm | Dependency management |
 | Content CMS | Sanity.io | Headless CMS, product/portfolio data, content federation |
 | Transactional DB | Neon Postgres via Prisma ORM | Leads, users, tracking data, redirect mappings |
 | Authentication | Auth.js v5 | Session management, RBAC (`admin`, `viewer`, `client`) |
@@ -113,22 +113,22 @@ src/
 ### Build & Development
 ```bash
 # Install dependencies
-npm install
+pnpm install
 
 # Development server
-npm run dev
+pnpm dev
 
 # Production build
-npm run build
+pnpm build
 
 # Compile Next.js edge build for Cloudflare Pages
-npm run pages:build
+pnpm pages:build
 
 # Local preview of Cloudflare Pages build (wrangler dev)
-npm run pages:preview
+pnpm pages:preview
 
 # Deploy to Cloudflare Pages (manual CLI)
-npm run pages:deploy
+pnpm pages:deploy
 ```
 
 ### Cloudflare Pages Deployment Pipeline
@@ -140,17 +140,17 @@ npm run pages:deploy
 <!-- AUTO-GENERATED START -->
 ## Deployment Phases
 
-- **Phase A — Development & Staging (Development Phase — CURRENT)**: Hosted on Vercel at `dbsn-test01.vercel.app`. Subdomains tested via `pju.dbsn-test01.vercel.app`, `dashboard.dbsn-test01.vercel.app`, etc. Environment variables set on Vercel Dashboard. Uses `npm run build` and `npm run dev` for development.
-- **Phase B — Production (PLANNED)**: Migrate to Cloudflare Pages project `dbsn-website`. Custom domains `sentradaya.com`, `pju.sentradaya.com`, etc. configured via Cloudflare DNS CNAME records. Uses `npm run pages:build` and `npm run pages:deploy`. Environment variables migrated to Cloudflare Pages Dashboard (Variables and Secrets).
+- **Phase A — Development & Staging (Development Phase — CURRENT)**: Hosted on Vercel at `dbsn-test01.vercel.app`. Subdomains tested via `pju.dbsn-test01.vercel.app`, `dashboard.dbsn-test01.vercel.app`, etc. Environment variables set on Vercel Dashboard. Uses `pnpm build` and `pnpm dev` for development.
+- **Phase B — Production (PLANNED)**: Migrate to Cloudflare Pages project `dbsn-website`. Custom domains `sentradaya.com`, `pju.sentradaya.com`, etc. configured via Cloudflare DNS CNAME records. Uses `pnpm pages:build` and `pnpm pages:deploy`. Environment variables migrated to Cloudflare Pages Dashboard (Variables and Secrets).
 
 ### Migration Checklist (Phase A → Phase B)
-1. Run `npm run pages:build` and verify the compilation completes without errors.
-2. Deploy the static assets to Cloudflare Pages using `npm run pages:deploy`.
+1. Run `pnpm pages:build` and verify the compilation completes without errors.
+2. Deploy the static assets to Cloudflare Pages using `pnpm pages:deploy`.
 3. Set all environment variables and encrypted secrets in the Cloudflare Pages Dashboard.
 4. Configure custom domains and DNS CNAME records in Cloudflare DNS.
 5. Update `NEXTAUTH_URL` to `https://sentradaya.com` in variables.
 6. Update OAuth callback URLs in third-party provider dashboards (if applicable).
-7. Run the GSC sitemap submission script (`npx tsx scripts/gsc-submit-sitemap.ts`).
+7. Run the GSC sitemap submission script (`pnpm exec tsx scripts/gsc-submit-sitemap.ts`).
 8. Verify subdomain routing and redirects resolve correctly on the production domain.
 <!-- AUTO-GENERATED END -->
 
@@ -166,7 +166,7 @@ npm run pages:deploy
 - Always offload database-driven lookups to a standard Node.js serverless route (such as `/api/redirects/lookup`) and make a lightweight loopback `fetch()` inside the middleware instead.
 
 ### Dev Server Deadlock Prevention
-- Single-threaded local Next.js development servers (`npm run dev`) will deadlock when making loopback `fetch()` calls inside the middleware.
+- Single-threaded local Next.js development servers (`pnpm dev`) will deadlock when making loopback `fetch()` calls inside the middleware.
 - Always wrap the middleware `fetch()` in an `AbortController` timeout (limit to 2000ms) to ensure it fails fast and allows the page to load if the loopback server is blocked.
 
 ### Vercel Tooling & Scripts Configuration
@@ -174,22 +174,22 @@ npm run pages:deploy
 - **Live Verification**: Use the custom script `verify_vercel.js` to poll deployment state via Vercel's REST API and run live HTTP checks against the target deployment URL.
 
 ### Pre-Deployment Checklist
-1. Verify all unit tests pass: `npm test`
-2. Verify local Next.js production build completes: `npm run build`
-3. Run local Playwright E2E smoke tests: `npx playwright test tests/e2e/hub-routing.spec.ts`
-4. Deploy preview to Vercel: `npx vercel deploy --yes --scope pampam666s-projects`
+1. Verify all unit tests pass: `pnpm test`
+2. Verify local Next.js production build completes: `pnpm build`
+3. Run local Playwright E2E smoke tests: `pnpm exec playwright test tests/e2e/hub-routing.spec.ts`
+4. Deploy preview to Vercel: `pnpm exec vercel deploy --yes --scope pampam666s-projects`
 5. Run the live Vercel deployment verification script: `node verify_vercel.js`
 
 ## Testing
 ```bash
 # Run tests
-npm test
+pnpm test
 
 # Test coverage report
-npm run test:coverage
+pnpm test:coverage
 
 # Run E2E tests
-npm run test:e2e
+pnpm test:e2e
 ```
 
 ## Onboarding & Reference
@@ -205,7 +205,7 @@ npm run test:e2e
 ### Linting & Code Quality
 ```bash
 # ESLint
-npm run lint
+pnpm lint
 
 ---
 
@@ -272,7 +272,7 @@ npm run lint
 
 ### Google Search Console (GSC) Verification & Sitemap Submission
 - **Verification Support**: Supports domain-wide property verification via DNS TXT record. For URL-prefix fallbacks, the platform dynamically generates a verification file (`public/google{code}.html` generated during build/dev initialization via `next.config.ts`) and renders a fallback `<meta name="google-site-verification" ... />` tag in the root layout `<head>`.
-- **Sitemap Submitter**: Operational script at `scripts/gsc-submit-sitemap.ts` uses native Node.js cryptography (`crypto` module) to sign Google OAuth2 JWT assertions. It programmatically registers sitemaps for the Domain Property (`sc-domain:sentradaya.com`) and individual spoke URL prefixes. Run via `npx tsx scripts/gsc-submit-sitemap.ts`.
+- **Sitemap Submitter**: Operational script at `scripts/gsc-submit-sitemap.ts` uses native Node.js cryptography (`crypto` module) to sign Google OAuth2 JWT assertions. It programmatically registers sitemaps for the Domain Property (`sc-domain:sentradaya.com`) and individual spoke URL prefixes. Run via `pnpm exec tsx scripts/gsc-submit-sitemap.ts`.
 
 ---
 

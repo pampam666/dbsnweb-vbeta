@@ -274,7 +274,7 @@ Keputusan teknologi kunci: **satu aplikasi Next.js 16** yang melayani semua doma
 **Milestone Kritis:**
 | # | Milestone | Deliverable | Ownership |
 |---|-----------|-------------|-----------|
-| M1.1 | Monorepo Foundation | Next.js 16 scaffold, npm setup, shared design system | Pramono (Engineer) |
+| M1.1 | Monorepo Foundation | Next.js 16 scaffold, pnpm setup, shared design system | Pramono (Engineer) |
 | M1.2 | Domain Routing & Edge | Cloudflare Pages binding, middleware routing, redirect engine | Pramono (Engineer) |
 | M1.3 | CMS Contracts | Schemas Sanity: Product, Certification, Portfolio, SpokeConfig | Pramono (Engineer) |
 | M1.4 | Transactional Data Layer | Neon Postgres schema, Prisma ORM, migration validation | Pramono (Engineer) |

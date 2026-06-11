@@ -94,7 +94,7 @@ In Version 3.1, the architecture is extended with a dedicated secure access spok
 
 All subdomains (hub, spokes, dashboard) are served from a **single unified Next.js codebase** with a shared design system (Tailwind CSS + Radix UI via shadcn/ui patterns) and a unified data pipeline (Sanity CMS + Neon Postgres via Prisma ORM). There are no divergent code forks between subdomains — all differentiation is handled by middleware routing and data-driven content via Sanity schemas and role/access controls.
 
-**Locked Stack:** Next.js 16 (App Router) · npm · Sanity.io · Tailwind CSS + Radix UI · Neon Postgres + Prisma ORM · Auth.js v5 · Cloudflare Pages · Resend + Telegram Bot · GA4 + GSC + Cloudflare Analytics · Phase 2: Sentry + PostHog
+**Locked Stack:** Next.js 16 (App Router) · pnpm · Sanity.io · Tailwind CSS + Radix UI · Neon Postgres + Prisma ORM · Auth.js v5 · Cloudflare Pages · Resend + Telegram Bot · GA4 + GSC + Cloudflare Analytics · Phase 2: Sentry + PostHog
 
 ```mermaid
 ---

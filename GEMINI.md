@@ -36,7 +36,7 @@ Gemini CLI MUST operate according to the **Antigravity Protocol** (`.agent/workf
 
 ### Phase 4: Verification & Review
 *   **Persona**: `code-reviewer.md` / `security-reviewer.md`.
-*   **Action**: Run `npm run lint`, `npm test`, and `npx playwright test`.
+*   **Action**: Run `pnpm lint`, `pnpm test`, and `pnpm exec playwright test`.
 *   **Checkpoint**: Mandatory terminal output evidence required for finality.
 
 ---
@@ -91,7 +91,7 @@ Utilize these skills from `.agent/skills/`:
 | :--- | :--- |
 | `/plan` | `enter_plan_mode` + `planner.md` rules |
 | `/tdd` | `tdd-workflow` skill + `tdd-guide.md` |
-| `/quality-gate` | `code-reviewer.md` + `npm run lint` |
+| `/quality-gate` | `code-reviewer.md` + `pnpm lint` |
 | `Read` / `Grep` | `read_file` / `grep_search` |
 | `Bash` | `run_shell_command` |
 | `Edit` | `replace` (Preferred) |

@@ -59,12 +59,12 @@ A high-performance Next.js 16 (React 19) platform consolidating three legacy Wor
 - **Git**: Conventional Commits (`feat:`, `fix:`, `chore:`).
 
 ## Common Tasks
-- **Run Dev**: `npm run dev`
-- **Build**: `npm run build`
-- **Build for Cloudflare**: `npm run pages:build`
-- **Run Tests**: `npm test`
-- **Run E2E**: `npm run test:e2e`
-- **Database Migration**: `npx prisma migrate dev`
+- **Run Dev**: `pnpm dev`
+- **Build**: `pnpm build`
+- **Build for Cloudflare**: `pnpm pages:build`
+- **Run Tests**: `pnpm test`
+- **Run E2E**: `pnpm test:e2e`
+- **Database Migration**: `pnpm exec prisma migrate dev`
 
 ## Where to Look
 | I want to... | Look at... |

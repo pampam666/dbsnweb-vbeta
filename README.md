@@ -67,7 +67,7 @@ Follow these steps to run the application locally on your machine.
 ### 1. Prerequisites
 Ensure you have the following installed:
 * [Node.js](https://nodejs.org/) (v20+ recommended)
-* `npm` (project standard for local development)
+* `pnpm` (project standard for local development)
 
 ### 2. Set Up Local Subdomains (`lvh.me`)
 To test subdomain routing locally, we map the hostnames using the `lvh.me` wildcard domain (which points back to `127.0.0.1`):
@@ -103,10 +103,10 @@ TELEGRAM_CHAT_ID="..."
 ### 4. Install & Run
 ```bash
 # Install dependencies
-npm install
+pnpm install
 
 # Run the local dev server
-npm run dev
+pnpm dev
 ```
 
 ---
@@ -115,14 +115,14 @@ npm run dev
 
 Execute these scripts during development and testing:
 
-* `npm run dev` — Starts the Next.js development server.
-* `npm run build` — Compiles the Next.js build bundle for production.
-* `npm run start` — Runs the compiled production application.
-* `npm run lint` — Runs ESLint code quality checks.
-* `npm run test` — Runs Jest unit and integration tests.
-* `npm run test:watch` — Runs Jest tests in interactive watch mode.
-* `npm run test:coverage` — Generates a Jest code coverage report (target: 80%+).
-* `npm run test:e2e` — Runs Playwright end-to-end integration tests.
+* `pnpm dev` — Starts the Next.js development server.
+* `pnpm build` — Compiles the Next.js build bundle for production.
+* `pnpm start` — Runs the compiled production application.
+* `pnpm lint` — Runs ESLint code quality checks.
+* `pnpm test` — Runs Jest unit and integration tests.
+* `pnpm test:watch` — Runs Jest tests in interactive watch mode.
+* `pnpm test:coverage` — Generates a Jest code coverage report (target: 80%+).
+* `pnpm test:e2e` — Runs Playwright end-to-end integration tests.
 
 ---
 

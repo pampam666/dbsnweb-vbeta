@@ -43,7 +43,7 @@ The application supports three verification mechanisms.
 ### B. GSC HTML File Verification (URL-Prefix fallback)
 The platform features an automated file builder wired into `next.config.ts`.
 1. Set the env variable `GSC_VERIFICATION_CODE` to your GSC HTML token (e.g., `google123456789.html` or just the code `123456789`).
-2. Run `npm run build` or `npm run dev`.
+2. Run `pnpm build` or `pnpm dev`.
 3. The server automatically generates `public/google{code}.html` containing the verification text.
 4. When deployed to Cloudflare Pages, this file is statically served at `/google{code}.html` for verification.
 
@@ -73,14 +73,14 @@ Ensure you set the `GSC_SERVICE_ACCOUNT_JSON` environment variable containing th
 Test the script and verify API target endpoints without sending real requests:
 ```bash
 # Run dry run directly
-npx tsx scripts/gsc-submit-sitemap.ts --dry-run
+pnpm exec tsx scripts/gsc-submit-sitemap.ts --dry-run
 ```
 
 #### Production Run (Live)
 Run the script to authenticate and submit sitemaps for all properties:
 ```bash
 # Execute sitemap submission
-GSC_SERVICE_ACCOUNT_JSON='{"type":"service_account",...}' npx tsx scripts/gsc-submit-sitemap.ts
+GSC_SERVICE_ACCOUNT_JSON='{"type":"service_account",...}' pnpm exec tsx scripts/gsc-submit-sitemap.ts
 ```
 
 ---

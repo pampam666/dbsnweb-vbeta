@@ -108,7 +108,7 @@ No additional configuration is needed — the middleware detects `.vercel.app` d
 
 ### Usage
 
-1. Start dev server: `npm run dev`
+1. Start dev server: `pnpm dev`
 2. Navigate to: `http://pju.lvh.me:3000`
 3. Verify you see the PJU spoke page
 
@@ -163,7 +163,7 @@ No additional configuration is needed — the middleware detects `.vercel.app` d
 
 ### Usage
 
-1. Start dev server: `npm run dev`
+1. Start dev server: `pnpm dev`
 2. Navigate to: `http://pju.sentradaya.com:3000`
 3. Verify you see the PJU spoke page
 
@@ -216,20 +216,20 @@ Default port is `3000`. To use a different port:
 
 ```bash
 # Pass port flag directly
-npm run dev -- -p 4000
+pnpm dev -- -p 4000
 ```
 
 ### Available Scripts
 
 | Command | Purpose |
 |---------|---------|
-| `npm run dev` | Start development server (port 3000) |
-| `npm run build` | Production build |
-| `npm start` | Serve production build |
-| `npm run lint` | Run ESLint |
-| `npm test` | Run Jest unit/integration tests |
-| `npm run test:watch` | Run tests in watch mode |
-| `npm run test:coverage` | Run tests with coverage report |
+| `pnpm dev` | Start development server (port 3000) |
+| `pnpm build` | Production build |
+| `pnpm start` | Serve production build |
+| `pnpm lint` | Run ESLint |
+| `pnpm test` | Run Jest unit/integration tests |
+| `pnpm test:watch` | Run tests in watch mode |
+| `pnpm test:coverage` | Run tests with coverage report |
 
 ### Hot Module Replacement
 
