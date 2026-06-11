@@ -50,9 +50,6 @@ function normalizePath(pathname: string): string {
 }
 
 export async function lookupRedirect(pathname: string, spoke: string | null): Promise<string | null> {
-  if (process.env.NEXT_RUNTIME === 'edge') {
-    return null
-  }
   const normalizedPath = normalizePath(pathname)
   const legacyUrl = spoke ? `/${spoke}${normalizedPath}` : normalizedPath
 
