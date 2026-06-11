@@ -58,7 +58,8 @@ async function isValidSignature(
       sigBytes,
       encoder.encode(body),
     )
-  } catch {
+  } catch (err) {
+    console.error('Error in isValidSignature:', err)
     return false
   }
 }

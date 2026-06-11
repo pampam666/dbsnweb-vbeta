@@ -71,6 +71,8 @@ export default async function middleware(request: NextRequest) {
       return NextResponse.rewrite(url)
     }
 
+    // Hub is transparent, so we rewrite it internally to the (hub) group
+    console.log(`[Middleware] Hub domain detected: ${pathname}`)
     const url = new URL(`/(hub)${pathname}${search}`, request.url)
     const response = NextResponse.rewrite(url)
     response.headers.set('x-middleware-subdomain', 'hub')

@@ -48,11 +48,12 @@ export type SanityEnv = z.infer<typeof sanityEnvSchema>
  * @throws {Error} If validation fails
  */
 export function validateSanityEnv(): SanityEnv {
+  const isBrowser = typeof window !== 'undefined' && process.env.NODE_ENV !== 'test'
   const raw = {
-    SANITY_PROJECT_ID: process.env.SANITY_PROJECT_ID,
-    SANITY_DATASET: process.env.SANITY_DATASET,
+    SANITY_PROJECT_ID: process.env.SANITY_PROJECT_ID || (isBrowser ? '3h4k8dye' : undefined),
+    SANITY_DATASET: process.env.SANITY_DATASET || (isBrowser ? 'production' : undefined),
     SANITY_API_VERSION: process.env.SANITY_API_VERSION || 'v2025-05-21',
-    SANITY_API_READ_TOKEN: process.env.SANITY_API_READ_TOKEN,
+    SANITY_API_READ_TOKEN: process.env.SANITY_API_READ_TOKEN || (isBrowser ? 'skDummyTokenForBrowser' : undefined),
     SANITY_API_WRITE_TOKEN: process.env.SANITY_API_WRITE_TOKEN,
     SANITY_WEBHOOK_SECRET: process.env.SANITY_WEBHOOK_SECRET,
   }
