@@ -73,6 +73,7 @@ Utilize these skills from `.agent/skills/`:
 - `frontend-patterns`: For UI/UX consistency.
 - `backend-patterns`: For API and Middleware logic.
 - `seo`: For search engine optimization.
+- `21st-sdk`: For the 21st SDK agent chat and component integration.
 
 ---
 

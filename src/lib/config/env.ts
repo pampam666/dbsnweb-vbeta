@@ -253,6 +253,53 @@ export const notificationEnvSchema = z.object({
 export type NotificationEnv = z.infer<typeof notificationEnvSchema>
 
 /**
+ * 21st SDK environment variable validation schema.
+ */
+export const anSDKEnvSchema = z.object({
+  API_KEY_21ST: z.string().min(1, '21st API key is required').startsWith('21st_', '21st API key must start with "21st_"'),
+})
+
+export type ANSDKEnv = z.infer<typeof anSDKEnvSchema>
+
+/**
+ * Validate 21st SDK environment variables.
+ *
+ * @returns Validated 21st SDK environment configuration
+ * @throws {Error} If validation fails
+ */
+export function validateANSDKEnv(): ANSDKEnv {
+  const raw = {
+    API_KEY_21ST: process.env.API_KEY_21ST,
+  }
+
+  const result = anSDKEnvSchema.safeParse(raw)
+
+  if (!result.success) {
+    const errors = result.error.issues
+      .map(issue => `${issue.path.join('.')}: ${issue.message}`)
+      .join(', ')
+    throw new Error(`21st SDK environment validation failed: ${errors}`)
+  }
+
+  return result.data
+}
+
+/**
+ * Get validated 21st SDK environment configuration.
+ * Caches the result after first call.
+ */
+let cachedANSDKEnv: ANSDKEnv | null = null
+
+export function getANSDKEnv(): ANSDKEnv {
+  if (cachedANSDKEnv) {
+    return cachedANSDKEnv
+  }
+
+  cachedANSDKEnv = validateANSDKEnv()
+  return cachedANSDKEnv
+}
+
+/**
  * Validate notification environment variables.
  *
  * @returns Validated notification environment configuration

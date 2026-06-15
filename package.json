@@ -16,6 +16,11 @@
     "pages:deploy": "npx wrangler pages deploy"
   },
   "dependencies": {
+    "@21st-sdk/agent": "^0.0.18",
+    "@21st-sdk/nextjs": "^0.0.11",
+    "@21st-sdk/node": "^0.1.1",
+    "@21st-sdk/react": "^0.2.3",
+    "@ai-sdk/react": "^3.0.204",
     "@auth/prisma-adapter": "^2.11.2",
     "@hookform/resolvers": "^5.2.2",
     "@neondatabase/serverless": "^1.1.0",
@@ -34,6 +39,7 @@
     "@sanity/client": "^7.22.0",
     "@sanity/image-url": "^2.1.1",
     "@sentry/nextjs": "^10.56.0",
+    "ai": "^6.0.202",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "embla-carousel-react": "^8.6.0",
@@ -78,5 +84,23 @@
     "ts-jest": "^29.4.10",
     "typescript": "^5",
     "wrangler": "^4.97.0"
-  }
+  },
+  "description": "[![Cloudflare Pages](https://img.shields.io/badge/Cloudflare-Pages-orange?style=flat&logo=cloudflare)](https://pages.cloudflare.com) [![Next.js Version](https://img.shields.io/badge/Next.js-16.2.6-blue?style=flat&logo=nextdotjs)](https://nextjs.org/) [![Sanity CMS](https://img.shields.io/badge/CMS-Sanity-red?style=flat&logo=sanity)](https://www.sanity.io/) [![Database](https://img.shields.io/badge/Database-Neon%20Postgres-00e699?style=flat&logo=postgresql)](https://neon.tech/)",
+  "main": "jest-environment.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pampam666/dbsnweb-vbeta.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/pampam666/dbsnweb-vbeta/issues"
+  },
+  "homepage": "https://github.com/pampam666/dbsnweb-vbeta#readme"
 }

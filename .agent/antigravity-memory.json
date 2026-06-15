@@ -41,7 +41,8 @@
     "framework": "Next.js 16 (App Router)",
     "orm": "Prisma ORM",
     "database": "Neon Postgres (Serverless)",
-    "package_manager": "pnpm"
+    "package_manager": "pnpm",
+    "agent_chat": "@21st-sdk/nextjs"
   },
   "vercel_learned_patterns": {
     "dual_lockfile_conflict": {
@@ -55,5 +56,17 @@
       "resolution": "Explicitly define 'export const runtime = \"nodejs\"' for all routes importing Prisma Client to force execution on Serverless Node.js runtime"
     }
   },
-  "last_updated": "2026-06-11"
+  "recent_learned_patterns": {
+    "navbar_routing_fix": {
+      "detection": "Anchor links (#section) failing to resolve properly from subpages in a hub-and-spoke Next.js architecture.",
+      "impact": "User clicks a navbar link on a subpage expecting to go to the section but stays on the subpage with an invalid hash.",
+      "resolution": "Use absolute standalone routes (e.g., /products) for main navigation links and only apply preventDefault() and scrollIntoView() for the homepage anchor (e.g., /#beranda) when the user is already on the homepage."
+    },
+    "21st_sdk_integration": {
+      "detection": "Requirement to add intelligent agent chat interface.",
+      "impact": "Improves user engagement with AI capabilities.",
+      "resolution": "Integrate @21st-sdk/nextjs and @ai-sdk/react. Route /chat to <AgentChat />. Secure via API_KEY_21ST environment variable handled by getTokenHandler at /api/an-token."
+    }
+  },
+  "last_updated": "2026-06-15"
 }

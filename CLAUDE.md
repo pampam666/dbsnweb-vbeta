@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**DBSN Centralized Digital Ecosystem** — A Next.js 16.2.6 hub-and-spoke platform consolidating three legacy WordPress domains into a single codebase with unified design system, CMS, transactional database, and authenticated client tracking portal.
+**DBSN Centralized Digital Ecosystem** — A Next.js 16.2.6 (React 19) hub-and-spoke platform consolidating three legacy WordPress domains into a single codebase with unified design system, CMS, transactional database, and authenticated client tracking portal.
 
 ---
 
@@ -44,67 +44,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 | Layer | Technology | Purpose |
 |--------|-----------|---------|
-| Runtime | Next.js 16.2.6 (App Router) | Application framework, routing, middleware |
+| Runtime | Next.js 16.2.6, React 19.2.4 | Application framework, App Router, server components |
 | Package Manager | pnpm | Dependency management |
 | Content CMS | Sanity.io | Headless CMS, product/portfolio data, content federation |
-| Transactional DB | Neon Postgres via Prisma ORM | Leads, users, tracking data, redirect mappings |
-| Authentication | Auth.js v5 | Session management, RBAC (`admin`, `viewer`, `client`) |
-| UI System | Tailwind CSS + Radix UI (shadcn/ui patterns) | Shared design tokens, accessible components |
-| State Management | Zustand (persist middleware) | Client-side state persistence (RFQ cart) |
-| Hosting | Vercel (Dev) / Cloudflare Pages (Prod) | Current: Vercel (Development/Staging) — dbsn-test01.vercel.app<br>Production (Planned): Cloudflare Pages — sentradaya.com + spoke subdomains |
-| Notifications | Resend (email) + Telegram Bot API + WhatsApp Fallback | RFQ alerts, failure notifications |
+| Transactional DB | Neon Postgres via Prisma 6.19.3 | Leads, users, tracking data, redirect mappings |
+| Authentication | Auth.js v5 (5.0.0-beta.31) | Session management, RBAC (`admin`, `viewer`, `client`) |
+| UI System | Tailwind CSS v4 + Radix UI | Shared design tokens, accessible components (shadcn/ui patterns) |
+| Agent Chat | @21st-sdk/nextjs, @ai-sdk/react | Intelligent agent chat interface integration |
+| State Management | Zustand 5 (persist middleware) | Client-side state persistence (RFQ cart) |
+| Monitoring | Sentry 10.56.0 | Error tracking |
+| Hosting | Vercel (Dev) / Cloudflare Pages (Prod) | Current: `dbsn-test01.vercel.app` — Production: `sentradaya.com` |
+| Notifications | Resend (email) + Telegram Bot API | RFQ alerts, failure notifications |
 | Analytics | GA4 + GSC + Cloudflare Analytics | Unified telemetry |
-| Phase 2 | Sentry (errors) + PostHog (session replay) | Error tracking, user behavior analytics |
-
-### Data Flow Architecture
-
-```
-Sanity CMS ──────┐
-│                          │
-│   Content (Product,      │
-│   Portfolio, Page)      │
-└─────────────────────────┼────→ Prisma ORM → Neon Postgres
-                                       │
-                        │
-                        ↓
-┌─────────────────────────┐   │
-│   Auth.js v5          │
-│ (Session + RBAC)       │
-│        ↓
-│  Next.js API Routes   │
-└─────────────────────────┘   │
-                        │
-                        ↓
-└─────────────────────────┐   │
-│   Cloudflare (301, Hosting, Edge)
-└─────────────────────────┘   │
-                                      ↓
-                              Notifications (Resend + Telegram)
-```
-
----
-
-## Component Structure
-
-```
-src/
-├── app/
-│   ├── (hub)/         # Hub root pages
-│   ├── (spokes)/       # Product spoke pages
-│   └── (dashboard)/    # Client tracking portal
-├── components/
-│   ├── ui/            # Radix UI primitives (Button, Dialog, etc.)
-│   ├── forms/          # RFQ forms (B2G, B2B variants with multi-product cart)
-│   └── shared/        # Reusable patterns, utilities
-├── lib/
-│   ├── api/            # API clients (Sanity, auth, database)
-│   ├── db/             # Prisma ORM clients
-│   ├── config/          # Environment variables, feature flags
-│   ├── schema/         # Zod validation schemas (rfq-schemas.ts)
-│   └── store/          # Zustand stores (rfq-cart-store.ts)
-└── styles/
-    └── globals.css    # Shared Tailwind config (root-level, no local overrides)
-```
 
 ---
 
@@ -115,235 +66,234 @@ src/
 # Install dependencies
 pnpm install
 
-# Development server
+# Development server (subdomain routing via lvh.me:3000)
 pnpm dev
 
-# Production build
+# Production build (Vercel)
 pnpm build
 
 # Compile Next.js edge build for Cloudflare Pages
 pnpm pages:build
 
-# Local preview of Cloudflare Pages build (wrangler dev)
+# Local preview of Cloudflare Pages build
 pnpm pages:preview
 
-# Deploy to Cloudflare Pages (manual CLI)
+# Deploy to Cloudflare Pages
 pnpm pages:deploy
 ```
 
-### Cloudflare Pages Deployment Pipeline
-- **Wrangler Config**: Root-level `wrangler.toml` defines the page project name (`dbsn-website`), compatibility date, edge compatibility flag (`nodejs_compat`), and environment variables under `[vars]`.
-- **Edge Compilation**: Build process compiles via `@cloudflare/next-on-pages` writing to `.vercel/output/static`.
-- **Edge Runtime**: All dynamic routes, API endpoints, and root layout must export `const runtime = 'edge'` to render correctly on Cloudflare Workers edge.
-- **Windows Path Patch**: Build processes running on Windows utilize a custom Vercel CLI cache patching script (`patch-vercel-builder.js`) that normalizes backslashes to forward slashes and strips Next.js route groups (`(hub)`/`(spokes)`) from lambda routing maps to prevent symlink conflicts (`EEXIST`).
-
-<!-- AUTO-GENERATED START -->
-## Deployment Phases
-
-- **Phase A — Development & Staging (Development Phase — CURRENT)**: Hosted on Vercel at `dbsn-test01.vercel.app`. Subdomains tested via `pju.dbsn-test01.vercel.app`, `dashboard.dbsn-test01.vercel.app`, etc. Environment variables set on Vercel Dashboard. Uses `pnpm build` and `pnpm dev` for development.
-- **Phase B — Production (PLANNED)**: Migrate to Cloudflare Pages project `dbsn-website`. Custom domains `sentradaya.com`, `pju.sentradaya.com`, etc. configured via Cloudflare DNS CNAME records. Uses `pnpm pages:build` and `pnpm pages:deploy`. Environment variables migrated to Cloudflare Pages Dashboard (Variables and Secrets).
-
-### Migration Checklist (Phase A → Phase B)
-1. Run `pnpm pages:build` and verify the compilation completes without errors.
-2. Deploy the static assets to Cloudflare Pages using `pnpm pages:deploy`.
-3. Set all environment variables and encrypted secrets in the Cloudflare Pages Dashboard.
-4. Configure custom domains and DNS CNAME records in Cloudflare DNS.
-5. Update `NEXTAUTH_URL` to `https://sentradaya.com` in variables.
-6. Update OAuth callback URLs in third-party provider dashboards (if applicable).
-7. Run the GSC sitemap submission script (`pnpm exec tsx scripts/gsc-submit-sitemap.ts`).
-8. Verify subdomain routing and redirects resolve correctly on the production domain.
-<!-- AUTO-GENERATED END -->
-
-## Vercel Deployment Notes
-
-### Architectural Decision: Hub Subdomain Routing
-- **Decision**: Avoid explicit rewrites to parenthesized route groups like `/(hub)` for Hub domain requests. Instead, return `NextResponse.next()` and set custom request/response headers (e.g. `x-middleware-subdomain: hub`).
-- **Rationale**: Vercel compiles away route groups during the production build. Rewriting to `/(hub)/path` triggers a 404 in production, whereas the local Next.js environment resolves it correctly.
-- **Negative Testing**: Requests for spoke sub-pages directly on the Hub domain (e.g., `sentradaya.com/pju`) must be blocked using `new NextResponse(null, { status: 404 })` inside middleware to prevent them from leaking into the dynamic root route `/[spoke]`.
-
-### Edge Function Size Optimization
-- Do **NOT** dynamically import or invoke `prisma` inside the Edge middleware (`src/middleware.ts` or its dependencies). Doing so bundles database binaries and exceeds Vercel's `1MB` Edge limit (causing deployment build failures).
-- Always offload database-driven lookups to a standard Node.js serverless route (such as `/api/redirects/lookup`) and make a lightweight loopback `fetch()` inside the middleware instead.
-
-### Dev Server Deadlock Prevention
-- Single-threaded local Next.js development servers (`pnpm dev`) will deadlock when making loopback `fetch()` calls inside the middleware.
-- Always wrap the middleware `fetch()` in an `AbortController` timeout (limit to 2000ms) to ensure it fails fast and allows the page to load if the loopback server is blocked.
-
-### Vercel Tooling & Scripts Configuration
-- **Vercel API Token & ID**: Configured via local environment or verified through scratch/verification scripts (Team ID: `team_tiNO6Bk8YYS2sc32UAbaxMjv`, Project ID: `prj_V8PzkGIisHdXmdMgwuIMRmsCnCKA`).
-- **Live Verification**: Use the custom script `verify_vercel.js` to poll deployment state via Vercel's REST API and run live HTTP checks against the target deployment URL.
-
-### Pre-Deployment Checklist
-1. Verify all unit tests pass: `pnpm test`
-2. Verify local Next.js production build completes: `pnpm build`
-3. Run local Playwright E2E smoke tests: `pnpm exec playwright test tests/e2e/hub-routing.spec.ts`
-4. Deploy preview to Vercel: `pnpm exec vercel deploy --yes --scope pampam666s-projects`
-5. Run the live Vercel deployment verification script: `node verify_vercel.js`
-
-## Testing
+### Testing
 ```bash
-# Run tests
-pnpm test
+# Unit/Integration tests (Jest + Testing Library)
+pnpm test              # Run all tests
+pnpm test:watch        # Interactive watch mode
+pnpm test:coverage     # Generate coverage report (target: 80%+)
 
-# Test coverage report
-pnpm test:coverage
-
-# Run E2E tests
-pnpm test:e2e
+# E2E tests (Playwright)
+pnpm test:e2e         # Run end-to-end tests
 ```
-
-## Onboarding & Reference
-- **Onboarding Guide**: `docs/ONBOARDING.md` — Detailed architectural deep-dive and first-day guide.
-- **Conventions**:
-  - File Naming: `kebab-case` for all files/folders.
-  - Components: PascalCase React components.
-  - Patterns: TDD-first approach, 80%+ coverage goal.
-  - Error Handling: Use `try/catch` with descriptive errors; validate inputs with Zod.
-  - Environment: All variables validated at runtime via `src/lib/config/env.ts`.
-
 
 ### Linting & Code Quality
 ```bash
-# ESLint
-pnpm lint
+pnpm lint             # ESLint code quality checks
+```
+
+---
+
+## Component Structure
+
+```
+src/
+├── app/
+│   ├── (hub)/         # Hub root pages (sentradaya.com)
+│   ├── (spokes)/       # Product spoke pages (*.sentradaya.com)
+│   └── (dashboard)/    # Client tracking portal (dashboard.sentradaya.com)
+├── components/
+│   ├── ui/            # Radix UI primitives (Button, Dialog, etc.)
+│   ├── forms/          # RFQ forms (B2G, B2B variants with multi-product cart)
+│   └── shared/        # Reusable patterns, utilities
+├── lib/
+│   ├── api/            # API clients (Sanity, auth, notifications)
+│   ├── db/             # Prisma ORM clients
+│   ├── config/          # Environment variables, feature flags
+│   ├── schema/         # Zod validation schemas (rfq-schemas.ts)
+│   ├── store/          # Zustand stores (rfq-cart-store.ts)
+│   └── middleware/     # Redirect engine, middleware utilities
+└── styles/
+    └── globals.css    # Shared Tailwind config (root-level, no local overrides)
+```
+
+---
+
+## Deployment Phases
+
+| Phase | Environment | Host | Commands |
+|-------|-------------|------|----------|
+| A (Current) | Development/Staging | Vercel (`dbsn-test01.vercel.app`) | `pnpm build`, `pnpm dev` |
+| B (Planned) | Production | Cloudflare Pages (`sentradaya.com`) | `pnpm pages:build`, `pnpm pages:deploy` |
+
+### Migration Checklist (Phase A → Phase B)
+1. Run `pnpm pages:build` and verify compilation completes.
+2. Deploy via `pnpm pages:deploy`.
+3. Set environment variables in Cloudflare Pages Dashboard.
+4. Configure custom domains and DNS CNAME records.
+5. Update `NEXTAUTH_URL` to `https://sentradaya.com`.
+6. Run GSC sitemap submission: `pnpm exec tsx scripts/gsc-submit-sitemap.ts`.
+7. Verify subdomain routing and redirects on production domain.
+
+---
+
+## Cloudflare Pages Deployment
+
+- **Wrangler Config**: `wrangler.toml` defines project (`dbsn-website`), compatibility flags, and environment variables.
+- **Edge Compilation**: `@cloudflare/next-on-pages` writes to `.vercel/output/static`.
+- **Edge Runtime**: All dynamic routes, API endpoints, and root layouts must export `const runtime = 'edge'`.
+- **Windows Path Patch**: `patch-vercel-builder.js` normalizes backslashes and strips route groups from lambda maps.
+
+---
+
+## Vercel Deployment Notes
+
+### Hub Subdomain Routing
+- **Decision**: Return `NextResponse.next()` with custom headers (e.g., `x-middleware-subdomain: hub`) instead of rewriting to `/(hub)`.
+- **Rationale**: Vercel compiles away route groups in production; rewriting to `/(hub)/path` triggers 404.
+- **Negative Testing**: Block spoke sub-pages on Hub domain (e.g., `sentradaya.com/pju`) via `new NextResponse(null, { status: 404 })` in middleware.
+
+### Edge Function Size Optimization
+- **CRITICAL**: Do NOT dynamically import `prisma` inside Edge middleware (`src/middleware.ts`). Database binaries exceed Vercel's 1MB Edge limit.
+- **Pattern**: Offload database lookups to `/api/redirects/lookup` and make lightweight loopback `fetch()` in middleware.
+
+### Dev Server Deadlock Prevention
+- Single-threaded dev servers deadlock on loopback `fetch()` in middleware.
+- Wrap middleware `fetch()` in `AbortController` timeout (2000ms) for fast failure.
 
 ---
 
 ## Architecture Key Patterns
 
 ### Hub-and-Spoke Routing
-- Subdomain resolution happens in middleware before Next.js routing
-- Route groups: `(hub)`, `(spokes)`, `(dashboard)`
-- Spokes share same route structure and UI components
-- Dashboard uses separate route group with authentication guards
+- Subdomain resolution in `src/middleware.ts` before Next.js routing.
+- Route groups: `(hub)`, `(spokes)`, `(dashboard)`.
+- Spokes share route structure and UI components.
+- Dashboard uses separate route group with authentication guards.
 
 ### Multi-Segment RFQ & Informational Routing
-- Navigation links route dynamically: fallback smooth-scroll when navigating on `/` home page (intercepted via client hooks), and normal page transition when navigating from other sub-pages.
-- Products catalog index page (`/products`) aggregates the 4 main product segments (PJUTS, Modul Panel Surya, Proteksi Penangkal Petir, Baterai Storage) and includes a comparative specifications matrix and feature checklists.
-- Dynamic subdomain routing compiles target spoke domains using `buildSpokeUrl` (`src/lib/utils/url.ts`) according to environment context (localhost using `.lvh.me:3000`, Vercel staging `dbsn-test01.vercel.app`, or production `.sentradaya.com`) to guide users from the hub product catalog to domain-specific spokes.
-- Portfolios (`/portfolio`) and Articles (`/articles`) indices and detailed pages fetch content directly from Sanity CMS and render content blocks using `<PortableText />`.
-- Client components manage the category filter bar for portfolios, while articles support search keyword queries matching title/excerpt content and save items dynamically in `localStorage`.
-- Detail templates render project image galleries via `<GalleryCarousel />` (Embla Carousel) and social sharing panels via `<ShareButtons />` using custom inline brand SVGs.
-- Interactive contact hub consolidates B2B and B2G RFQ forms (linked directly with Zustand store cart items) alongside a general message submission form.
-- Certification list fetches metadata from Sanity CMS and leverages a client-side certifications grid with filter tags and a Radix-based click-to-enlarge modal document viewer (PDF/Image).
+- Navigation: smooth-scroll on `/` home page, normal transition elsewhere.
+- Products catalog (`/products`): aggregates 4 segments (PJUTS, Solar Cell, Lightning Protection, Battery Storage).
+- Dynamic subdomain routing via `buildSpokeUrl` in `src/lib/utils/url.ts`.
+- Portfolios (`/portfolio`) and Articles (`/articles`) use Sanity CMS + `<PortableText />`.
+- Certifications grid with Radix-based modal viewer (PDF/Image).
 
 ### Content Federation (Sanity)
-- All product and portfolio data stored in Sanity CMS
-- Prisma `Sanity` client queries CMS for product/portfolio lookups in spoke pages
-- Content changes trigger webhook-based cache invalidation
+- All product/portfolio data in Sanity CMS.
+- Prisma `Sanity` client queries CMS for spoke pages.
+- Webhook-based cache invalidation on content changes.
 
 ### Multi-Tenant Data Access
-- Row-level security via `users.tracking_scope_ids` (JSON array of authorized project/order IDs)
-- Dashboard users (`role=client`) can only read rows where their user ID is in `tracking_scope_ids`
-- Admin users (`role=admin` or `role=viewer`) have full system access
+- Row-level security via `users.tracking_scope_ids` (JSON array).
+- `role=client` users see only rows where their ID is in `tracking_scope_ids`.
+- `role=admin` / `role=viewer` have full access.
 
 ### RFQ Cart System
-- **State Management**: Zustand store (`src/lib/store/rfq-cart-store.ts`) with `persist` middleware (`dbsn-rfq-cart` localStorage key).
-  - Mutators: `addItem` (validates with `rfqCartItemSchema`, merges duplicate product+variant keys, and clamps quantity), `removeItem`, `updateQuantity`, `updateItemNotes`, and `clearCart`.
-  - Slice Selectors (optimizes renders): `selectItemCount`, `selectTotalQuantity`, `selectHasItem`, `selectCartItems`.
-- **SSR Hydration Guard**: Hydration hook (`src/hooks/use-rfq-cart.ts`) exports `useRfqCartHydrated()`. Returns `true` only after Zustand has loaded state from localStorage, preventing SSR hydration mismatches.
-- **Dynamic Forms Integration**: Checkout forms (`src/components/forms/RfqB2BForm.tsx`, `src/components/forms/RfqB2GForm.tsx`) use `react-hook-form` + `useFieldArray` bound to the cart `items` array.
-  - While hydrating: renders a loading skeleton (`aria-label="loading rfq form"`).
-  - If cart is empty: renders an Empty Cart view with a CTA to browse products.
-  - Actions (quantity updates, notes, removal) instantly trigger store mutations to keep Zustand and the form in sync.
+- **Store**: `src/lib/store/rfq-cart-store.ts` (Zustand with persist, key: `dbsn-rfq-cart`).
+- **Mutators**: `addItem`, `removeItem`, `updateQuantity`, `updateItemNotes`, `clearCart`.
+- **Selectors**: `selectItemCount`, `selectTotalQuantity`, `selectHasItem`, `selectCartItems`.
+- **Hydration Guard**: `src/hooks/use-rfq-cart.ts` exports `useRfqCartHydrated()` to prevent SSR mismatches.
+- **Forms**: `src/components/forms/RfqB2BForm.tsx`, `RfqB2GForm.tsx` use `react-hook-form` + `useFieldArray`.
 
 ### RFQ Submission Flow
-- **REST Endpoint**: POST `/api/rfq` accepts flat composite JSON payloads validated against `rfqB2BSchema` or `rfqB2GSchema` (schema located in `src/lib/schema/rfq-schemas.ts`). Endpoint code is at `src/app/api/rfq/route.ts`.
-- **Infrastructure**: On success, leads are created in Postgres and non-blocking notifications are triggered: email acknowledgment/internal alert (`src/lib/api/notifications/resend.ts`) and Telegram bot notification (`src/lib/api/notifications/telegram.ts`).
-- **Resilience / Fallback**: On failure, the API returns a `fallback_url` built by `src/lib/api/notifications/whatsapp.ts` to redirect to WhatsApp sales prefill, and alerts devs via Telegram.
+- **Endpoint**: POST `/api/rfq` validates against `rfqB2BSchema` / `rfqB2GSchema` in `src/lib/schema/rfq-schemas.ts`.
+- **Success**: Create lead in Postgres, enqueue notifications (`EMAIL_ACK`, `EMAIL_INTERNAL`, `TELEGRAM`).
+- **Failure**: Return WhatsApp fallback URL + alert devs via Telegram.
 
 ### Authentication Flow
-- **Session Management**: Auth.js v5 configured via `src/lib/auth/auth.config.ts`, using a custom credentials provider and JWT session storage.
-- **Route Protection**: Middleware matches sessions using cookie session tokens and blocks access.
-- **Server Guards**: Exported from `src/lib/auth/auth-guard.ts` (`getServerSession()`, `requireAuth()`, `requireDashboardAccess()`, `checkDashboardAccess()`) to secure server routes/components and query access permissions.
-- **Route handlers wrapper**: NextAuth endpoint is located at `src/app/api/auth/[...nextauth]/route.ts`.
-
-### Database Singleton Client
-- **Location**: `src/lib/db/prisma.ts` exports the active `prisma` client.
-- **Pattern**: Implements a global client wrapper (`globalThis.__prisma`) in non-production environments to prevent creating multiple connections during Next.js hot-reloading.
+- **Config**: `src/lib/auth/auth.config.ts` (credentials provider, JWT session storage).
+- **Middleware**: Matches sessions via cookie tokens, blocks unauthorized access.
+- **Server Guards**: `src/lib/auth/auth-guard.ts` exports `getServerSession()`, `requireAuth()`, `requireDashboardAccess()`.
+- **Route Handler**: `src/app/api/auth/[...nextauth]/route.ts`.
 
 ### 301 Redirect Engine
-- **Engine Location**: `src/lib/middleware/redirect-engine.ts` exports `lookupRedirect(pathname, spoke)`.
-- **Database Model**: Stores mappings in Postgres using the `RedirectMap` Prisma model (fields: `legacyUrl` (ID), `targetUrl`, `spoke`, `hitCount`).
-- **Caching**: Features an in-memory LRU cache (limit 500 entries) with a 5-minute TTL and negative caching for misses to protect DB performance.
-- **Asynchronous Tracking**: Increments `hitCount` on matching redirects asynchronously without blocking the hot path response.
-- **Middleware Integration**: Intercepts requests in `src/middleware.ts` before subdomain routing, preserving search parameters (e.g., `?ref=...`).
-- **Admin Management API**: CRUD API route at `src/app/api/admin/redirects/route.ts` secured with `requireAuth('ADMIN')` for listing, creating, and deleting mappings, which automatically flushes the engine's cache on mutation.
+- **Engine**: `src/lib/middleware/redirect-engine.ts` exports `lookupRedirect(pathname, spoke)`.
+- **Model**: `RedirectMap` in Prisma schema (fields: `legacyUrl`, `targetUrl`, `spoke`, `hitCount`).
+- **Caching**: LRU cache (500 entries, 5-minute TTL) with negative caching.
+- **Async Tracking**: Increments `hitCount` without blocking response.
+- **Admin API**: `/api/admin/redirects` secured with `requireAuth('ADMIN')`.
 
-### Google Search Console (GSC) Verification & Sitemap Submission
-- **Verification Support**: Supports domain-wide property verification via DNS TXT record. For URL-prefix fallbacks, the platform dynamically generates a verification file (`public/google{code}.html` generated during build/dev initialization via `next.config.ts`) and renders a fallback `<meta name="google-site-verification" ... />` tag in the root layout `<head>`.
-- **Sitemap Submitter**: Operational script at `scripts/gsc-submit-sitemap.ts` uses native Node.js cryptography (`crypto` module) to sign Google OAuth2 JWT assertions. It programmatically registers sitemaps for the Domain Property (`sc-domain:sentradaya.com`) and individual spoke URL prefixes. Run via `pnpm exec tsx scripts/gsc-submit-sitemap.ts`.
-
----
-
-## Key Dependencies
-
-| Dependency | Version | Purpose |
-|----------|--------|---------|
-| next-auth | ^5.0.0-beta.31 | Auth.js v5, session management |
-| @auth/prisma-adapter | ^2.11.2 | Database adapter mapping Auth.js to Prisma |
-| @prisma/client | ^6.19.3 | Prisma ORM, Neon Postgres client |
-| @sanity/client | ^7.22.0 | Sanity CMS client |
-| zustand | ^4.5.0 | State management with persist middleware |
-| @radix-ui/react-slot | ^1.2.4 | Radix UI slot primitive |
-| @radix-ui/react-dialog | ^1.1.15 | Radix UI dialog component |
-| @radix-ui/react-select | ^2.2.6 | Radix UI select component |
-| @radix-ui/react-tabs | ^1.1.13 | Radix UI tabs component |
-| tailwindcss | ^4 | Tailwind CSS v4 CSS framework |
-| resend | ^6.12.4 | Email SDK client |
-| zod | ^4.4.3 | Schema validation |
+### Google Search Console (GSC)
+- **Verification**: DNS TXT record for domain property; dynamic `public/google{code}.html` for URL-prefix.
+- **Sitemap Submit**: `scripts/gsc-submit-sitemap.ts` uses Node.js `crypto` for OAuth2 JWT assertions.
+- **Run**: `pnpm exec tsx scripts/gsc-submit-sitemap.ts`.
 
 ---
 
 ## Environment Variables
 
-Required environment variables must be set before running in application:
-
 | Variable | Description | Sensitivity |
 |---------|-----------|----------|
 | DATABASE_URL | Neon Postgres connection string | High |
-| NEXTAUTH_SECRET | Auth.js v5 secret for JWT signing | High |
+| NEXTAUTH_SECRET | Auth.js v5 JWT signing secret | High |
 | NEXTAUTH_URL | Auth.js v5 provider URL | High |
 | SANITY_PROJECT_ID | Sanity CMS project ID | High |
 | SANITY_API_READ_TOKEN | Sanity CMS read token | High |
 | SANITY_WRITE_TOKEN | Sanity CMS write token | High |
 | RESEND_API_KEY | Resend email API key | High |
 | TELEGRAM_BOT_TOKEN | Telegram bot API token | High |
+| API_KEY_21ST | 21st SDK authentication token | High |
 | GA_TRACKING_ID | Google Analytics 4 tracking ID | Medium |
 | GSC_SERVICE_ACCOUNT_JSON | Google Search Console service account | Medium |
 | NODE_ENV | Environment (development, staging, production) | Medium |
 
+Runtime validation: `src/lib/config/env.ts`.
+
 ---
 
-## Integration Points
+## Documentation Index
 
-When integrating new features or third-party services, follow these integration patterns:
+Detailed guides in `/docs`:
+- `docs/ONBOARDING.md` — Architectural deep-dive and first-day guide
+- `docs/core/architecture/architecture.md` — System architecture and domain mappings
+- `docs/core/architecture/middleware-routing.md` — Edge routing and subdomain resolution
+- `docs/core/development/local-setup.md` — Local development environment setup
+- `docs/core/development/testing-guide.md` — Jest and Playwright testing patterns
+- `docs/core/development/sanity-cms-guide.md` — Sanity CMS integration and GROQ queries
 
-1. **CMS Integration** — Use Prisma `Sanity` client with proper GROQ queries
-2. **API Integration** — Implement proper error handling and retry logic
-3. **Analytics Integration** — Use GA4 event naming consistent with PRD v3.1. Standardized taxonomy:
-   - `RFQ_SUBMIT`: Fired on successful RFQ submission (parameters: `segment`, `spoke`, `item_count`).
-   - `RFQ_FALLBACK_WHATSAPP`: Fired when user clicks the WhatsApp fallback link after a failed RFQ submission (parameters: `spoke`).
-   - `PRODUCT_VIEW`: Fired when a product page is viewed (parameters: `product_name`, `spoke`).
-   - `FILE_DOWNLOAD`: Fired when clicking a product datasheet download link (parameters: `file_name`, `file_type`).
-   - `CONTACT_CLICK`: Fired when clicking contact or WhatsApp CTA links/buttons (parameters: `contact_type`, `location`).
-   - `SPOKE_NAVIGATION`: Fired when navigating between the hub and spokes or spoke subdomains (parameters: `spoke`, `source`).
-4. **Notification Integration** — Use the database-backed `NotificationQueue` (`src/lib/api/notifications/queue.ts`) to enqueue jobs (`EMAIL_ACK`, `EMAIL_INTERNAL`, `TELEGRAM`) for resilient delivery with exponential backoff and terminal failure Telegram admin alerts.
-5. **WhatsApp Fallback Engine** — Serialize captured RFQ fields to wa.me prefill format
-6. **Authentication Integration** — Wire NextAuth route handlers with proper RBAC enforcement
-7. **Phase 2 Monitoring** — Integrate Sentry for error tracking and PostHog for session replay
+---
+
+## Integration Patterns
+
+When integrating new features or third-party services:
+
+1. **21st SDK Agent Chat Integration**:
+   - *Frontend route*: `/chat` utilizing standard `<AgentChat />` client component from `@21st-sdk/nextjs`.
+   - *Agent configuration*: `src/agents/my-agent/index.ts` with custom agent definition.
+   - *Token handler endpoint*: POST `/api/an-token` fetching from `API_KEY_21ST` via `getTokenHandler`.
+2. **CMS Integration**: Use Prisma `Sanity` client with proper GROQ queries.
+3. **API Integration**: Implement error handling and retry logic.
+3. **Analytics (GA4)**: Use standardized event taxonomy:
+   - `RFQ_SUBMIT` — Successful RFQ submission (`segment`, `spoke`, `item_count`)
+   - `RFQ_FALLBACK_WHATSAPP` — WhatsApp fallback after failed RFQ (`spoke`)
+   - `PRODUCT_VIEW` — Product page viewed (`product_name`, `spoke`)
+   - `FILE_DOWNLOAD` — Datasheet download (`file_name`, `file_type`)
+   - `CONTACT_CLICK` — Contact/WhatsApp CTA clicked (`contact_type`, `location`)
+   - `SPOKE_NAVIGATION` — Hub ↔ Spoke navigation (`spoke`, `source`)
+4. **Notification Integration**: Use `NotificationQueue` in `src/lib/api/notifications/queue.ts` for resilient delivery with exponential backoff.
+5. **Authentication**: Wire NextAuth handlers with proper RBAC enforcement.
+6. **Monitoring**: Integrate Sentry for error tracking.
 
 ---
 
 ## Notes
 
-This is a **hub-and-spoke architecture** — all subdomains run from a single Next.js codebase
-- **No code forks** — differentiation is content-driven via Sanity CMS and routing, not separate implementations
-- **Shared design system** — Tailwind config at repo root is single source of truth for all UI
-- **Mobile-first** — All UI components must be tested on 375px minimum viewport
-- **Performance targets** — PSI mobile score 90+ on all key pages is a launch gate requirement
+- **Hub-and-Spoke**: All subdomains run from a single Next.js codebase.
+- **No Code Forks**: Differentiation is content-driven via Sanity CMS and routing.
+- **Shared Design System**: Tailwind config at repo root is the single source of truth.
+- **Mobile-First**: All UI tested on 375px minimum viewport.
+- **Performance Target**: PSI mobile score 90+ on all key pages is a launch gate requirement.
+- **File Naming**: `kebab-case` for files/folders, PascalCase for components.
+- **TDD Approach**: 80%+ test coverage goal.
+- **Error Handling**: `try/catch` with descriptive errors; Zod for input validation.
 
 ---
 
-*Generated: 2026-06-04*
-*Status: Production Ready — Phase 3 features (Notification Queue, Cloudflare Pages Deployment, 301 Redirect Engine, SEO Migration, GA4 event tracking, and GSC verification) completed and fully documented*
+*Generated: 2026-06-11*
+*Status: Production Ready — Phase 3 features (Notification Queue, Cloudflare Pages Deployment, 301 Redirect Engine, SEO Migration, GA4 event tracking, GSC verification, Sentry monitoring) completed and fully documented*
