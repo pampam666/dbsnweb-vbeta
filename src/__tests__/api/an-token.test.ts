@@ -10,7 +10,7 @@ describe('api/an-token', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    process.env = { ...originalEnv, API_KEY_21ST: 'test-api-key' }
+    process.env = { ...originalEnv, API_KEY_21ST: '21st_test_api_key' }
   })
 
   afterAll(() => {
@@ -21,7 +21,7 @@ describe('api/an-token', () => {
     const { getTokenHandler } = await import('@/app/api/an-token/route')
     getTokenHandler()
     expect(createTokenHandler).toHaveBeenCalledWith({
-      apiKey: 'test-api-key',
+      apiKey: '21st_test_api_key',
     })
   })
 
