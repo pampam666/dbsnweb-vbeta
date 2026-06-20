@@ -7,8 +7,8 @@ import { Award } from 'lucide-react'
 export const revalidate = 3600 // Revalidate hourly
 
 export const metadata: Metadata = {
-  title: 'Daftar Sertifikasi & Kepatuhan - DBSN Sentradaya',
-  description: 'Daftar sertifikasi resmi produk DBSN termasuk SNI, TKDN, LKPP, dan ISO untuk standar proyek energi terbarukan di Indonesia.',
+  title: 'Sertifikasi | PT DBSN',
+  description: 'Kepatuhan regulasi dan sertifikasi resmi PT DBSN Sentradaya termasuk SNI, TKDN, e-Katalog LKPP, dan ISO 9001 untuk jaminan kualitas proyek.',
 }
 
 export default async function CertificationsPage() {

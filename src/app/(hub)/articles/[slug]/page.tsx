@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { PortableText } from '@/components/shared/PortableText'
 import ShareButtons from '@/components/shared/ShareButtons'
+import { createArticleSchema } from '@/lib/seo/json-ld'
 
 export const revalidate = 3600 // Revalidate hourly
 
@@ -57,6 +58,10 @@ export default async function ArticleDetailPage({
 
   return (
     <div className="min-h-screen bg-slate-50">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(createArticleSchema(article)) }}
+      />
       <main className="container mx-auto px-4 pt-28 pb-20 max-w-3xl">
         {/* Back Link */}
         <div className="mb-6">

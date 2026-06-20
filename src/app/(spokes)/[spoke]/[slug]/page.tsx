@@ -27,6 +27,9 @@ export async function generateMetadata({
   return {
     title: `${page.seoMeta?.title || page.title} - DBSN`,
     description: page.seoMeta?.description,
+    alternates: {
+      canonical: `https://${spoke}.sentradaya.com/${slug}`,
+    },
   }
 }
 
@@ -66,7 +69,7 @@ export default async function SpokeDynamicPage({
           </nav>
         </header>
 
-        <main className="container mx-auto px-6 py-12 max-w-4xl">
+        <main id="main-content" tabIndex={-1} className="container mx-auto px-6 py-12 max-w-4xl outline-none">
           <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden p-6 md:p-10 space-y-8">
             <h1 className="text-3xl md:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
               {pageData.title}

@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next'
 import { headers } from 'next/headers'
 import { extractSubdomain, isSpokeDomain } from '../lib/middleware/config'
-import { getProductSlugsWithSpokes } from '../lib/api/sanity/queries'
+import { getProductSlugsWithSpokes, getArticleSlugs, getPortfolioSlugs } from '../lib/api/sanity/queries'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const headersList = await headers()
@@ -55,10 +55,44 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/faq',
   ]
 
-  return staticPages.map(page => ({
+  const entries: MetadataRoute.Sitemap = staticPages.map(page => ({
     url: `${baseUrl}${page}`,
     lastModified,
     changeFrequency: 'weekly',
     priority: page === '' ? 1.0 : 0.8,
   }))
+
+  try {
+    const articles = await getArticleSlugs()
+    if (articles) {
+      for (const a of articles) {
+        entries.push({
+          url: `${baseUrl}/articles/${a.slug}`,
+          lastModified,
+          changeFrequency: 'weekly',
+          priority: 0.6,
+        })
+      }
+    }
+  } catch {
+    // Ignore error
+  }
+
+  try {
+    const portfolios = await getPortfolioSlugs()
+    if (portfolios) {
+      for (const p of portfolios) {
+        entries.push({
+          url: `${baseUrl}/portfolio/${p.slug}`,
+          lastModified,
+          changeFrequency: 'weekly',
+          priority: 0.6,
+        })
+      }
+    }
+  } catch {
+    // Ignore error
+  }
+
+  return entries
 }

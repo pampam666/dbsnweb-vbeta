@@ -26,6 +26,9 @@ export async function generateMetadata({
   return {
     title: `Portofolio ${config.name} - DBSN`,
     description: `Daftar proyek pemasangan dan implementasi infrastruktur ${config.name} sukses kami di seluruh Indonesia.`,
+    alternates: {
+      canonical: `https://${spoke}.sentradaya.com/portfolio`,
+    },
   }
 }
 
@@ -64,7 +67,7 @@ export default async function SpokePortfolioPage({
           </nav>
         </header>
 
-        <main className="container mx-auto px-6 py-12">
+        <main id="main-content" tabIndex={-1} className="container mx-auto px-6 py-12 outline-none">
           <div className="max-w-4xl mx-auto text-center mb-12">
             <h1 className="text-3xl md:text-5xl font-extrabold text-slate-900 tracking-tight capitalize">
               Portofolio Proyek {config.name}

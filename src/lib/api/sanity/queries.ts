@@ -502,3 +502,51 @@ export async function getArticleBySlug(
     return null
   }
 }
+
+/**
+ * Fetch all article slugs.
+ *
+ * @returns Array of slugs, or null
+ */
+export async function getArticleSlugs(): Promise<Array<{ slug: string }> | null> {
+  const query = defineQuery(groq`
+    *[_type == "article" && defined(slug.current)]{
+      "slug": slug.current
+    }
+  `)
+  try {
+    return await client.fetch<Array<{ slug: string }>>(
+      query,
+      {},
+      {
+        next: { revalidate: 3600, tags: [CACHE_TAGS.article()] },
+      },
+    )
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Fetch all portfolio entry slugs.
+ *
+ * @returns Array of slugs, or null
+ */
+export async function getPortfolioSlugs(): Promise<Array<{ slug: string }> | null> {
+  const query = defineQuery(groq`
+    *[_type == "portfolioEntry" && defined(slug.current)]{
+      "slug": slug.current
+    }
+  `)
+  try {
+    return await client.fetch<Array<{ slug: string }>>(
+      query,
+      {},
+      {
+        next: { revalidate: 3600, tags: [CACHE_TAGS.portfolio()] },
+      },
+    )
+  } catch {
+    return null
+  }
+}

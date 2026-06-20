@@ -41,7 +41,7 @@ interface ProductData {
   specifications?: ProductSpec[]
 }
 
-export function createProductSchema(product: ProductData, spoke: string) {
+export function createProductSchema(product: ProductData, _spoke: string) {
   let imageUrl = `https://${ROOT_DOMAIN}/og-default.png`
   if (product.images?.[0]) {
     try {
@@ -122,6 +122,62 @@ export function createLocalBusinessSchema() {
       dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
       opens: '08:00',
       closes: '17:00',
+    },
+  }
+}
+
+interface FAQItem {
+  question: string
+  answer: string
+}
+
+export function createFAQSchema(items: FAQItem[]) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: items.map((item) => ({
+      '@type': 'Question',
+      name: item.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: item.answer,
+      },
+    })),
+  }
+}
+
+interface ArticleData {
+  title: string
+  publishedAt: string
+  excerpt?: string
+  slug: string
+  author?: string | null
+}
+
+export function createArticleSchema(article: ArticleData) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: article.title,
+    description: article.excerpt || article.title,
+    datePublished: article.publishedAt,
+    dateModified: article.publishedAt,
+    url: `https://${ROOT_DOMAIN}/articles/${article.slug}`,
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': `https://${ROOT_DOMAIN}/articles/${article.slug}`,
+    },
+    author: {
+      '@type': 'Organization',
+      name: article.author || 'PT DBSN Sentradaya',
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'PT DBSN Sentradaya',
+      logo: {
+        '@type': 'ImageObject',
+        url: `https://${ROOT_DOMAIN}/logo.png`,
+      },
     },
   }
 }

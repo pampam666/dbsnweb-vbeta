@@ -36,5 +36,19 @@ export const spokeConfig = defineType({
         hotspot: true,
       },
     }),
+    defineField({
+      name: 'seoDefaults',
+      title: 'SEO Defaults',
+      type: 'object',
+      fields: [
+        defineField({ name: 'title', title: 'SEO Title', type: 'string' }),
+        defineField({
+          name: 'description',
+          title: 'SEO Description',
+          type: 'text',
+          rows: 3,
+        }),
+      ],
+    }),
   ],
 })

@@ -9,6 +9,8 @@ import {
   createProductSchema,
   createBreadcrumbSchema,
   createLocalBusinessSchema,
+  createFAQSchema,
+  createArticleSchema,
 } from '../../../lib/seo/json-ld'
 
 describe('SEO JSON-LD Schemas', () => {
@@ -70,6 +72,41 @@ describe('SEO JSON-LD Schemas', () => {
       expect(schema.name).toBe('DBSN Sentradaya')
       expect(schema.address?.addressLocality).toBe('Surabaya')
       expect(schema.telephone).toBe('+62-31-xxxxxx')
+    })
+  })
+
+  describe('createFAQSchema', () => {
+    it('returns valid FAQPage schema', () => {
+      const items = [
+        { question: 'Q1', answer: 'A1' },
+        { question: 'Q2', answer: 'A2' },
+      ]
+      const schema = createFAQSchema(items)
+      expect(schema['@context']).toBe('https://schema.org')
+      expect(schema['@type']).toBe('FAQPage')
+      expect(schema.mainEntity).toHaveLength(2)
+      expect(schema.mainEntity[0]['@type']).toBe('Question')
+      expect(schema.mainEntity[0].name).toBe('Q1')
+      expect(schema.mainEntity[0].acceptedAnswer?.text).toBe('A1')
+    })
+  })
+
+  describe('createArticleSchema', () => {
+    it('returns valid BlogPosting schema', () => {
+      const article = {
+        title: 'Judul Artikel',
+        publishedAt: '2026-06-21T05:00:00Z',
+        excerpt: 'Ringkasan artikel',
+        slug: 'judul-artikel',
+        author: 'Admin DBSN',
+      }
+      const schema = createArticleSchema(article)
+      expect(schema['@context']).toBe('https://schema.org')
+      expect(schema['@type']).toBe('BlogPosting')
+      expect(schema.headline).toBe('Judul Artikel')
+      expect(schema.description).toBe('Ringkasan artikel')
+      expect(schema.author?.name).toBe('Admin DBSN')
+      expect(schema.publisher?.name).toBe('PT DBSN Sentradaya')
     })
   })
 })

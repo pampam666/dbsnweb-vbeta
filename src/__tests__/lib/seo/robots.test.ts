@@ -7,6 +7,7 @@ jest.mock('next/headers', () => ({
   headers: jest.fn(),
 }))
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mockHeadersFn = headers as any
 
 describe('Robots.txt Generator', () => {
@@ -29,9 +30,26 @@ describe('Robots.txt Generator', () => {
       expect.objectContaining({
         userAgent: '*',
         allow: '/',
-        disallow: ['/dashboard/', '/api/', '/_next/'],
+        disallow: ['/dashboard/', '/api/', '/_next/', '/login', '/lupa-kata-sandi'],
       })
     )
+  })
+
+  it('blocks indexing entirely on dashboard domains', async () => {
+    const mockHeaders = {
+      get: (key: string) => {
+        if (key.toLowerCase() === 'host') return 'dashboard.sentradaya.com'
+        return null
+      },
+    }
+    mockHeadersFn.mockResolvedValue(mockHeaders)
+
+    const result = await robots()
+
+    expect(result.rules).toEqual({
+      userAgent: '*',
+      disallow: '/',
+    })
   })
 
   it('returns correct sitemap url for hub domain', async () => {
