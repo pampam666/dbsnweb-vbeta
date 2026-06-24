@@ -7,14 +7,13 @@ import {
   SPOKE_SUBDOMAINS,
 } from './lib/middleware/config'
 import { lookupRedirect } from './lib/middleware/redirect-engine'
-import { getToken } from 'next-auth/jwt'
 
 /**
  * DBSN Subdomain Middleware Routing.
  * Maps hostnames to their corresponding Next.js Route Groups.
- * - dayaberkah.id / www.dayaberkah.id -> /(hub) (next.js transparent group)
- * - dashboard.dayaberkah.id -> /dashboard
- * - [spoke].dayaberkah.id -> /[spoke] (maps to /(spokes)/[spoke] internally)
+ * - sentradaya.com / www.sentradaya.com -> /(hub) (next.js transparent group)
+ * - dashboard.sentradaya.com -> /dashboard
+ * - [spoke].sentradaya.com -> /[spoke] (maps to /(spokes)/[spoke] internally)
  * 
  * Runs on the V8 Edge Runtime.
  */
@@ -41,45 +40,20 @@ export default async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl, 301)
   }
 
+  // 2. Short-circuit for already rewritten paths (to prevent infinite loops)
   const isDash = isDashboardDomain(cleanHost)
 
-  // 2. Short-circuit for already rewritten paths (to prevent infinite loops)
-  // Secure against direct access to /dashboard paths
-  if (pathname.startsWith('/dashboard') && isDash) {
-    const isPublicRoute =
-      pathname === '/dashboard/login' ||
-      pathname === '/dashboard/lupa-kata-sandi' ||
-      pathname === '/dashboard/konfirmasi-reset'
-
-    if (!isPublicRoute) {
-      let token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET })
-      if (!token && process.env.NODE_ENV === 'development' && request.cookies.get('next-auth.session-token')?.value === 'mock-e2e-admin-token') {
-        token = {
-          email: 'admin@dbsn.co.id',
-          name: 'System Admin',
-          role: 'ADMIN',
-          isActive: true,
-        } as any
-      }
-      if (!token) {
-        const loginUrl = new URL('/login', request.url)
-        return NextResponse.redirect(loginUrl)
-      }
-    }
-
-    const response = NextResponse.next()
-    response.headers.set('x-middleware-subdomain', 'dashboard')
-    response.headers.set('x-middleware-matched-route', '/dashboard')
-    return response
-  }
-
   if (
+    (pathname.startsWith('/dashboard') && isDash) ||
     pathname.startsWith('/(hub)') ||
     pathname.startsWith('/404') ||
     (spoke && pathname.startsWith(`/${spoke}`))
   ) {
     const response = NextResponse.next()
-    if (pathname.startsWith('/(hub)')) {
+    if (isDash) {
+      response.headers.set('x-middleware-subdomain', 'dashboard')
+      response.headers.set('x-middleware-matched-route', '/dashboard')
+    } else if (pathname.startsWith('/(hub)')) {
       response.headers.set('x-middleware-subdomain', 'hub')
       response.headers.set('x-middleware-matched-route', '/(hub)')
     } else if (spoke) {
@@ -111,16 +85,13 @@ export default async function middleware(request: NextRequest) {
       pathname === '/konfirmasi-reset'
 
     if (!isPublicRoute) {
-      let token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET })
-      if (!token && process.env.NODE_ENV === 'development' && request.cookies.get('next-auth.session-token')?.value === 'mock-e2e-admin-token') {
-        token = {
-          email: 'admin@dbsn.co.id',
-          name: 'System Admin',
-          role: 'ADMIN',
-          isActive: true,
-        } as any
-      }
-      if (!token) {
+      const sessionToken =
+        request.cookies.get('next-auth.session-token')?.value ||
+        request.cookies.get('__Secure-next-auth.session-token')?.value ||
+        request.cookies.get('authjs.session-token')?.value ||
+        request.cookies.get('__Secure-authjs.session-token')?.value
+
+      if (!sessionToken) {
         const loginUrl = new URL('/login', request.url)
         return NextResponse.redirect(loginUrl)
       }
