@@ -56,9 +56,9 @@ export default async function ProductDetailPage({
 
   const productSchema = createProductSchema(product, spoke)
   const breadcrumbSchema = createBreadcrumbSchema([
-    { name: 'DBSN Hub', url: 'https://sentradaya.com' },
-    { name: config.name, url: `https://${spoke}.sentradaya.com` },
-    { name: product.title, url: `https://${spoke}.sentradaya.com/products/${slug}` },
+    { name: 'DBSN Hub', url: 'https://dayaberkah.id' },
+    { name: config.name, url: `https://${spoke}.dayaberkah.id` },
+    { name: product.title, url: `https://${spoke}.dayaberkah.id/products/${slug}` },
   ])
 
   return (
@@ -79,7 +79,7 @@ export default async function ProductDetailPage({
           </nav>
         </header>
 
-        <main className="container mx-auto px-6 py-12 max-w-6xl">
+        <main id="main-content" tabIndex={-1} className="container mx-auto px-6 py-12 max-w-6xl outline-none">
           <ProductViewTracker productName={product.title} spoke={spoke} />
           <Script
             id="product-schema"

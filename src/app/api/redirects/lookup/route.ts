@@ -1,9 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db/prisma'
+import { getClientIp, createRateLimiter } from '@/lib/rate-limiter'
+
+const limiter = createRateLimiter({
+  interval: 60 * 1000,
+  maxRequests: 30,
+})
 
 export const runtime = 'nodejs' // Use standard Node.js serverless runtime (not edge)
 
 export async function GET(request: NextRequest) {
+  const ip = getClientIp(request)
+  const rateLimitResult = limiter.check(ip)
+  if (!rateLimitResult.success) {
+    return NextResponse.json(
+      { success: false, error: 'Too Many Requests' },
+      {
+        status: 429,
+        headers: {
+          'Retry-After': Math.ceil((rateLimitResult.reset - Date.now()) / 1000).toString(),
+        },
+      }
+    )
+  }
+
   try {
     const { searchParams } = request.nextUrl
     const pathname = searchParams.get('pathname')
@@ -16,7 +36,7 @@ export async function GET(request: NextRequest) {
     const normalizedPath = pathname === '/' ? '/' : (pathname.endsWith('/') ? pathname.slice(0, -1) : pathname)
     const legacyUrl = spoke ? `/${spoke}${normalizedPath}` : normalizedPath
 
-    const host = spoke ? `${spoke}.sentradaya.com` : 'sentradaya.com'
+    const host = spoke ? `${spoke}.dayaberkah.id` : 'dayaberkah.id'
     const variations = [
       legacyUrl,
       `http://${host}${normalizedPath}`,

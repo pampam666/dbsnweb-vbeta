@@ -5,14 +5,14 @@ import { getProductSlugsWithSpokes, getArticleSlugs, getPortfolioSlugs } from '.
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const headersList = await headers()
-  const host = headersList.get('host') || 'sentradaya.com'
+  const host = headersList.get('host') || 'dayaberkah.id'
   const subdomain = extractSubdomain(host)
   const isSpoke = isSpokeDomain(host)
 
   const lastModified = new Date()
 
   if (isSpoke) {
-    const baseUrl = `https://${subdomain}.sentradaya.com`
+    const baseUrl = `https://${subdomain}.dayaberkah.id`
     const entries: MetadataRoute.Sitemap = [
       {
         url: baseUrl,
@@ -43,7 +43,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   // Hub domain sitemap
-  const baseUrl = 'https://sentradaya.com'
+  const baseUrl = 'https://dayaberkah.id'
   const staticPages = [
     '',
     '/about',

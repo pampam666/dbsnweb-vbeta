@@ -1,6 +1,6 @@
 import { prisma } from '../db/prisma'
 
-const ROOT_DOMAIN = 'sentradaya.com'
+const ROOT_DOMAIN = 'dayaberkah.id'
 
 export interface AuditOptions {
   baseUrl?: string
@@ -32,7 +32,7 @@ export interface AuditReport {
 }
 
 export async function auditRedirects(options: AuditOptions = {}): Promise<AuditReport> {
-  const baseUrl = options.baseUrl || 'https://sentradaya.com'
+  const baseUrl = options.baseUrl || 'https://dayaberkah.id'
   const checkStatus = options.checkStatus ?? false
 
   const redirects = await prisma.redirectMap.findMany()

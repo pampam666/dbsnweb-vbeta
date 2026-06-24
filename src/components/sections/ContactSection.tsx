@@ -85,7 +85,7 @@ export default function ContactSection() {
                   {[
                     { icon: MapPin, title: "Alammat", desc: "Jl. Raya Industri No. 88\nSurabaya, Jawa Timur 60175\nIndonesia" },
                     { icon: Phone, title: "Telepon", desc: "+62 31 1234 5678" },
-                    { icon: Mail, title: "Email", desc: "info@sentradaya.com" },
+                    { icon: Mail, title: "Email", desc: "info@dayaberkah.id" },
                     { icon: Clock, title: "Jam Operasional", desc: "Senin - Jumat\n08:00 - 17:00 WIB" },
                   ].map(({ icon: Icon, title, desc }) => (
                     <div key={title} className="flex items-start gap-3">

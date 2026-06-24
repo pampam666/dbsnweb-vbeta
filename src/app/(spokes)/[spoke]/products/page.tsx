@@ -27,7 +27,7 @@ export async function generateMetadata({
     title: `Produk ${config.name} - DBSN`,
     description: `Daftar lengkap produk infrastruktur ${config.name} terbaik di Indonesia.`,
     alternates: {
-      canonical: `https://${spoke}.sentradaya.com/products`,
+      canonical: `https://${spoke}.dayaberkah.id/products`,
     },
   }
 }

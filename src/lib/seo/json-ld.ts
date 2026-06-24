@@ -1,6 +1,6 @@
 import { getOptimizedImageUrl } from '../api/sanity/image'
 
-const ROOT_DOMAIN = 'sentradaya.com'
+const ROOT_DOMAIN = 'dayaberkah.id'
 
 export function createOrganizationSchema() {
   return {
@@ -102,7 +102,7 @@ export function createLocalBusinessSchema() {
     name: 'DBSN Sentradaya',
     image: `https://${ROOT_DOMAIN}/logo.png`,
     telephone: '+62-31-xxxxxx',
-    email: 'info@sentradaya.com',
+    email: 'info@dayaberkah.id',
     url: `https://${ROOT_DOMAIN}`,
     address: {
       '@type': 'PostalAddress',

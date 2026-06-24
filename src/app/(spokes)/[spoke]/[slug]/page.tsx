@@ -28,7 +28,7 @@ export async function generateMetadata({
     title: `${page.seoMeta?.title || page.title} - DBSN`,
     description: page.seoMeta?.description,
     alternates: {
-      canonical: `https://${spoke}.sentradaya.com/${slug}`,
+      canonical: `https://${spoke}.dayaberkah.id/${slug}`,
     },
   }
 }

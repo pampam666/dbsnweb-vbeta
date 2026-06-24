@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 
-const ROOT_DOMAIN = 'sentradaya.com'
+const ROOT_DOMAIN = 'dayaberkah.id'
 const DEFAULT_OG_IMAGE = `https://${ROOT_DOMAIN}/og-default.png`
 
 function slugify(text: string): string {

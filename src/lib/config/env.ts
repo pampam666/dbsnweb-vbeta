@@ -103,8 +103,8 @@ export type MiddlewareEnv = z.infer<typeof middlewareEnvSchema>
  */
 export function validateMiddlewareEnv(): MiddlewareEnv {
   const isProd = process.env.NODE_ENV === 'production'
-  const defaultDomain = isProd ? 'sentradaya.com' : 'lvh.me'
-  const defaultUrl = isProd ? 'https://sentradaya.com' : 'http://lvh.me:3000'
+  const defaultDomain = isProd ? 'dayaberkah.id' : 'lvh.me'
+  const defaultUrl = isProd ? 'https://dayaberkah.id' : 'http://lvh.me:3000'
 
   const raw = {
     NEXT_PUBLIC_ROOT_DOMAIN: process.env.NEXT_PUBLIC_ROOT_DOMAIN || defaultDomain,

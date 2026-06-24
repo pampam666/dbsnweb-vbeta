@@ -382,7 +382,7 @@ export default function ContactPage() {
                     {[
                       { icon: MapPin, title: "Alamat Kantor Utama", desc: "Jl. Raya Industri No. 88\nSurabaya, Jawa Timur 60175\nIndonesia", link: "https://maps.google.com/?q=-7.2756,112.7421" },
                       { icon: Phone, title: "Telepon / Fax", desc: "+62 31 1234 5678", link: "tel:+623112345678" },
-                      { icon: Mail, title: "Email Korporat", desc: "info@sentradaya.com", link: "mailto:info@sentradaya.com" },
+                      { icon: Mail, title: "Email Korporat", desc: "info@dayaberkah.id", link: "mailto:info@dayaberkah.id" },
                       { icon: Clock, title: "Jam Operasional", desc: "Senin - Jumat\n08:00 - 17:00 WIB", link: null },
                     ].map((item) => (
                       <div key={item.title} className="flex items-start gap-3.5">

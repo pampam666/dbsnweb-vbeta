@@ -67,7 +67,7 @@ export function extractSubdomain(hostname: string): string | null {
     try {
       rootDomain = getMiddlewareEnv().NEXT_PUBLIC_ROOT_DOMAIN
     } catch {
-      rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'sentradaya.com'
+      rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'dayaberkah.id'
     }
   }
 
@@ -108,7 +108,7 @@ export function isHubDomain(hostname: string): boolean {
     try {
       rootDomain = getMiddlewareEnv().NEXT_PUBLIC_ROOT_DOMAIN
     } catch {
-      rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'sentradaya.com'
+      rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'dayaberkah.id'
     }
   }
 

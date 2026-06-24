@@ -27,7 +27,7 @@ export async function generateMetadata({
     title: `Portofolio ${config.name} - DBSN`,
     description: `Daftar proyek pemasangan dan implementasi infrastruktur ${config.name} sukses kami di seluruh Indonesia.`,
     alternates: {
-      canonical: `https://${spoke}.sentradaya.com/portfolio`,
+      canonical: `https://${spoke}.dayaberkah.id/portfolio`,
     },
   }
 }

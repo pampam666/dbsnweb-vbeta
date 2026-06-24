@@ -4,7 +4,7 @@ import { extractSubdomain, isSpokeDomain, isDashboardDomain } from '../lib/middl
 
 export default async function robots(): Promise<MetadataRoute.Robots> {
   const headersList = await headers()
-  const host = headersList.get('host') || 'sentradaya.com'
+  const host = headersList.get('host') || 'dayaberkah.id'
   const subdomain = extractSubdomain(host)
   const isSpoke = isSpokeDomain(host)
 
@@ -18,9 +18,9 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
     }
   }
 
-  let sitemapUrl = 'https://sentradaya.com/sitemap.xml'
+  let sitemapUrl = 'https://dayaberkah.id/sitemap.xml'
   if (isSpoke) {
-    sitemapUrl = `https://${subdomain}.sentradaya.com/sitemap.xml`
+    sitemapUrl = `https://${subdomain}.dayaberkah.id/sitemap.xml`
   }
 
   const disallowList = ['/dashboard/', '/api/', '/_next/']

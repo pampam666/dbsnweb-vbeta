@@ -32,7 +32,7 @@ const footerLinks = [
 const contactInfo = [
   { icon: MapPin, text: "Jl. Raya Industri No. 88, Surabaya, Jawa Timur 60175" },
   { icon: Phone, text: "+62 31 1234 5678" },
-  { icon: Mail, text: "info@sentradaya.com" },
+  { icon: Mail, text: "info@dayaberkah.id" },
 ];
 
 export default function Footer() {

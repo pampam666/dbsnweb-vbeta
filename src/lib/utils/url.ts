@@ -2,7 +2,7 @@ import { getWindowLocation } from './location'
 
 /**
  * Dynamically builds a URL targeting a spoke subdomain based on the current environment.
- * Handles local development (lvh.me), staging (vercel.app), and production (sentradaya.com).
+ * Handles local development (lvh.me), staging (vercel.app), and production (dayaberkah.id).
  *
  * @param spoke - Spoke subdomain name (e.g. 'pju', 'solarcell', 'alatpetir', 'baterai')
  * @param path - Routing path (e.g. '/products' or '/products/slug')
@@ -32,7 +32,7 @@ export function buildSpokeUrl(spoke: string, path: string = ''): string {
     }
   } else {
     // Fallback or production root domain
-    rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'sentradaya.com'
+    rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'dayaberkah.id'
   }
 
   const portSuffix = port ? `:${port}` : ''

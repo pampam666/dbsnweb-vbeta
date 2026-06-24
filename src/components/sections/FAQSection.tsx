@@ -18,7 +18,7 @@ const faqCategories: Record<string, FAQ[]> = {
     { question: "Apakah DBSN Sentradaya melayani pengiriman ke seluruh Indonesia?", answer: "Ya, DBSN Sentradaya melayani pengiriman produk ke seluruh wilayah Indonesia, mulai dari Sumatera hingga Papua. Kami bekerja sama dengan jasa logistik terpercaya untuk memastikan produk sampai dengan aman dan tepat waktu." },
     { question: "Berapa lama proses pengiriman produk?", answer: "Estimasi waktu pengiriman bervariasi tergantung lokasi tujuan. Untuk wilayah Jawa, pengiriman membutuhkan 3–5 hari kerja. Untuk luar Jawa 5–10 hari kerja. Untuk wilayah Indonesia Timur, estimasi 7–14 hari kerja." },
     { question: "Apakah tersedia layanan pemasangan/instalasi?", answer: "Ya, DBSN Sentradaya menyediakan layanan pemasangan dan instalasi profesional untuk seluruh produk kami. Tim teknisi bersertifikasi kami siap membantu instalasi PJU, panel surya, penangkal petir, dan sistem baterai di lokasi proyek Anda." },
-    { question: "Bagaimana cara mendapatkan katalog produk?", answer: "Anda dapat menghubungi tim sales kami melalui WhatsApp, mengirim email ke info@dbsnsentradaya.com, atau mengisi formulir pada halaman Hubungi Kami. Tim kami akan segera mengirimkan katalog produk digital serta informasi harga terbaru." },
+    { question: "Bagaimana cara mendapatkan katalog produk?", answer: "Anda dapat menghubungi tim sales kami melalui WhatsApp, mengirim email ke info@dayaberkah.id, atau mengisi formulir pada halaman Hubungi Kami. Tim kami akan segera mengirimkan katalog produk digital serta informasi harga terbaru." },
     { question: "Apakah DBSN Sentradaya menyediakan garansi produk?", answer: "Tentu, seluruh produk DBSN Sentradaya dilengkapi garansi resmi. Garansi bervariasi: PJU LED (2–3 tahun), Panel Surya (5–10 tahun), Penangkal Petir (3–5 tahun), dan Baterai LiFePO4 (5–10 tahun)." },
   ],
   produk: [
@@ -94,7 +94,7 @@ export default function FAQSection() {
           <div className="relative mb-8">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <Input type="text" placeholder="Cari pertanyaan..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-12 border-emerald-200 focus:border-emerald-500 text-base" />
+              className="pl-10 h-12 border-emerald-200 focus:border-emerald-500 text-base" aria-label="Search frequently asked questions" />
             {searchQuery && (
               <p className="text-sm text-gray-500 mt-2">
                 Ditemukan <span className="font-semibold text-emerald-700">{totalResults}</span> hasil untuk &ldquo;<span className="font-medium">{searchQuery}</span>&rdquo;

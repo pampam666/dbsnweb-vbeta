@@ -65,7 +65,7 @@ export const faqData: Record<"umum" | "teknis" | "layanan", FAQItem[]> = {
     },
     {
       question: "Bagaimana cara mendapatkan katalog produk dan konsultasi teknis gratis?",
-      answer: "Anda dapat dengan mudah mengisi form RFQ di halaman Kontak, mengirimkan email ke info@sentradaya.com, atau mengklik tombol WhatsApp untuk langsung berdiskusi dengan tim sales engineering kami yang siap membantu merekomendasikan produk terbaik."
+      answer: "Anda dapat dengan mudah mengisi form RFQ di halaman Kontak, mengirimkan email ke info@dayaberkah.id, atau mengklik tombol WhatsApp untuk langsung berdiskusi dengan tim sales engineering kami yang siap membantu merekomendasikan produk terbaik."
     }
   ]
 };

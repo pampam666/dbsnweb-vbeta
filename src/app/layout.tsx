@@ -6,7 +6,7 @@ import './globals.css'
 export const metadata: Metadata = {
   title: 'DBSN Digital Ecosystem',
   description: 'Solusi Energi Terbarukan untuk Masa Depan Indonesia',
-  metadataBase: new URL('https://sentradaya.com'),
+  metadataBase: new URL('https://dayaberkah.id'),
   alternates: {
     canonical: '/',
   },
