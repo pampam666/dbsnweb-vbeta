@@ -11,9 +11,9 @@ import { lookupRedirect } from './lib/middleware/redirect-engine'
 /**
  * DBSN Subdomain Middleware Routing.
  * Maps hostnames to their corresponding Next.js Route Groups.
- * - sentradaya.com / www.sentradaya.com -> /(hub) (next.js transparent group)
- * - dashboard.sentradaya.com -> /dashboard
- * - [spoke].sentradaya.com -> /[spoke] (maps to /(spokes)/[spoke] internally)
+ * - dayaberkah.id / www.dayaberkah.id -> /(hub) (next.js transparent group)
+ * - dashboard.dayaberkah.id -> /dashboard
+ * - [spoke].dayaberkah.id -> /[spoke] (maps to /(spokes)/[spoke] internally)
  * 
  * Runs on the V8 Edge Runtime.
  */

@@ -1,5 +1,17 @@
 import crypto from 'crypto';
 
+const logger = {
+  info: (message: string, meta?: Record<string, any>) => {
+    console.info(JSON.stringify({ level: 'info', message, ...meta }));
+  },
+  warn: (message: string, meta?: Record<string, any>) => {
+    console.warn(JSON.stringify({ level: 'warn', message, ...meta }));
+  },
+  error: (message: string, error?: any) => {
+    console.error(JSON.stringify({ level: 'error', message, error: error instanceof Error ? error.message : error }));
+  }
+};
+
 interface ServiceAccount {
   client_email: string;
   private_key: string;
@@ -116,12 +128,15 @@ async function submitSitemap(siteUrl: string, sitemapUrl: string, accessToken: s
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error(`❌ Failed to submit sitemap "${sitemapUrl}" to site "${siteUrl}": ${response.status} ${response.statusText}`);
-    console.error(`   Error details: ${errorText}`);
+    logger.error(`Failed to submit sitemap "${sitemapUrl}" to site "${siteUrl}"`, {
+      status: response.status,
+      statusText: response.statusText,
+      errorDetails: errorText,
+    });
     return false;
   }
 
-  console.log(`✅ Successfully submitted sitemap "${sitemapUrl}" to site "${siteUrl}"`);
+  logger.info(`Successfully submitted sitemap "${sitemapUrl}" to site "${siteUrl}"`);
   return true;
 }
 
@@ -135,13 +150,10 @@ async function main() {
   let serviceAccount: ServiceAccount | null = null;
   let isDryRun = isForceDryRun;
 
-  console.log('==================================================');
-  console.log('🚀 Google Search Console Sitemap Submitter');
-  console.log('==================================================\n');
+  logger.info('Google Search Console Sitemap Submitter starting...');
 
   if (!credentialsJson) {
-    console.log('⚠️  No GSC_SERVICE_ACCOUNT_JSON found in environment.');
-    console.log('👉 Running in DRY-RUN mode. To execute live, set GSC_SERVICE_ACCOUNT_JSON in your environment.');
+    logger.warn('No GSC_SERVICE_ACCOUNT_JSON found in environment. Running in DRY-RUN mode.');
     isDryRun = true;
   } else {
     try {
@@ -155,51 +167,37 @@ async function main() {
         serviceAccount.private_key.includes('mock') || 
         serviceAccount.private_key === 'mock'
       ) {
-        console.log('⚠️  Detected mock or incomplete service account credentials.');
-        console.log('👉 Running in DRY-RUN mode.');
+        logger.warn('Detected mock or incomplete service account credentials. Running in DRY-RUN mode.');
         isDryRun = true;
       }
     } catch (e) {
-      console.error('❌ Failed to parse GSC_SERVICE_ACCOUNT_JSON environment variable.');
-      console.log('👉 Running in DRY-RUN mode.');
+      logger.error('Failed to parse GSC_SERVICE_ACCOUNT_JSON environment variable. Running in DRY-RUN mode.', e);
       isDryRun = true;
     }
   }
 
   if (isDryRun) {
-    console.log('\n--- 📝 DRY-RUN SUBMISSION SUMMARY ---');
-    console.log(`Email (Service Account): ${serviceAccount?.client_email || 'mock-service-account@gserviceaccount.com'}`);
-    console.log('Target properties & sitemaps to submit:');
-    
-    for (const item of SUBMISSIONS) {
-      console.log(`\nSite Property: "${item.siteUrl}"`);
-      for (const sitemap of item.sitemaps) {
-        const mockApiUrl = `https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(item.siteUrl)}/sitemaps/${encodeURIComponent(sitemap)}`;
-        console.log(`  - Sitemap: ${sitemap}`);
-        console.log(`    API URL: PUT ${mockApiUrl}`);
-      }
-    }
-    console.log('\n==================================================');
-    console.log('📝 Dry run completed. No real API requests were sent.');
-    console.log('==================================================');
+    logger.info('Running dry-run submission summary', {
+      serviceAccountEmail: serviceAccount?.client_email || 'mock-service-account@gserviceaccount.com',
+      submissionsCount: SUBMISSIONS.reduce((sum, item) => sum + item.sitemaps.length, 0),
+    });
     return;
   }
 
   if (!serviceAccount) {
-    console.error('❌ Service account configuration is unexpectedly null. Aborting.');
+    logger.error('Service account configuration is unexpectedly null. Aborting.');
     process.exit(1);
   }
 
   try {
-    console.log(`🔑 Authenticating service account: ${serviceAccount.client_email}...`);
+    logger.info(`Authenticating service account: ${serviceAccount.client_email}...`);
     const accessToken = await getAccessToken(serviceAccount);
-    console.log('🔑 Authentication successful! Beginning sitemap submissions...\n');
+    logger.info('Authentication successful! Beginning sitemap submissions...');
 
     let successCount = 0;
     let failCount = 0;
 
     for (const item of SUBMISSIONS) {
-      console.log(`\nProcessing Site Property: "${item.siteUrl}"`);
       for (const sitemap of item.sitemaps) {
         const success = await submitSitemap(item.siteUrl, sitemap, accessToken);
         if (success) {
@@ -210,22 +208,16 @@ async function main() {
       }
     }
 
-    console.log('\n==================================================');
-    console.log(`🎉 Sitemap submission completed.`);
-    console.log(`   Successes: ${successCount}`);
-    console.log(`   Failures:  ${failCount}`);
-    console.log('==================================================');
+    logger.info('Sitemap submission completed', {
+      successes: successCount,
+      failures: failCount,
+    });
 
     if (failCount > 0) {
-      console.log('💡 Note: Failures are common if GSC properties are not verified yet or permissions are missing.');
+      logger.info('Note: Failures are common if GSC properties are not verified yet or permissions are missing.');
     }
   } catch (error) {
-    console.error('\n❌ Fatal error during sitemap submission process:');
-    if (error instanceof Error) {
-      console.error(error.message);
-    } else {
-      console.error(error);
-    }
+    logger.error('Fatal error during sitemap submission process', error);
     process.exit(1);
   }
 }

@@ -16,14 +16,14 @@ jest.mock('@/lib/api/sanity/image', () => ({
 
 // Mock components that import ES modules
 jest.mock('@/components/shared/GalleryCarousel', () => {
-  return function DummyGalleryCarousel({ images, alt }: any) {
+  return function DummyGalleryCarousel({ images, alt }: { images?: unknown[]; alt?: string }) {
     return <div data-testid="carousel">{alt} images count: {images?.length}</div>
   }
 })
 
 jest.mock('@/components/shared/PortableText', () => {
   return {
-    PortableText: ({ value }: any) => <div data-testid="portable-text">{JSON.stringify(value)}</div>,
+    PortableText: ({ value }: { value: unknown }) => <div data-testid="portable-text">{JSON.stringify(value)}</div>,
   }
 })
 
@@ -87,7 +87,7 @@ describe('PortfolioDetailPage', () => {
     render(resolvedPage)
 
     expect(screen.getByRole('heading', { name: 'PJUTS Jalan Utama Daerah A' })).toBeInTheDocument()
-    expect(screen.getByTestPositions || screen.getByTestId('portable-text')).toBeInTheDocument()
+    expect(screen.getByTestId('portable-text')).toBeInTheDocument()
     expect(screen.getByText('Menerangi 150 titik jalan utama')).toBeInTheDocument()
     expect(screen.getByText('Daerah A')).toBeInTheDocument()
     expect(screen.getByText('Lampu LED Street Light')).toBeInTheDocument()

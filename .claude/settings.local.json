@@ -55,9 +55,33 @@
       "Bash(ECC_GATEGUARD=off rm -f \"src/lib/api/sanity/__tests__queries.test.ts\")",
       "Bash(npm list *)",
       "mcp__plugin_ecc_exa__web_search_exa",
-      "WebSearch"
+      "WebSearch",
+      "Bash(curl -s -H \"Authorization: Bearer vcp_0nbOSzUyqzIYXUZSWNO27joKq5g7BSFadkFlq7DblM0Usr8lpR0MozAw\" \"https://api.vercel.com/v2/teams?limit=10\")",
+      "Bash(curl *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); [print\\(f\\\\\"{x.get\\('uid'\\)} | {x.get\\('readyState'\\)} | createdAt={x.get\\('createdAt'\\)} | commit={x.get\\('meta',{}\\).get\\('githubCommitMessage','N/A'\\)[:60]} | sha={x.get\\('meta',{}\\).get\\('githubCommitSha','N/A'\\)[:7]}\\\\\"\\) for x in d.get\\('deployments',[]\\)]\")",
+      "Bash(python -c ' *)",
+      "Bash(curl -s \"https://api.vercel.com/v6/deployments/dpl_FuFrmAYTEAPAap9tg38ZRZmdYFXB/events?limit=200\" -H \"Authorization: Bearer vcp_0nbOSzUyqzIYXUZSWNO27joKq5g7BSFadkFlq7DblM0Usr8lpR0MozAw\")",
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(pnpm build *)",
+      "Bash(git checkout *)",
+      "Bash(xargs -0 sed -i 's|sentradaya\\\\.com|dayaberkah.id|g')",
+      "Bash(pnpm test *)"
     ]
   },
+  "enabledMcpjsonServers": [
+    "memory",
+    "sequential-thinking",
+    "context7",
+    "playwright",
+    "neon",
+    "github",
+    "cloudflare-docs",
+    "magic",
+    "devfleet",
+    "vercel"
+  ],
   "enabledPlugins": {
     "ecc@ecc": false
   }

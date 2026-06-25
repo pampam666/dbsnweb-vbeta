@@ -1,10 +1,14 @@
-import { describe, it, expect, beforeEach, jest, afterEach } from '@jest/globals'
+import { describe, it, expect, beforeEach, jest, afterEach, afterAll } from '@jest/globals'
 import { lookupRedirect, clearCache } from '../../../lib/middleware/redirect-engine'
 
 // Mock the global fetch
-const mockFetch = jest.fn()
+const mockFetch = jest.fn<(...args: unknown[]) => Promise<unknown>>()
 const originalFetch = global.fetch
-global.fetch = mockFetch as any
+global.fetch = mockFetch as unknown as typeof global.fetch
+
+afterAll(() => {
+  global.fetch = originalFetch
+})
 
 describe('Redirect Engine', () => {
   const origin = 'http://localhost:3000'

@@ -18,7 +18,9 @@ export default function HubLayout({
           <Navbar />
         </Suspense>
 
-        {children}
+        <div id="main-content" tabIndex={-1} className="outline-none">
+          {children}
+        </div>
       </div>
 
       <Suspense fallback={null}>

@@ -107,11 +107,16 @@ export default function GalleryCarousel({ images, alt }: Props) {
           <button
             key={index}
             onClick={() => scrollTo(index)}
-            className={`w-2.5 h-2.5 rounded-full transition-all duration-300 cursor-pointer ${
-              selectedIndex === index ? 'bg-blue-600 w-6' : 'bg-slate-300 hover:bg-slate-400'
-            }`}
+            className="group min-w-6 min-h-6 flex items-center justify-center cursor-pointer"
             aria-label={`Slide ke-${index + 1}`}
-          />
+            aria-current={selectedIndex === index ? "true" : "false"}
+          >
+            <span
+              className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                selectedIndex === index ? 'bg-blue-600 w-6' : 'bg-slate-300 group-hover:bg-slate-400'
+              }`}
+            />
+          </button>
         ))}
       </div>
     </div>

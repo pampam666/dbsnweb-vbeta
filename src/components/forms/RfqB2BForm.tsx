@@ -141,11 +141,12 @@ export function RfqB2BForm({ onSubmit }: RfqB2BFormProps) {
       
       // Clear cart on success
       useRfqCartStore.getState().clearCart()
-    } catch (err: any) {
+    } catch (err) {
       console.error('RFQ B2B Submission failed:', err)
-      const fallbackUrl = err.fallback_url || err.response?.data?.error?.fallback_url || err.error?.fallback_url
+      const error = err as Error & { fallback_url?: string; response?: { data?: { error?: { fallback_url?: string } } }; error?: { fallback_url?: string } }
+      const fallbackUrl = error.fallback_url || error.response?.data?.error?.fallback_url || error.error?.fallback_url
       setSubmitError({
-        message: err.message || 'Terjadi kesalahan sistem saat mengirim RFQ.',
+        message: error.message || 'Terjadi kesalahan sistem saat mengirim RFQ.',
         fallbackUrl
       })
     } finally {
@@ -176,13 +177,13 @@ export function RfqB2BForm({ onSubmit }: RfqB2BFormProps) {
       noValidate
     >
       {/* Hidden tracking fields */}
-      <input type="hidden" value="B2B" {...register('segment')} />
-      <input type="hidden" value={trackingMetadata.source_domain} {...register('source_domain')} />
-      <input type="hidden" value={trackingMetadata.source_page_path} {...register('source_page_path')} />
-      <input type="hidden" value={trackingMetadata.source_campaign_tag || ''} {...register('source_campaign_tag')} />
-      <input type="hidden" value={trackingMetadata.utm_source || ''} {...register('utm_source')} />
-      <input type="hidden" value={trackingMetadata.utm_medium || ''} {...register('utm_medium')} />
-      <input type="hidden" value={trackingMetadata.utm_campaign || ''} {...register('utm_campaign')} />
+      <input type="hidden" value="B2B" {...register('segment')} aria-hidden="true" />
+      <input type="hidden" value={trackingMetadata.source_domain} {...register('source_domain')} aria-hidden="true" />
+      <input type="hidden" value={trackingMetadata.source_page_path} {...register('source_page_path')} aria-hidden="true" />
+      <input type="hidden" value={trackingMetadata.source_campaign_tag || ''} {...register('source_campaign_tag')} aria-hidden="true" />
+      <input type="hidden" value={trackingMetadata.utm_source || ''} {...register('utm_source')} aria-hidden="true" />
+      <input type="hidden" value={trackingMetadata.utm_medium || ''} {...register('utm_medium')} aria-hidden="true" />
+      <input type="hidden" value={trackingMetadata.utm_campaign || ''} {...register('utm_campaign')} aria-hidden="true" />
 
       {/* Contact Information */}
       <div className="space-y-4">
@@ -244,9 +245,9 @@ export function RfqB2BForm({ onSubmit }: RfqB2BFormProps) {
               key={item.id}
               className="relative rounded-lg border border-slate-200 p-4 bg-white shadow-sm transition-all hover:border-slate-300"
             >
-              <input type="hidden" {...register(`items.${index}.product_id` as const)} />
-              <input type="hidden" {...register(`items.${index}.product_name` as const)} />
-              <input type="hidden" {...register(`items.${index}.variant` as const)} />
+              <input type="hidden" {...register(`items.${index}.product_id` as const)} aria-hidden="true" />
+              <input type="hidden" {...register(`items.${index}.product_name` as const)} aria-hidden="true" />
+              <input type="hidden" {...register(`items.${index}.variant` as const)} aria-hidden="true" />
 
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">

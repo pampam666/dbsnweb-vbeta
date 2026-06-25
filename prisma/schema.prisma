@@ -90,6 +90,7 @@ model User {
   id                String             @id @default(cuid())
   email             String             @unique @map("email") @db.VarChar(255)
   emailVerified     DateTime?          @map("email_verified")
+  hashedPassword    String?            @map("hashed_password")
   image             String?
   name              String             @map("name") @db.VarChar(255)
   role              Role               @default(ADMIN)

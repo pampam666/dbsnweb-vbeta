@@ -6,6 +6,10 @@ module.exports = {
   moduleDirectories: ['node_modules'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^next-auth$': '<rootDir>/jest-environment/next-auth-mock.js',
+    '^next-auth/jwt$': '<rootDir>/jest-environment/next-auth-jwt-mock.js',
+    '^next-auth/providers/google$': '<rootDir>/jest-environment/next-auth-providers-google-mock.js',
+    '^next-auth/providers/credentials$': '<rootDir>/jest-environment/next-auth-providers-credentials-mock.js',
   },
   testMatch: ['<rootDir>/src/**/*.test.{js,jsx,ts,tsx}'],
   testPathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/node_modules/'],

@@ -12,33 +12,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### System Topology
 
-```
-┌─────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-│                     Public (Cloudflare Edge)                      │
-│  ┌───────────────────────────────────────────────────────────────────────────────────────────┐ │
-│  │                                                │
-│  │  Hub: sentradaya.com              Spokes:        Dashboard:         │
-│  │  (Corporate Trust)             pju.sentradaya.com     dashboard.sentradaya.com   │
-│  │                                  solarcell.sentradaya.com (Secure Tracking) │
-│  │                                  alatpetir.sentradaya.com                     │
-│  │                                  baterai.sentradaya.com                       │
-│  └───────────────────────────────────────────────────────────────────────────────────────────────┘ │
-│                                                              │
-│  ┌───────────────────────────────────────────────────────────────────────────────────────────────┐ │
-│  │                                                │
-│  │                     Next.js 16 App (Single Codebase)         │
-│  │  App Router + Middleware (Subdomain Routing)    │
-│  └───────────────────────────────────────────────────────────────────────────────────────────────┘ │
-│                                                              │
-│  ┌───────────────────────────────────────────────────────────────────────────────────────────────┐ │
-│  │                                                │
-│  │  Hub: sentradaya.com              Spokes:        Dashboard:         │
-│  │  (Corporate Trust)             pju.sentradaya.com     dashboard.sentradaya.com   │
-│  │                                  solarcell.sentradaya.com (Secure Tracking) │
-│  │                                  alatpetir.sentradaya.com                     │
-│  │                                  baterai.sentradaya.com                       │
-│  └───────────────────────────────────────────────────────────────────────────────────────────────┘ │
-```
+One Next.js codebase serves five hostnames. Edge middleware resolves the subdomain before routing to one of three route groups:
+
+| Hostname | Route Group | Purpose |
+|----------|-------------|---------|
+| `sentradaya.com` | `(hub)` | Corporate trust site |
+| `pju.sentradaya.com` | `(spokes)` | Penerangan Jalan Umum (street lighting) |
+| `solarcell.sentradaya.com` | `(spokes)` | Solar cell systems |
+| `alatpetir.sentradaya.com` | `(spokes)` | Lightning protection |
+| `baterai.sentradaya.com` | `(spokes)` | Industrial battery systems |
+| `dashboard.sentradaya.com` | `(dashboard)` | Authenticated client tracking portal |
+
+Spokes share route structure and UI components — differentiation is content-driven via Sanity CMS, not via code forks.
 
 ### Tech Stack
 
@@ -69,7 +54,7 @@ pnpm install
 # Development server (subdomain routing via lvh.me:3000)
 pnpm dev
 
-# Production build (Vercel)
+# Production build (Vercel) — runs prisma generate first
 pnpm build
 
 # Compile Next.js edge build for Cloudflare Pages
@@ -82,21 +67,30 @@ pnpm pages:preview
 pnpm pages:deploy
 ```
 
+### Database & Seed Scripts
+```bash
+pnpm db:seed:users                       # Seed auth users (admin/viewer/client)
+pnpm exec tsx prisma/seed-redirects.ts   # Seed 301 redirect map
+pnpm exec tsx scripts/gsc-submit-sitemap.ts  # Submit sitemap to Google Search Console
+```
+
 ### Testing
 ```bash
 # Unit/Integration tests (Jest + Testing Library)
 pnpm test              # Run all tests
 pnpm test:watch        # Interactive watch mode
 pnpm test:coverage     # Generate coverage report (target: 80%+)
+pnpm test src/__tests__/api/rfq/route.test.ts  # Run a single test file
+pnpm test -t "rejects invalid input"           # Run tests matching a name pattern
 
 # E2E tests (Playwright)
-pnpm test:e2e         # Run end-to-end tests
+pnpm test:e2e                              # Run all E2E tests
+pnpm exec playwright test tests/e2e/subdomain-routing.spec.ts  # Single spec
 ```
 
 ### Linting & Code Quality
-```bash
-pnpm lint             # ESLint code quality checks
-```
+
+`pnpm lint` runs ESLint against a **curated list of files** (see `package.json`), not the whole project. The list covers security-sensitive code (auth config, middleware, rate limiter, password reset) plus the redirect engine and chat route. To lint new files, either add them to the script in `package.json` or invoke `npx eslint <path>` directly.
 
 ---
 
@@ -269,16 +263,16 @@ When integrating new features or third-party services:
    - *Token handler endpoint*: POST `/api/an-token` fetching from `API_KEY_21ST` via `getTokenHandler`.
 2. **CMS Integration**: Use Prisma `Sanity` client with proper GROQ queries.
 3. **API Integration**: Implement error handling and retry logic.
-3. **Analytics (GA4)**: Use standardized event taxonomy:
+4. **Analytics (GA4)**: Use standardized event taxonomy:
    - `RFQ_SUBMIT` — Successful RFQ submission (`segment`, `spoke`, `item_count`)
    - `RFQ_FALLBACK_WHATSAPP` — WhatsApp fallback after failed RFQ (`spoke`)
    - `PRODUCT_VIEW` — Product page viewed (`product_name`, `spoke`)
    - `FILE_DOWNLOAD` — Datasheet download (`file_name`, `file_type`)
    - `CONTACT_CLICK` — Contact/WhatsApp CTA clicked (`contact_type`, `location`)
    - `SPOKE_NAVIGATION` — Hub ↔ Spoke navigation (`spoke`, `source`)
-4. **Notification Integration**: Use `NotificationQueue` in `src/lib/api/notifications/queue.ts` for resilient delivery with exponential backoff.
-5. **Authentication**: Wire NextAuth handlers with proper RBAC enforcement.
-6. **Monitoring**: Integrate Sentry for error tracking.
+5. **Notification Integration**: Use `NotificationQueue` in `src/lib/api/notifications/queue.ts` for resilient delivery with exponential backoff.
+6. **Authentication**: Wire NextAuth handlers with proper RBAC enforcement.
+7. **Monitoring**: Integrate Sentry for error tracking.
 
 ---
 
@@ -295,5 +289,5 @@ When integrating new features or third-party services:
 
 ---
 
-*Generated: 2026-06-11*
+*Generated: 2026-06-11 · Updated: 2026-06-23*
 *Status: Production Ready — Phase 3 features (Notification Queue, Cloudflare Pages Deployment, 301 Redirect Engine, SEO Migration, GA4 event tracking, GSC verification, Sentry monitoring) completed and fully documented*

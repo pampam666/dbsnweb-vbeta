@@ -5,11 +5,18 @@ jest.mock('@21st-sdk/nextjs/server', () => ({
   createTokenHandler: jest.fn(() => (req: NextRequest) => Promise.resolve(new Response(JSON.stringify({ token: 'mock-token' }), { status: 200 }))),
 }))
 
+const mockAuth = jest.fn()
+jest.mock('@/lib/auth/auth.config', () => ({
+  auth: mockAuth,
+}))
+
+
 describe('api/an-token', () => {
   const originalEnv = process.env
 
   beforeEach(() => {
     jest.clearAllMocks()
+    mockAuth.mockResolvedValue({ user: { email: 'admin@dbsn.co.id' } })
     process.env = { ...originalEnv, API_KEY_21ST: '21st_test_api_key' }
   })
 
@@ -33,5 +40,16 @@ describe('api/an-token', () => {
 
     expect(response.status).toBe(200)
     expect(data.token).toBe('mock-token')
+  })
+
+  it('should return 401 if unauthenticated', async () => {
+    mockAuth.mockResolvedValueOnce(null)
+    const { POST } = await import('@/app/api/an-token/route')
+    const req = new NextRequest('http://localhost/api/an-token', { method: 'POST' })
+    const response = await POST(req)
+    const data = await response.json()
+
+    expect(response.status).toBe(401)
+    expect(data.error).toBe('Unauthorized')
   })
 })

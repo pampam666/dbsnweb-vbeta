@@ -2,6 +2,16 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
+const logger = {
+  info: (message: string, meta?: Record<string, any>) => {
+    console.info(JSON.stringify({ level: 'info', message, ...meta }))
+  },
+  error: (message: string, error?: any) => {
+    console.error(JSON.stringify({ level: 'error', message, error: error instanceof Error ? error.message : error }))
+  }
+}
+
+
 const sampleRedirects = [
   // Hub mappings
   {
@@ -85,7 +95,7 @@ const sampleRedirects = [
 ]
 
 async function main() {
-  console.log('Starting redirect maps seeding...')
+  logger.info('Starting redirect maps seeding...')
   
   for (const item of sampleRedirects) {
     const upserted = await prisma.redirectMap.upsert({
@@ -101,17 +111,22 @@ async function main() {
         hitCount: 0,
       },
     })
-    console.log(`Seeded: ${upserted.legacyUrl} -> ${upserted.targetUrl} (${upserted.spoke})`)
+    logger.info('Seeded redirect map', {
+      legacyUrl: upserted.legacyUrl,
+      targetUrl: upserted.targetUrl,
+      spoke: upserted.spoke,
+    })
   }
 
-  console.log('Seeding finished successfully.')
+  logger.info('Seeding finished successfully.')
 }
 
 main()
   .catch((e) => {
-    console.error('Error during seeding:', e)
+    logger.error('Error during seeding', e)
     process.exit(1)
   })
   .finally(async () => {
     await prisma.$disconnect()
   })
+

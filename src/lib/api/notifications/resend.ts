@@ -81,3 +81,39 @@ export async function sendInternalNotification(lead: Lead): Promise<void> {
     console.error('Failed to send internal email notification:', err)
   }
 }
+
+export async function sendPasswordResetEmail(email: string, resetUrl: string): Promise<void> {
+  const apiKey = process.env.RESEND_API_KEY
+  const fromEmail = process.env.RESEND_FROM_EMAIL
+
+  if (!apiKey || !fromEmail) {
+    console.error('Resend email credentials missing')
+    return
+  }
+
+  const resend = new Resend(apiKey)
+
+  try {
+    const { error } = await resend.emails.send({
+      from: fromEmail,
+      to: email,
+      subject: 'Atur Ulang Kata Sandi - DBSN Portal',
+      html: `<h2>Atur Ulang Kata Sandi</h2>
+<p>Halo,</p>
+<p>Kami menerima permintaan untuk mengatur ulang kata sandi akun DBSN Portal Anda.</p>
+<p>Silakan klik tautan di bawah ini untuk mengatur ulang kata sandi Anda. Tautan ini akan kedaluwarsa dalam 1 jam:</p>
+<p><a href="${resetUrl}" style="display:inline-block;padding:10px 20px;background-color:#2563eb;color:white;text-decoration:none;border-radius:6px;">Atur Ulang Kata Sandi</a></p>
+<p>Jika tautan di atas tidak berfungsi, salin dan tempel URL berikut ke peramban Anda:</p>
+<p>${resetUrl}</p>
+<p>Jika Anda tidak meminta ini, abaikan saja email ini.</p>
+<p>Best regards,<br/>Sentra Daya Team</p>`,
+    })
+
+    if (error) {
+      console.error('Resend password reset email sending failed:', error)
+    }
+  } catch (err) {
+    console.error('Failed to send password reset email:', err)
+  }
+}
+

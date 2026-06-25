@@ -5,6 +5,12 @@ import { Segment, NotificationType } from '@prisma/client'
 import { NotificationQueue } from '../../../lib/api/notifications/queue'
 import { alertRfqFailure } from '@/lib/api/notifications/telegram'
 import { buildWhatsAppFallbackUrl } from '@/lib/api/notifications/whatsapp'
+import { getClientIp, createRateLimiter } from '@/lib/rate-limiter'
+
+const limiter = createRateLimiter({
+  interval: 60 * 1000,
+  maxRequests: 5,
+})
 
 export const runtime = 'nodejs' // Prisma client exceeds Edge 1MB bundle limit
 
@@ -18,6 +24,25 @@ export const runtime = 'nodejs' // Prisma client exceeds Edge 1MB bundle limit
  * Persists lead to Postgres, triggers notifications, and offers WhatsApp fallback on failure.
  */
 export async function POST(request: NextRequest) {
+  const ip = getClientIp(request)
+  const rateLimitResult = limiter.check(ip)
+  if (!rateLimitResult.success) {
+    return NextResponse.json(
+      {
+        error: {
+          code: 'rate_limited',
+          message: 'Too many RFQ submissions. Please try again in a minute.',
+        },
+      },
+      {
+        status: 429,
+        headers: {
+          'Retry-After': Math.ceil((rateLimitResult.reset - Date.now()) / 1000).toString(),
+        },
+      }
+    )
+  }
+
   let body: any
   try {
     try {

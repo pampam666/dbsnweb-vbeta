@@ -77,6 +77,7 @@ export default async function SpokeHome({
           </nav>
         </header>
 
+        <main id="main-content" tabIndex={-1} className="outline-none">
         {/* Hero Section */}
         <section className="relative bg-slate-900 text-white overflow-hidden py-24 md:py-32">
           {config.heroImage && (
@@ -197,6 +198,7 @@ export default async function SpokeHome({
             )}
           </div>
         </section>
+        </main>
       </div>
 
       <footer className="bg-white border-t border-slate-200 py-8 text-center text-sm text-slate-500 mt-16">

@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import ThemeToggle from "@/components/shared/ThemeToggle";
 import { FileText, Menu, X } from "lucide-react";
 import { useTrackEvent } from "@/hooks/use-analytics";
@@ -54,7 +53,7 @@ export default function Navbar() {
             <div className="relative w-9 h-9 overflow-hidden rounded-xl bg-white shadow-sm flex items-center justify-center">
               <Image
                 src="/images/dbsn_logo.png"
-                alt="Logo PT. DBSN"
+                alt="PT DBSN - Home"
                 fill
                 sizes="36px"
                 className="object-contain"
@@ -67,7 +66,7 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-1">
+          <nav aria-label="Main Navigation" className="hidden md:flex items-center gap-1">
             {navLinks.map((link) => (
               <Link
                 key={link.label}
@@ -111,7 +110,7 @@ export default function Navbar() {
 
       {/* Mobile Nav */}
       {isOpen && (
-        <div className="md:hidden bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 px-4 py-3 space-y-1">
+        <nav aria-label="Mobile Navigation" className="md:hidden bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 px-4 py-3 space-y-1">
           {navLinks.map((link) => (
             <Link
               key={link.label}
@@ -132,7 +131,7 @@ export default function Navbar() {
           >
             <FileText className="w-4 h-4" />Ajukan Penawaran
           </Link>
-        </div>
+        </nav>
       )}
     </header>
   );

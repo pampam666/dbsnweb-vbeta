@@ -125,17 +125,39 @@ export default function TestimonialsSection() {
             <TestimonialCard testimonial={testimonials[currentIndex]!} />
           </div>
           <div className="flex items-center justify-center gap-4 mt-6">
-            <Button variant="outline" size="icon" className="w-11 h-11 rounded-full border-emerald-200 text-emerald-700 hover:bg-emerald-100 min-w-[44px] min-h-[44px]" onClick={prev}>
+            <Button
+              variant="outline"
+              size="icon"
+              className="w-11 h-11 rounded-full border-emerald-200 text-emerald-700 hover:bg-emerald-100 min-w-[44px] min-h-[44px]"
+              onClick={prev}
+              aria-label="Previous testimonial"
+            >
               <ChevronLeft className="w-5 h-5" />
             </Button>
             <div className="flex gap-2">
               {testimonials.map((_, i) => (
-                <button key={i} onClick={() => setCurrentIndex(i)}
-                  className={`w-2.5 h-2.5 rounded-full transition-all duration-300 min-w-[28px] min-h-[28px] ${i === currentIndex ? "bg-emerald-600 w-6" : "bg-emerald-200 hover:bg-emerald-300"}`}
-                />
+                <button
+                  key={i}
+                  onClick={() => setCurrentIndex(i)}
+                  className="group min-w-6 min-h-6 flex items-center justify-center cursor-pointer"
+                  aria-label={`Go to testimonial ${i + 1}`}
+                  aria-current={i === currentIndex ? "true" : "false"}
+                >
+                  <span
+                    className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                      i === currentIndex ? "bg-emerald-600 w-6" : "bg-emerald-200 group-hover:bg-emerald-300"
+                    }`}
+                  />
+                </button>
               ))}
             </div>
-            <Button variant="outline" size="icon" className="w-11 h-11 rounded-full border-emerald-200 text-emerald-700 hover:bg-emerald-100 min-w-[44px] min-h-[44px]" onClick={next}>
+            <Button
+              variant="outline"
+              size="icon"
+              className="w-11 h-11 rounded-full border-emerald-200 text-emerald-700 hover:bg-emerald-100 min-w-[44px] min-h-[44px]"
+              onClick={next}
+              aria-label="Next testimonial"
+            >
               <ChevronRight className="w-5 h-5" />
             </Button>
           </div>

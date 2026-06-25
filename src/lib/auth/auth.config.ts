@@ -1,29 +1,31 @@
 import NextAuth from 'next-auth'
 import Credentials from 'next-auth/providers/credentials'
+import Google from 'next-auth/providers/google'
 import { PrismaAdapter } from '@auth/prisma-adapter'
 import { prisma } from '../db/prisma'
 import { Role } from '@prisma/client'
+import bcrypt from 'bcryptjs'
 
 declare module 'next-auth' {
   interface User {
     role: Role
     linkedLeadId?: string | null
-    trackingScopeIds?: any
+    trackingScopeIds?: unknown
   }
   interface Session {
     user: {
       role: Role
       linkedLeadId?: string | null
-      trackingScopeIds?: any
+      trackingScopeIds?: unknown
     } & import('next-auth').DefaultSession['user']
   }
 }
 
-declare module '@auth/core/jwt' {
+declare module 'next-auth/jwt' {
   interface JWT {
     role: Role
     linkedLeadId?: string | null
-    trackingScopeIds?: any
+    trackingScopeIds?: unknown
     issuedAt?: number
   }
 }
@@ -31,6 +33,10 @@ declare module '@auth/core/jwt' {
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   providers: [
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID || 'dummy-client-id',
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'dummy-client-secret',
+    }),
     Credentials({
       credentials: {
         email: { label: 'Email', type: 'email' },
@@ -44,17 +50,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const email = credentials.email as string
         const password = credentials.password as string
 
-        if (password !== 'correct-password') {
-          return null
-        }
-
         const user = await prisma.user.findUnique({
           where: { email },
         })
 
-        if (!user || !user.isActive) {
+        if (!user || !user.hashedPassword || !user.isActive) {
           return null
         }
+
+        const isValid = await bcrypt.compare(password, user.hashedPassword)
+        if (!isValid) {
+          return null
+        }
+
+        // Update lastLoginAt
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { lastLoginAt: new Date() },
+        })
 
         return {
           id: user.id,
@@ -71,8 +84,28 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     strategy: 'jwt',
   },
   callbacks: {
-    async signIn({ user }) {
+    async signIn({ user, account }) {
       if (!user?.email) return false
+
+      if (account?.provider === 'google') {
+        const dbUser = await prisma.user.findUnique({
+          where: { email: user.email },
+        })
+
+        if (!dbUser) {
+          await prisma.user.create({
+            data: {
+              email: user.email,
+              name: user.name || user.email.split('@')[0],
+              role: 'CLIENT',
+              isActive: true,
+            },
+          })
+          return true
+        }
+
+        return dbUser.isActive
+      }
 
       const dbUser = await prisma.user.findUnique({
         where: { email: user.email },
@@ -124,7 +157,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (token && session.user) {
         session.user.role = token.role as Role
         session.user.linkedLeadId = token.linkedLeadId as string | null
-        session.user.trackingScopeIds = token.trackingScopeIds as any
+        session.user.trackingScopeIds = token.trackingScopeIds as unknown
       }
       return session
     },

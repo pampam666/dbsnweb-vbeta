@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -86,67 +87,79 @@ function ProductDetailPanel({ product, onClose }: { product: Product; onClose: (
   const WA_URL = "https://wa.me/6283112345678?text=Halo%20DBSN%20Sentradaya";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" role="dialog" aria-modal="true">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white dark:bg-gray-900 w-full sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-t-3xl sm:rounded-2xl shadow-2xl custom-scrollbar">
-        <div className={`h-1.5 ${product.sheetAccent} rounded-t-3xl sm:rounded-t-2xl`} />
-        <div className="p-6 space-y-6">
-          <div className="flex items-center gap-4">
-            <div className={`w-16 h-16 rounded-2xl ${product.iconBg} flex items-center justify-center shrink-0`}>
-              <product.icon className={`w-8 h-8 ${product.iconColor}`} />
-            </div>
-            <div>
-              <h3 className="text-emerald-900 dark:text-emerald-100 text-xl font-bold">{product.title}</h3>
-              <p className="text-gray-500 text-sm mt-1">{product.subtitle}</p>
-            </div>
-            <button onClick={onClose} className="ml-auto text-gray-400 hover:text-gray-600 transition-colors text-2xl leading-none">&times;</button>
-          </div>
-          <div>
-            <h4 className="font-semibold text-emerald-800 dark:text-emerald-300 text-sm mb-2">Deskripsi Produk</h4>
-            <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{product.fullDescription}</p>
-          </div>
-          <div>
-            <h4 className="font-semibold text-emerald-800 dark:text-emerald-300 text-sm mb-3">Fitur Unggulan</h4>
-            <ul className="space-y-2.5">
-              {product.features.map((feature) => (
-                <li key={feature} className="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-300">
-                  <div className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-800 flex items-center justify-center shrink-0">
-                    <Check className="w-3 h-3 text-emerald-700 dark:text-emerald-300" />
+    <DialogPrimitive.Root open={true} onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200" />
+        <DialogPrimitive.Content className="fixed inset-0 z-50 flex items-end sm:items-center justify-center outline-none animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200">
+          <div className="relative bg-white dark:bg-gray-900 w-full sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-t-3xl sm:rounded-2xl shadow-2xl custom-scrollbar">
+            <DialogPrimitive.Title className="sr-only">{product.title}</DialogPrimitive.Title>
+            <DialogPrimitive.Description className="sr-only">
+              Detail produk {product.title}
+            </DialogPrimitive.Description>
+            <div className={`h-1.5 ${product.sheetAccent} rounded-t-3xl sm:rounded-t-2xl`} />
+            <div className="p-6 space-y-6">
+              <div className="flex items-center gap-4">
+                <div className={`w-16 h-16 rounded-2xl ${product.iconBg} flex items-center justify-center shrink-0`}>
+                  <product.icon className={`w-8 h-8 ${product.iconColor}`} />
+                </div>
+                <div>
+                  <h3 className="text-emerald-900 dark:text-emerald-100 text-xl font-bold">{product.title}</h3>
+                  <p className="text-gray-500 text-sm mt-1">{product.subtitle}</p>
+                </div>
+                <DialogPrimitive.Close asChild>
+                  <button className="ml-auto text-gray-400 hover:text-gray-600 transition-colors text-2xl leading-none" aria-label="Close product details">
+                    &times;
+                  </button>
+                </DialogPrimitive.Close>
+              </div>
+              <div>
+                <h4 className="font-semibold text-emerald-800 dark:text-emerald-300 text-sm mb-2">Deskripsi Produk</h4>
+                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{product.fullDescription}</p>
+              </div>
+              <div>
+                <h4 className="font-semibold text-emerald-800 dark:text-emerald-300 text-sm mb-3">Fitur Unggulan</h4>
+                <ul className="space-y-2.5">
+                  {product.features.map((feature) => (
+                    <li key={feature} className="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-300">
+                      <div className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-800 flex items-center justify-center shrink-0">
+                        <Check className="w-3 h-3 text-emerald-700 dark:text-emerald-300" />
+                      </div>
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <Badge variant="outline" className="border-emerald-200 text-emerald-700">{product.productCount} Varian Produk Tersedia</Badge>
+              {productSpecs[product.id] && (
+                <div>
+                  <h4 className="font-semibold text-emerald-800 dark:text-emerald-300 text-sm mb-3">Spesifikasi Teknis</h4>
+                  <div className="rounded-lg border border-emerald-100 dark:border-emerald-800 overflow-hidden">
+                    <table className="w-full text-sm">
+                      <tbody>
+                        {productSpecs[product.id].map((spec, i) => (
+                          <tr key={spec.label} className={i % 2 === 0 ? "bg-white dark:bg-gray-800" : "bg-emerald-50/40 dark:bg-emerald-900/20"}>
+                            <td className="px-4 py-2.5 text-gray-500 font-medium text-xs">{spec.label}</td>
+                            <td className="px-4 py-2.5 text-emerald-900 dark:text-emerald-100 text-xs">{spec.value}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
-                  {feature}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <Badge variant="outline" className="border-emerald-200 text-emerald-700">{product.productCount} Varian Produk Tersedia</Badge>
-          {productSpecs[product.id] && (
-            <div>
-              <h4 className="font-semibold text-emerald-800 dark:text-emerald-300 text-sm mb-3">Spesifikasi Teknis</h4>
-              <div className="rounded-lg border border-emerald-100 dark:border-emerald-800 overflow-hidden">
-                <table className="w-full text-sm">
-                  <tbody>
-                    {productSpecs[product.id].map((spec, i) => (
-                      <tr key={spec.label} className={i % 2 === 0 ? "bg-white dark:bg-gray-800" : "bg-emerald-50/40 dark:bg-emerald-900/20"}>
-                        <td className="px-4 py-2.5 text-gray-500 font-medium text-xs">{spec.label}</td>
-                        <td className="px-4 py-2.5 text-emerald-900 dark:text-emerald-100 text-xs">{spec.value}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                </div>
+              )}
+              <div className="space-y-3 pb-4">
+                <Button className="w-full bg-emerald-700 hover:bg-emerald-800 text-white gap-2 min-h-[48px]" onClick={() => scrollTo("permintaan-penawaran")}>
+                  <Lightbulb className="w-4 h-4" />Ajukan Penawaran
+                </Button>
+                <Button variant="outline" className="w-full border-emerald-200 text-emerald-700 hover:bg-emerald-50 gap-2 min-h-[48px]" onClick={() => { onClose(); window.open(WA_URL, "_blank"); }}>
+                  <MessageSquare className="w-4 h-4" />Hubungi via WhatsApp
+                </Button>
               </div>
             </div>
-          )}
-          <div className="space-y-3 pb-4">
-            <Button className="w-full bg-emerald-700 hover:bg-emerald-800 text-white gap-2 min-h-[48px]" onClick={() => scrollTo("permintaan-penawaran")}>
-              <Lightbulb className="w-4 h-4" />Ajukan Penawaran
-            </Button>
-            <Button variant="outline" className="w-full border-emerald-200 text-emerald-700 hover:bg-emerald-50 gap-2 min-h-[48px]" onClick={() => { onClose(); window.open(WA_URL, "_blank"); }}>
-              <MessageSquare className="w-4 h-4" />Hubungi via WhatsApp
-            </Button>
           </div>
-        </div>
-      </div>
-    </div>
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
   );
 }
 
@@ -239,7 +252,7 @@ export default function ProductsSection() {
                 <Card className="premium-card cursor-pointer h-full group hover:-translate-y-1" onClick={() => setSelectedProduct(product)}>
                   <div className={`h-2 bg-gradient-to-r ${product.gradient}`} />
                   <div className="relative aspect-[4/3] overflow-hidden">
-                    <Image src={productImages[product.id]} alt={product.title} fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
+                    <Image src={productImages[product.id]} alt={product.title || "Product item"} fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     <div className="absolute bottom-3 left-1/2 -translate-x-1/2 opacity-0 translate-y-3 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-10">
                       <div className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/95 shadow-xl text-emerald-700 text-sm font-bold border border-emerald-200">

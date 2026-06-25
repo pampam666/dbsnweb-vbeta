@@ -139,3 +139,39 @@ Detailed guides are located inside the `/docs` directory:
 * 🔧 [Local Setup & Hosts Guide](file:///docs/core/development/local-setup.md) — Detailed instructions on host configurations and env setup.
 * 🪵 [Sanity CMS Integration Guide](file:///docs/core/development/sanity-cms-guide.md) — GROQ queries, cache invalidations, and image optimizations.
 * 🧪 [Jest & Playwright Testing Guide](file:///docs/core/development/testing-guide.md) — Patterns for unit, integration, and E2E testing.
+
+---
+
+## 🔒 Secrets & Environment Management
+
+For local development, keep environment variables in `.env` (Next.js server-side / build variables) and Cloudflare Pages variables in `.dev.vars` (simulated secrets for wrangler pages dev). Both of these files are ignored by git.
+
+For production deployment on **Cloudflare Pages**, secure environment secrets (such as API keys and connection strings) must be set via Cloudflare's Dashboard under Page Settings > Environment Variables, or via the wrangler CLI.
+
+Use the following commands to upload secrets to Cloudflare:
+
+```bash
+# Database URL for Prisma Client
+npx wrangler pages secret put DATABASE_URL
+
+# Auth.js / NextAuth Session Secret (min. 32 characters)
+npx wrangler pages secret put NEXTAUTH_SECRET
+
+# Google OAuth Credentials
+npx wrangler pages secret put GOOGLE_CLIENT_ID
+npx wrangler pages secret put GOOGLE_CLIENT_SECRET
+
+# Resend API Key
+npx wrangler pages secret put RESEND_API_KEY
+
+# Telegram Notification Bot Token & Chat ID
+npx wrangler pages secret put TELEGRAM_BOT_TOKEN
+npx wrangler pages secret put TELEGRAM_CHAT_ID
+
+# Admin Default Seed Password
+npx wrangler pages secret put ADMIN_DEFAULT_PASSWORD
+
+# Cron Job Auth Validation Token
+npx wrangler pages secret put CRON_SECRET
+```
+

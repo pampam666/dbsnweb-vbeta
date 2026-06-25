@@ -112,7 +112,7 @@ export default function PortfolioSection({ portfolioItems = defaultPortfolioItem
                   {String(index + 1).padStart(2, "0")}
                 </div>
                 {item.image ? (
-                  <Image src={item.image} alt={item.title} fill className="object-cover" />
+                  <Image src={item.image} alt={item.title || "Portfolio item"} fill className="object-cover" />
                 ) : (
                   <>
                     <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 10px, #047857 10px, #047857 11px)` }} />
@@ -146,7 +146,7 @@ export default function PortfolioSection({ portfolioItems = defaultPortfolioItem
               <div className={`h-1.5 ${categoryAccentColors[selectedItem.clientCategory]}`} />
               {selectedItem.image && (
                 <div className="relative aspect-video w-full overflow-hidden">
-                  <Image src={selectedItem.image} alt={selectedItem.title} fill className="object-cover" />
+                  <Image src={selectedItem.image} alt={selectedItem.title || "Portfolio item"} fill className="object-cover" />
                   <Badge className={`absolute top-3 left-3 ${categoryColors[selectedItem.clientCategory]}`}>{categoryLabels[selectedItem.clientCategory]}</Badge>
                 </div>
               )}

@@ -5,7 +5,27 @@ export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs' // Prisma client exceeds Edge 1MB bundle limit
 
 
-export async function GET() {
+export async function GET(request: Request) {
+  const cronSecret = process.env.CRON_SECRET
+  if (!cronSecret) {
+    console.error('CRON_SECRET environment variable is missing')
+    return NextResponse.json(
+      { success: false, error: 'Cron authorization is not configured' },
+      { status: 500 }
+    )
+  }
+
+  const authHeader = request.headers.get('authorization')
+  const customHeader = request.headers.get('x-cron-secret')
+  const isAuthorized = authHeader === `Bearer ${cronSecret}` || customHeader === cronSecret
+
+  if (!isAuthorized) {
+    return NextResponse.json(
+      { success: false, error: 'Unauthorized' },
+      { status: 401 }
+    )
+  }
+
   try {
     await NotificationQueue.processAllPending()
     return NextResponse.json({

@@ -14,7 +14,7 @@ test.describe('Subdomain Routing E2E Smoke Tests', () => {
 
     // Assert page content
     const heading = page.locator('h1')
-    await expect(heading).toContainText('Solusi Energi Terbarukan')
+    await expect(heading).toContainText('Solusi Energi & Infrastruktur Terpercaya untuk Indonesia')
     await expect(page.locator('header nav')).toContainText('DBSN')
   })
 
@@ -53,7 +53,33 @@ test.describe('Subdomain Routing E2E Smoke Tests', () => {
     }
   })
 
-  test('4. Dashboard layout renders at http://dashboard.lvh.me:3000', async ({ page }) => {
+  test('4. Dashboard layout renders at http://dashboard.lvh.me:3000', async ({ page, context }) => {
+    // Set the mock e2e admin token cookie to bypass authentication
+    await context.addCookies([
+      {
+        name: 'next-auth.session-token',
+        value: 'mock-e2e-admin-token',
+        domain: 'lvh.me',
+        path: '/',
+      },
+    ])
+
+    // Mock client-side session retrieval
+    await page.route('**/api/auth/session', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          user: {
+            name: 'System Admin',
+            email: 'admin@dbsn.co.id',
+            role: 'ADMIN',
+          },
+          expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+        }),
+      })
+    })
+
     const response = await page.goto('http://dashboard.lvh.me:3000')
     expect(response).not.toBeNull()
     expect(response!.status()).toBe(200)
@@ -95,5 +121,64 @@ test.describe('Subdomain Routing E2E Smoke Tests', () => {
     // Middleware headers should not be present (skipped rewrite)
     const headers = response!.headers()
     expect(headers['x-middleware-subdomain']).toBeUndefined()
+  })
+
+  test('7. Alat Petir spoke page renders at http://alatpetir.lvh.me:3000', async ({ page }) => {
+    const consoleErrors: string[] = []
+    page.on('pageerror', (err) => {
+      consoleErrors.push(err.message)
+    })
+
+    const response = await page.goto('http://alatpetir.lvh.me:3000')
+    expect(response).not.toBeNull()
+    
+    // Assert middleware headers
+    const headers = response!.headers()
+    expect(headers['x-middleware-subdomain']).toBe('alatpetir')
+    expect(headers['x-middleware-matched-route']).toBe('/(spokes)/alatpetir')
+
+    // Accepts either 200 or 404 (in case CMS config is not seeded)
+    expect([200, 404]).toContain(response!.status())
+    expect(consoleErrors).toEqual([])
+  })
+
+  test('8. Baterai spoke page renders at http://baterai.lvh.me:3000', async ({ page }) => {
+    const consoleErrors: string[] = []
+    page.on('pageerror', (err) => {
+      consoleErrors.push(err.message)
+    })
+
+    const response = await page.goto('http://baterai.lvh.me:3000')
+    expect(response).not.toBeNull()
+    
+    // Assert middleware headers
+    const headers = response!.headers()
+    expect(headers['x-middleware-subdomain']).toBe('baterai')
+    expect(headers['x-middleware-matched-route']).toBe('/(spokes)/baterai')
+
+    expect([200, 404]).toContain(response!.status())
+    expect(consoleErrors).toEqual([])
+  })
+
+  test('9. Solar Cell Spoke products page loads at http://solarcell.lvh.me:3000/products', async ({ page }) => {
+    const response = await page.goto('http://solarcell.lvh.me:3000/products')
+    expect(response).not.toBeNull()
+    
+    const headers = response!.headers()
+    expect(headers['x-middleware-subdomain']).toBe('solarcell')
+    expect(headers['x-middleware-matched-route']).toBe('/(spokes)/solarcell')
+
+    expect([200, 404]).toContain(response!.status())
+  })
+
+  test('10. Solar Cell Spoke portfolio page loads at http://solarcell.lvh.me:3000/portfolio', async ({ page }) => {
+    const response = await page.goto('http://solarcell.lvh.me:3000/portfolio')
+    expect(response).not.toBeNull()
+    
+    const headers = response!.headers()
+    expect(headers['x-middleware-subdomain']).toBe('solarcell')
+    expect(headers['x-middleware-matched-route']).toBe('/(spokes)/solarcell')
+
+    expect([200, 404]).toContain(response!.status())
   })
 })

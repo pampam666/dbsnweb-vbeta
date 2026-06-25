@@ -10,7 +10,7 @@ const connectionString = process.env.DATABASE_URL!
 
 // Use Neon Driver Adapter for Edge compatibility
 const pool = new Pool({ connectionString })
-const adapter = new PrismaNeon(pool)
+const adapter = new PrismaNeon(pool as unknown as ConstructorParameters<typeof PrismaNeon>[0])
 
 export const prisma = globalForPrisma.__prisma ?? new PrismaClient({ adapter })
 

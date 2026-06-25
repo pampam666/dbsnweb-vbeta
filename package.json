@@ -4,13 +4,16 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "pregenerate": "node --eval \"import('fs').then(f => f.rmSync('node_modules/.prisma', { recursive: true, force: true })).catch(() => {})\"",
+    "generate": "prisma generate",
+    "build": "pnpm generate && next build",
     "start": "next start",
-    "lint": "eslint",
+    "lint": "eslint src/lib/auth/auth.config.ts src/middleware.ts src/lib/rate-limiter.ts src/app/api/auth/forgot-password/route.ts src/app/api/auth/reset-password/route.ts src/app/dashboard/login/page.tsx src/app/dashboard/lupa-kata-sandi/page.tsx src/app/dashboard/konfirmasi-reset/page.tsx src/__tests__/api/auth/password-reset.test.ts src/__tests__/rate-limiter.test.ts src/__tests__/lib/middleware/redirect-engine.test.ts src/__tests__/portfolio-detail.test.tsx src/app/chat/page.tsx src/lib/db/prisma.ts",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:e2e": "playwright test",
+    "db:seed:users": "npx tsx prisma/seed-users.ts",
     "pages:build": "npx @cloudflare/next-on-pages",
     "pages:preview": "npx wrangler pages dev",
     "pages:deploy": "npx wrangler pages deploy"
@@ -40,6 +43,7 @@
     "@sanity/image-url": "^2.1.1",
     "@sentry/nextjs": "^10.56.0",
     "ai": "^6.0.202",
+    "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "embla-carousel-react": "^8.6.0",
@@ -47,7 +51,7 @@
     "lucide-react": "^1.16.0",
     "motion-dom": "^12.40.0",
     "next": "16.2.6",
-    "next-auth": "^5.0.0-beta.31",
+    "next-auth": "5.0.0-beta.31",
     "next-sanity": "^12.4.5",
     "next-themes": "^0.4.6",
     "posthog-js": "^1.379.2",
@@ -70,6 +74,7 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
+    "@types/bcryptjs": "^3.0.0",
     "@types/jest": "^30.0.0",
     "@types/node": "^20",
     "@types/react": "^19",
@@ -79,6 +84,7 @@
     "eslint-config-next": "16.2.6",
     "jest": "^30.4.2",
     "jest-environment-jsdom": "^30.4.1",
+    "lru-cache": "^11.5.1",
     "prisma": "^6.19.3",
     "tailwindcss": "^4",
     "ts-jest": "^29.4.10",
@@ -104,3 +110,6 @@
   },
   "homepage": "https://github.com/pampam666/dbsnweb-vbeta#readme"
 }
+
+
+

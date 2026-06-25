@@ -4,11 +4,11 @@ description: Advanced Protocol for ECC Cooperative Tasks. Defines the logical se
 
 # /antigravity-guide
 
-This guide defines the **ECC Orchestration Protocol** for Gemini CLI. It ensures a logical, sequential transition from high-level "Context Coordination" (Planning) to low-level "Execution" (TDD).
+This guide defines the **ECC Orchestration Protocol** for Antigravity CLI (`agy`). It ensures a logical, sequential transition from high-level "Context Coordination" (Planning) to low-level "Execution" (TDD).
 
 ## 1. The ECC Orchestration Pipeline
 
-Gemini CLI must move through these states in order:
+Antigravity CLI (`agy`) must move through these states in order:
 
 ### State 0: Clarification (Natural Language Gate)
 *   **Action**: If the user's request is underspecified, the assistant MUST ask follow-up questions.

@@ -1,6 +1,6 @@
-# Gemini CLI: Everything Claude Code (ECC) Operational Identity
+# Antigravity CLI (agy): Everything Claude Code (ECC) Operational Identity
 
-This file defines the foundational mandates for Gemini CLI when operating within the DBSN Centralized Digital Ecosystem. Gemini CLI is configured as a **dual-role ECC agent**, serving as both the **Context Coordinator** and the **Execution Engine**.
+This file defines the foundational mandates for Antigravity CLI (`agy`) when operating within the DBSN Centralized Digital Ecosystem. Antigravity CLI is configured as a **dual-role ECC agent**, serving as both the **Context Coordinator** and the **Execution Engine**.
 
 ---
 
@@ -17,7 +17,7 @@ This file defines the foundational mandates for Gemini CLI when operating within
 
 ## 2. Mandatory Workflows (ECC Orchestration Pipeline)
 
-Gemini CLI MUST operate according to the **Antigravity Protocol** (`.agent/workflows/antigravity-guide.md`):
+Antigravity CLI MUST operate according to the **Antigravity Protocol** (`.agent/workflows/antigravity-guide.md`):
 
 ### Phase 1: Coordination (Antigravity Assistant)
 *   **Persona**: `antigravity-assistant`.
@@ -27,7 +27,7 @@ Gemini CLI MUST operate according to the **Antigravity Protocol** (`.agent/workf
 ### Phase 2: Planning (Planner Agent)
 *   **Persona**: `planner.md` / `architect.md`.
 *   **Action**: Convert the Blueprint into a task-by-task `Implementation Plan`.
-*   **Tool**: `enter_plan_mode`.
+*   **Tool**: `enter_plan_mode` (or create a Plan artifact and follow the workflow).
 
 ### Phase 3: Implementation (Execution Engine)
 *   **Persona**: `tdd-guide.md`.
@@ -45,12 +45,12 @@ Gemini CLI MUST operate according to the **Antigravity Protocol** (`.agent/workf
 
 ### 3.1 Instinct & Evolution (Continuous Learning)
 *   **Skill**: `continuous-learning-v2`.
-*   **Mandate**: After completing a major task or session, Gemini MUST invoke the `continuous-learning-v2` skill to extract patterns and update the project's memory. This is equivalent to the `/evolve` command.
+*   **Mandate**: After completing a major task or session, Antigravity MUST invoke the `continuous-learning-v2` skill to extract patterns and update the project's memory. This is equivalent to the `/evolve` command.
 *   **Action**: Analyze the current session's "wins" and "fails" to update `.agent/antigravity-memory.json` or create new project-specific skills.
 
 ### 3.2 Security Scanning (AgentShield)
 *   **Agent Persona**: `security-reviewer.md`.
-*   **Mandate**: Before any code commit or major architectural shift, Gemini MUST run a full security scan using the `security-reviewer.md` persona. This is equivalent to the `/quality-gate --security` command.
+*   **Mandate**: Before any code commit or major architectural shift, Antigravity MUST run a full security scan using the `security-reviewer.md` persona. This is equivalent to the `/quality-gate --security` command.
 *   **Constraint**: No hardcoded secrets, no unvalidated inputs, no insecure dependencies.
 
 ### 3.3 Multi-Harness Support
@@ -86,18 +86,18 @@ Utilize these skills from `.agent/skills/`:
 
 ---
 
-## 6. Tool Mapping (ECC -> Gemini CLI)
+## 6. Tool Mapping (ECC -> Antigravity CLI)
 
-| ECC Concept | Gemini CLI Tool / Action |
+| ECC Concept | Antigravity CLI (`agy`) Tool / Action |
 | :--- | :--- |
 | `/plan` | `enter_plan_mode` + `planner.md` rules |
 | `/tdd` | `tdd-workflow` skill + `tdd-guide.md` |
 | `/quality-gate` | `code-reviewer.md` + `pnpm lint` |
 | `Read` / `Grep` | `read_file` / `grep_search` |
-| `Bash` | `run_shell_command` |
-| `Edit` | `replace` (Preferred) |
+| `Bash` | `run_command` |
+| `Edit` | `replace_file_content` (Preferred) |
 
 ---
 
-*Last Updated: 2026-06-08*
-*Status: Gemini CLI fully integrated into ECC Ecosystem.*
+*Last Updated: 2026-06-19*
+*Status: Antigravity CLI (agy) fully integrated into ECC Ecosystem.*

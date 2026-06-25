@@ -1,8 +1,8 @@
 # Everything Claude Code (ECC) — Agent Instructions
 
-This is a **production-ready AI coding plugin** providing 58 specialized agents, 220 skills, 74 commands, and automated hook workflows for software development.
+This is a **production-ready AI coding plugin** providing 67 specialized agents, 271 skills, 92 commands, and automated hook workflows for software development.
 
-**Version:** 2.0.0-rc.1
+**Version:** 2.0.0
 
 ## Core Principles
 
@@ -21,6 +21,7 @@ This is a **production-ready AI coding plugin** providing 58 specialized agents,
 | tdd-guide | Test-driven development | New features, bug fixes |
 | code-reviewer | Code quality and maintainability | After writing/modifying code |
 | security-reviewer | Vulnerability detection | Before commits, sensitive code |
+| spec-miner | Brownfield spec extraction | Onboarding brownfield projects to spec-driven development |
 | build-error-resolver | Fix build/type errors | When build fails |
 | e2e-runner | End-to-end Playwright testing | Critical user flows |
 | refactor-cleaner | Dead code cleanup | Code maintenance |
@@ -35,6 +36,8 @@ This is a **production-ready AI coding plugin** providing 58 specialized agents,
 | kotlin-build-resolver | Kotlin/Gradle build errors | Kotlin build failures |
 | database-reviewer | PostgreSQL/Supabase specialist | Schema design, query optimization |
 | python-reviewer | Python code review | Python projects |
+| django-reviewer | Django code review | Django apps, DRF APIs, ORM, migrations |
+| django-build-resolver | Django build, migration, and setup errors | Django startup, dependency, migration, collectstatic failures |
 | java-reviewer | Java and Spring Boot code review | Java/Spring Boot projects |
 | java-build-resolver | Java/Maven/Gradle build errors | Java build failures |
 | loop-operator | Autonomous loop execution | Run loops safely, monitor stalls, intervene |
@@ -53,6 +56,7 @@ Use agents proactively without user prompt:
 - Bug fix or new feature → **tdd-guide**
 - Architectural decision → **architect**
 - Security-sensitive code → **security-reviewer**
+- Brownfield project onboarding → **spec-miner**
 - Autonomous loops / loop monitoring → **loop-operator**
 - Harness config reliability and cost → **harness-optimizer**
 
@@ -147,9 +151,9 @@ Troubleshoot failures: check test isolation → verify mocks → fix implementat
 ## Project Structure
 
 ```
-agents/          — 58 specialized subagents
-skills/          — 220 workflow skills and domain knowledge
-commands/        — 74 slash commands
+agents/          — 67 specialized subagents
+skills/          — 271 workflow skills and domain knowledge
+commands/        — 92 slash commands
 hooks/           — Trigger-based automations
 rules/           — Always-follow guidelines (common + per-language)
 scripts/         — Cross-platform Node.js utilities

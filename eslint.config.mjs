@@ -16,6 +16,8 @@ const eslintConfig = defineConfig([
     ".vercel/**",
     "studio/**",
     "node_modules/**",
+    ".gemini/**",
+    ".agent/**",
   ]),
 ]);
 
