@@ -94,7 +94,7 @@ export default function FAQSection() {
           <div className="relative mb-8">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <Input type="text" placeholder="Cari pertanyaan..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-12 border-emerald-200 focus:border-emerald-500 text-base" aria-label="Search frequently asked questions" />
+              className="pl-10 h-12 border-emerald-200 focus:border-emerald-500 text-base" />
             {searchQuery && (
               <p className="text-sm text-gray-500 mt-2">
                 Ditemukan <span className="font-semibold text-emerald-700">{totalResults}</span> hasil untuk &ldquo;<span className="font-medium">{searchQuery}</span>&rdquo;

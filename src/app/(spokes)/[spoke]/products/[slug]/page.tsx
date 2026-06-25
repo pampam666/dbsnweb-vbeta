@@ -79,7 +79,7 @@ export default async function ProductDetailPage({
           </nav>
         </header>
 
-        <main id="main-content" tabIndex={-1} className="container mx-auto px-6 py-12 max-w-6xl outline-none">
+        <main className="container mx-auto px-6 py-12 max-w-6xl">
           <ProductViewTracker productName={product.title} spoke={spoke} />
           <Script
             id="product-schema"
