@@ -11,8 +11,16 @@ jest.mock('next/headers', () => ({
 const mockHeadersFn = headers as any
 
 describe('Robots.txt Generator', () => {
+  const originalEnv = process.env
+
   beforeEach(() => {
     jest.clearAllMocks()
+    process.env = { ...originalEnv }
+    process.env.NEXT_PUBLIC_ROOT_DOMAIN = 'dayaberkah.id'
+  })
+
+  afterEach(() => {
+    process.env = originalEnv
   })
 
   it('allows root for all user agents and disallows private directories', async () => {
