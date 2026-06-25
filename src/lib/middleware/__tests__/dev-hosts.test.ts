@@ -25,7 +25,7 @@ describe('Dev Hosts Helper', () => {
 
   it('should return null for unknown or non-development hostnames', () => {
     expect(getExpectedRoute('unknown.lvh.me')).toBeNull()
-    expect(getExpectedRoute('sentradaya.com')).toBeNull()
+    expect(getExpectedRoute('dayaberkah.id')).toBeNull()
     expect(getExpectedRoute('')).toBeNull()
     expect(getExpectedRoute(null)).toBeNull()
     expect(getExpectedRoute(undefined)).toBeNull()

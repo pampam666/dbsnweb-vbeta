@@ -20,8 +20,8 @@ describe('SEO JSON-LD Schemas', () => {
       expect(schema['@context']).toBe('https://schema.org')
       expect(schema['@type']).toBe('Organization')
       expect(schema.name).toBe('DBSN Sentradaya')
-      expect(schema.url).toBe('https://sentradaya.com')
-      expect(schema.logo).toBe('https://sentradaya.com/logo.png')
+      expect(schema.url).toBe('https://dayaberkah.id')
+      expect(schema.logo).toBe('https://dayaberkah.id/logo.png')
     })
   })
 
@@ -50,8 +50,8 @@ describe('SEO JSON-LD Schemas', () => {
   describe('createBreadcrumbSchema', () => {
     it('returns valid BreadcrumbList schema', () => {
       const items = [
-        { name: 'Home', url: 'https://sentradaya.com' },
-        { name: 'Products', url: 'https://sentradaya.com/products' },
+        { name: 'Home', url: 'https://dayaberkah.id' },
+        { name: 'Products', url: 'https://dayaberkah.id/products' },
       ]
       const schema = createBreadcrumbSchema(items)
       expect(schema['@context']).toBe('https://schema.org')
@@ -59,7 +59,7 @@ describe('SEO JSON-LD Schemas', () => {
       expect(schema.itemListElement).toHaveLength(2)
       expect(schema.itemListElement[0].position).toBe(1)
       expect(schema.itemListElement[0].name).toBe('Home')
-      expect(schema.itemListElement[0].item).toBe('https://sentradaya.com')
+      expect(schema.itemListElement[0].item).toBe('https://dayaberkah.id')
       expect(schema.itemListElement[1].position).toBe(2)
     })
   })

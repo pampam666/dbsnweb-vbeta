@@ -18,7 +18,7 @@ describe('Robots.txt Generator', () => {
   it('allows root for all user agents and disallows private directories', async () => {
     const mockHeaders = {
       get: (key: string) => {
-        if (key.toLowerCase() === 'host') return 'sentradaya.com'
+        if (key.toLowerCase() === 'host') return 'dayaberkah.id'
         return null
       },
     }
@@ -38,7 +38,7 @@ describe('Robots.txt Generator', () => {
   it('blocks indexing entirely on dashboard domains', async () => {
     const mockHeaders = {
       get: (key: string) => {
-        if (key.toLowerCase() === 'host') return 'dashboard.sentradaya.com'
+        if (key.toLowerCase() === 'host') return 'dashboard.dayaberkah.id'
         return null
       },
     }
@@ -55,14 +55,14 @@ describe('Robots.txt Generator', () => {
   it('returns correct sitemap url for hub domain', async () => {
     const mockHeaders = {
       get: (key: string) => {
-        if (key.toLowerCase() === 'host') return 'sentradaya.com'
+        if (key.toLowerCase() === 'host') return 'dayaberkah.id'
         return null
       },
     }
     mockHeadersFn.mockResolvedValue(mockHeaders)
 
     const result = await robots()
-    expect(result.sitemap).toBe('https://sentradaya.com/sitemap.xml')
+    expect(result.sitemap).toBe('https://dayaberkah.id/sitemap.xml')
   })
 
   it('returns subdomain sitemap url for spoke domain', async () => {
@@ -75,6 +75,6 @@ describe('Robots.txt Generator', () => {
     mockHeadersFn.mockResolvedValue(mockHeaders)
 
     const result = await robots()
-    expect(result.sitemap).toBe('https://pju.sentradaya.com/sitemap.xml')
+    expect(result.sitemap).toBe('https://pju.dayaberkah.id/sitemap.xml')
   })
 })

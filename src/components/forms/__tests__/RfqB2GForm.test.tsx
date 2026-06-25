@@ -6,7 +6,7 @@ import { useRfqCartHydrated, useRfqCartStore } from '@/hooks/use-rfq-cart'
 // Mock tracking utility
 jest.mock('@/lib/utils/tracking', () => ({
   extractTrackingMetadata: jest.fn(() => ({
-    source_domain: 'sentradaya.com',
+    source_domain: 'dayaberkah.id',
     source_page_path: '/pju',
     utm_source: 'google',
     utm_medium: 'cpc',
@@ -462,7 +462,7 @@ describe('RfqB2GForm', () => {
         expect(mockOnSubmit).toHaveBeenCalledTimes(1)
         expect(mockOnSubmit.mock.calls[0][0]).toEqual(
           expect.objectContaining({
-            source_domain: 'sentradaya.com',
+            source_domain: 'dayaberkah.id',
             source_page_path: '/pju',
             utm_source: 'google',
             utm_medium: 'cpc',

@@ -14,7 +14,7 @@ describe('Hub Routing Tests', () => {
   beforeEach(async () => {
     jest.resetModules()
     process.env = { ...originalEnv }
-    process.env.NEXT_PUBLIC_ROOT_DOMAIN = 'sentradaya.com'
+    process.env.NEXT_PUBLIC_ROOT_DOMAIN = 'dayaberkah.id'
     const mwModule = await import('../../../middleware')
     middleware = mwModule.default
   })
@@ -114,9 +114,9 @@ describe('Hub Routing Tests', () => {
 
   describe('middleware() - Regression Tests', () => {
     it('should rewrite dashboard requests correctly', async () => {
-      const req = new NextRequest('https://dashboard.sentradaya.com/profile', {
+      const req = new NextRequest('https://dashboard.dayaberkah.id/profile', {
         headers: {
-          host: 'dashboard.sentradaya.com',
+          host: 'dashboard.dayaberkah.id',
           cookie: 'next-auth.session-token=dummy-token-value',
         },
       })
@@ -126,8 +126,8 @@ describe('Hub Routing Tests', () => {
     })
 
     it('should rewrite spoke requests correctly', async () => {
-      const req = new NextRequest('https://solarcell.sentradaya.com/products', {
-        headers: { host: 'solarcell.sentradaya.com' },
+      const req = new NextRequest('https://solarcell.dayaberkah.id/products', {
+        headers: { host: 'solarcell.dayaberkah.id' },
       })
       const res = await middleware(req)
       expect(res).toBeDefined()

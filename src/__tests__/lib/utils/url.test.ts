@@ -59,20 +59,20 @@ describe('buildSpokeUrl', () => {
 
   it('builds correct url on production domain without port', () => {
     mockGetWindowLocation.mockReturnValue({
-      hostname: 'sentradaya.com',
+      hostname: 'dayaberkah.id',
       port: '',
       protocol: 'https:',
     })
 
     const url = buildSpokeUrl('pju', '/products')
-    expect(url).toBe('https://pju.sentradaya.com/products')
+    expect(url).toBe('https://pju.dayaberkah.id/products')
 
     mockGetWindowLocation.mockReturnValue({
-      hostname: 'pju.sentradaya.com',
+      hostname: 'pju.dayaberkah.id',
       port: '',
       protocol: 'https:',
     })
     const urlFromSpoke = buildSpokeUrl('baterai', '/products')
-    expect(urlFromSpoke).toBe('https://baterai.sentradaya.com/products')
+    expect(urlFromSpoke).toBe('https://baterai.dayaberkah.id/products')
   })
 })

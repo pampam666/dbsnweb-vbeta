@@ -324,7 +324,7 @@ describe('B2G RFQ Schema', () => {
   it('should validate complete B2G RFQ with all required fields', () => {
     const validB2G = {
       segment: 'B2G',
-      source_domain: 'sentradaya.com',
+      source_domain: 'dayaberkah.id',
       source_page_path: '/pju/rfq',
       contact_name: 'PPK Officer',
       contact_email: 'ppk@gov.id',
@@ -353,7 +353,7 @@ describe('B2G RFQ Schema', () => {
   it('should validate B2G with multiple cart items', () => {
     const validB2G = {
       segment: 'B2G',
-      source_domain: 'sentradaya.com',
+      source_domain: 'dayaberkah.id',
       contact_name: 'PPK Officer',
       contact_email: 'ppk@gov.id',
       items: [
@@ -375,7 +375,7 @@ describe('B2G RFQ Schema', () => {
   it('should require procurement_type for B2G', () => {
     const invalidB2G = {
       segment: 'B2G',
-      source_domain: 'sentradaya.com',
+      source_domain: 'dayaberkah.id',
       contact_name: 'PPK Officer',
       contact_email: 'ppk@gov.id',
       items: [makeCartItem()],
@@ -402,7 +402,7 @@ describe('B2G RFQ Schema', () => {
     allowedTypes.forEach((type) => {
       const data = {
         segment: 'B2G',
-        source_domain: 'sentradaya.com',
+        source_domain: 'dayaberkah.id',
         contact_name: 'PPK Officer',
         contact_email: 'ppk@gov.id',
         items: [makeCartItem()],
@@ -417,7 +417,7 @@ describe('B2G RFQ Schema', () => {
   it('should reject invalid procurement_type', () => {
     const invalidB2G = {
       segment: 'B2G',
-      source_domain: 'sentradaya.com',
+      source_domain: 'dayaberkah.id',
       contact_name: 'PPK Officer',
       contact_email: 'ppk@gov.id',
       items: [makeCartItem()],
@@ -431,7 +431,7 @@ describe('B2G RFQ Schema', () => {
   it('should validate DIPA reference format', () => {
     const validData = {
       segment: 'B2G',
-      source_domain: 'sentradaya.com',
+      source_domain: 'dayaberkah.id',
       contact_name: 'PPK Officer',
       contact_email: 'ppk@gov.id',
       items: [makeCartItem()],
@@ -446,7 +446,7 @@ describe('B2G RFQ Schema', () => {
   it('should allow DIPA reference to be optional', () => {
     const dataWithoutDipa = {
       segment: 'B2G',
-      source_domain: 'sentradaya.com',
+      source_domain: 'dayaberkah.id',
       contact_name: 'PPK Officer',
       contact_email: 'ppk@gov.id',
       items: [makeCartItem()],
@@ -461,7 +461,7 @@ describe('B2G RFQ Schema', () => {
   it('should include source tracking fields', () => {
     const dataWithTracking = {
       segment: 'B2G',
-      source_domain: 'pju.sentradaya.com',
+      source_domain: 'pju.dayaberkah.id',
       source_page_path: '/products/street-light',
       source_campaign_tag: 'google-ads',
       utm_source: 'google',
@@ -476,7 +476,7 @@ describe('B2G RFQ Schema', () => {
     const result = rfqB2GSchema.safeParse(dataWithTracking)
     expect(result.success).toBe(true)
     if (result.success) {
-      expect(result.data.source_domain).toBe('pju.sentradaya.com')
+      expect(result.data.source_domain).toBe('pju.dayaberkah.id')
       expect(result.data.source_page_path).toBe('/products/street-light')
       expect(result.data.utm_source).toBe('google')
     }
@@ -489,7 +489,7 @@ describe('B2B RFQ Schema', () => {
   it('should validate complete B2B RFQ with all required fields', () => {
     const validB2B = {
       segment: 'B2B',
-      source_domain: 'sentradaya.com',
+      source_domain: 'dayaberkah.id',
       source_page_path: '/solarcell/rfq',
       contact_name: 'Procurement Manager',
       contact_email: 'procurement@company.com',
@@ -514,7 +514,7 @@ describe('B2B RFQ Schema', () => {
   it('should validate B2B with multiple cart items', () => {
     const validB2B = {
       segment: 'B2B',
-      source_domain: 'sentradaya.com',
+      source_domain: 'dayaberkah.id',
       contact_name: 'Procurement Manager',
       contact_email: 'procurement@company.com',
       items: [
@@ -533,7 +533,7 @@ describe('B2B RFQ Schema', () => {
   it('should reject B2B with empty items array', () => {
     const invalidB2B = {
       segment: 'B2B',
-      source_domain: 'sentradaya.com',
+      source_domain: 'dayaberkah.id',
       contact_name: 'Procurement Manager',
       contact_email: 'procurement@company.com',
       items: [],
@@ -546,7 +546,7 @@ describe('B2B RFQ Schema', () => {
   it('should not require procurement_type for B2B', () => {
     const b2bWithoutProcurementType = {
       segment: 'B2B',
-      source_domain: 'sentradaya.com',
+      source_domain: 'dayaberkah.id',
       contact_name: 'Procurement Manager',
       contact_email: 'procurement@company.com',
       items: [makeCartItem()],
@@ -560,7 +560,7 @@ describe('B2B RFQ Schema', () => {
   it('should allow company_name to be optional for B2B', () => {
     const b2bWithoutCompany = {
       segment: 'B2B',
-      source_domain: 'sentradaya.com',
+      source_domain: 'dayaberkah.id',
       contact_name: 'Individual Buyer',
       contact_email: 'buyer@gmail.com',
       items: [makeCartItem({ quantity: 10 })],
@@ -574,7 +574,7 @@ describe('B2B RFQ Schema', () => {
   it('should reject B2B with procurement_type (B2G-only field)', () => {
     const b2bWithProcurementType = {
       segment: 'B2B',
-      source_domain: 'sentradaya.com',
+      source_domain: 'dayaberkah.id',
       contact_name: 'Procurement Manager',
       contact_email: 'procurement@company.com',
       items: [makeCartItem()],
@@ -588,7 +588,7 @@ describe('B2B RFQ Schema', () => {
   it('should include source tracking fields', () => {
     const dataWithTracking = {
       segment: 'B2B',
-      source_domain: 'solarcell.sentradaya.com',
+      source_domain: 'solarcell.dayaberkah.id',
       source_page_path: '/products/panel-300w',
       source_campaign_tag: 'linkedin-ad',
       utm_source: 'linkedin',
@@ -600,7 +600,7 @@ describe('B2B RFQ Schema', () => {
     const result = rfqB2BSchema.safeParse(dataWithTracking)
     expect(result.success).toBe(true)
     if (result.success) {
-      expect(result.data.source_domain).toBe('solarcell.sentradaya.com')
+      expect(result.data.source_domain).toBe('solarcell.dayaberkah.id')
       expect(result.data.utm_source).toBe('linkedin')
     }
   })
@@ -612,7 +612,7 @@ describe('Segment Validation', () => {
   it('should accept B2G segment', () => {
     const data = {
       segment: 'B2G',
-      source_domain: 'sentradaya.com',
+      source_domain: 'dayaberkah.id',
       contact_name: 'Test User',
       contact_email: 'test@example.com',
       items: [makeCartItem()],
@@ -626,7 +626,7 @@ describe('Segment Validation', () => {
   it('should accept B2B segment', () => {
     const data = {
       segment: 'B2B',
-      source_domain: 'sentradaya.com',
+      source_domain: 'dayaberkah.id',
       contact_name: 'Test User',
       contact_email: 'test@example.com',
       items: [makeCartItem()],
@@ -639,7 +639,7 @@ describe('Segment Validation', () => {
   it('should reject invalid segment', () => {
     const data = {
       segment: 'B2C',
-      source_domain: 'sentradaya.com',
+      source_domain: 'dayaberkah.id',
       contact_name: 'Test User',
       contact_email: 'test@example.com',
       items: [makeCartItem()],

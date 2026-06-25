@@ -35,8 +35,8 @@ describe('Middleware Env Config', () => {
     const { validateMiddlewareEnv } = await import('../env')
 
     const config = validateMiddlewareEnv()
-    expect(config.NEXT_PUBLIC_ROOT_DOMAIN).toBe('sentradaya.com')
-    expect(config.NEXT_PUBLIC_SITE_URL).toBe('https://sentradaya.com')
+    expect(config.NEXT_PUBLIC_ROOT_DOMAIN).toBe('dayaberkah.id')
+    expect(config.NEXT_PUBLIC_SITE_URL).toBe('https://dayaberkah.id')
   })
 
   it('should use environment variables when they are defined', async () => {
@@ -158,7 +158,7 @@ describe('Middleware Env Config', () => {
   describe('Notification Env Config', () => {
     beforeEach(() => {
       process.env.RESEND_API_KEY = 're_key123'
-      process.env.RESEND_FROM_EMAIL = 'sales@sentradaya.com'
+      process.env.RESEND_FROM_EMAIL = 'sales@dayaberkah.id'
       process.env.TELEGRAM_BOT_TOKEN = 'bot123'
       process.env.TELEGRAM_CHAT_ID = 'chat456'
       process.env.WHATSAPP_SALES_NUMBER = '62812345678'
@@ -168,7 +168,7 @@ describe('Middleware Env Config', () => {
       const { validateNotificationEnv, getNotificationEnv } = await import('../env')
       const env = validateNotificationEnv()
       expect(env.RESEND_API_KEY).toBe('re_key123')
-      expect(env.RESEND_FROM_EMAIL).toBe('sales@sentradaya.com')
+      expect(env.RESEND_FROM_EMAIL).toBe('sales@dayaberkah.id')
       expect(env.TELEGRAM_BOT_TOKEN).toBe('bot123')
       expect(env.TELEGRAM_CHAT_ID).toBe('chat456')
       expect(env.WHATSAPP_SALES_NUMBER).toBe('62812345678')

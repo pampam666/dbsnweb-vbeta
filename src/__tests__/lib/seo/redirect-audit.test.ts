@@ -29,7 +29,7 @@ describe('Redirect Audit Utility', () => {
   it('handles empty redirect table', async () => {
     mockFindMany.mockResolvedValue([])
 
-    const report = await auditRedirects({ baseUrl: 'https://sentradaya.com', checkStatus: true })
+    const report = await auditRedirects({ baseUrl: 'https://dayaberkah.id', checkStatus: true })
 
     expect(report.totalRedirects).toBe(0)
     expect(report.chains).toHaveLength(0)
@@ -51,7 +51,7 @@ describe('Redirect Audit Utility', () => {
       ok: true,
     })
 
-    const report = await auditRedirects({ baseUrl: 'https://sentradaya.com', checkStatus: false })
+    const report = await auditRedirects({ baseUrl: 'https://dayaberkah.id', checkStatus: false })
 
     expect(report.totalRedirects).toBe(4)
     
@@ -82,7 +82,7 @@ describe('Redirect Audit Utility', () => {
       return Promise.resolve({ status: 404, ok: false })
     })
 
-    const report = await auditRedirects({ baseUrl: 'https://sentradaya.com', checkStatus: true })
+    const report = await auditRedirects({ baseUrl: 'https://dayaberkah.id', checkStatus: true })
 
     expect(report.totalRedirects).toBe(2)
     expect(report.brokenTargets).toHaveLength(1)

@@ -27,7 +27,7 @@ describe('Sitemap.xml Generator', () => {
   it('returns hub sitemap when host is hub domain', async () => {
     const mockHeaders = {
       get: (key: string) => {
-        if (key.toLowerCase() === 'host') return 'sentradaya.com'
+        if (key.toLowerCase() === 'host') return 'dayaberkah.id'
         return null
       },
     }
@@ -37,18 +37,18 @@ describe('Sitemap.xml Generator', () => {
 
     // Hub sitemap contains only hub static urls
     const urls = result.map((item) => item.url)
-    expect(urls).toContain('https://sentradaya.com')
-    expect(urls).toContain('https://sentradaya.com/about')
-    expect(urls).toContain('https://sentradaya.com/contact')
-    expect(urls).toContain('https://sentradaya.com/certifications')
-    expect(urls).toContain('https://sentradaya.com/portfolio')
-    expect(urls).toContain('https://sentradaya.com/products')
-    expect(urls).toContain('https://sentradaya.com/articles')
-    expect(urls).toContain('https://sentradaya.com/faq')
+    expect(urls).toContain('https://dayaberkah.id')
+    expect(urls).toContain('https://dayaberkah.id/about')
+    expect(urls).toContain('https://dayaberkah.id/contact')
+    expect(urls).toContain('https://dayaberkah.id/certifications')
+    expect(urls).toContain('https://dayaberkah.id/portfolio')
+    expect(urls).toContain('https://dayaberkah.id/products')
+    expect(urls).toContain('https://dayaberkah.id/articles')
+    expect(urls).toContain('https://dayaberkah.id/faq')
 
     // Spoke-specific urls or product detail urls should NOT be in the hub sitemap
-    expect(urls).not.toContain('https://pju.sentradaya.com')
-    expect(urls).not.toContain('https://sentradaya.com/pju/products/test-slug')
+    expect(urls).not.toContain('https://pju.dayaberkah.id')
+    expect(urls).not.toContain('https://dayaberkah.id/pju/products/test-slug')
   })
 
   it('returns spoke-specific sitemap when host is a spoke subdomain', async () => {
@@ -70,15 +70,15 @@ describe('Sitemap.xml Generator', () => {
     const urls = result.map((item) => item.url)
 
     // Spoke sitemap should contain spoke home and products belonging to pju
-    expect(urls).toContain('https://pju.sentradaya.com')
-    expect(urls).toContain('https://pju.sentradaya.com/products/pju-solar-10w')
+    expect(urls).toContain('https://pju.dayaberkah.id')
+    expect(urls).toContain('https://pju.dayaberkah.id/products/pju-solar-10w')
 
     // Spoke sitemap should NOT contain products from other spokes
-    expect(urls).not.toContain('https://pju.sentradaya.com/products/solar-panel-100w')
-    expect(urls).not.toContain('https://solarcell.sentradaya.com')
+    expect(urls).not.toContain('https://pju.dayaberkah.id/products/solar-panel-100w')
+    expect(urls).not.toContain('https://solarcell.dayaberkah.id')
 
     // Spoke sitemap should NOT contain hub-specific static pages (about, contact, etc.)
-    expect(urls).not.toContain('https://pju.sentradaya.com/about')
+    expect(urls).not.toContain('https://pju.dayaberkah.id/about')
   })
 
   it('handles empty/null products list from Sanity gracefully', async () => {
@@ -94,6 +94,6 @@ describe('Sitemap.xml Generator', () => {
     const result = await sitemap()
     const urls = result.map((item) => item.url)
 
-    expect(urls).toEqual(['https://pju.sentradaya.com'])
+    expect(urls).toEqual(['https://pju.dayaberkah.id'])
   })
 })

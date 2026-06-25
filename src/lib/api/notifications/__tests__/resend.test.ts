@@ -37,7 +37,7 @@ describe('Resend Email Notification Service', () => {
     createdAt: new Date(),
     updatedAt: new Date(),
     segment: 'B2B' as Segment,
-    sourceDomain: 'solarcell.sentradaya.com',
+    sourceDomain: 'solarcell.dayaberkah.id',
     sourcePagePath: '/checkout',
     sourceCampaignTag: null,
     utmSource: null,

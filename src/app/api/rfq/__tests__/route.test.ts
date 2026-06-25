@@ -129,7 +129,7 @@ describe('POST /api/rfq', () => {
   it('should accept valid B2B payload, save to DB, trigger notifications, and return 201 Created', async () => {
     const validB2BPayload = {
       segment: 'B2B',
-      source_domain: 'solarcell.sentradaya.com',
+      source_domain: 'solarcell.dayaberkah.id',
       source_page_path: '/products',
       contact_name: 'Test Buyer',
       contact_email: 'buyer@example.com',
@@ -155,7 +155,7 @@ describe('POST /api/rfq', () => {
     expect(mockLeadCreate).toHaveBeenCalledWith({
       data: expect.objectContaining({
         segment: 'B2B',
-        sourceDomain: 'solarcell.sentradaya.com',
+        sourceDomain: 'solarcell.dayaberkah.id',
         contactEmail: 'buyer@example.com',
         productCategory: 'Solar Module 100W',
         quantity: 25,
@@ -183,7 +183,7 @@ describe('POST /api/rfq', () => {
   it('should accept valid B2G payload and return 201 Created', async () => {
     const validB2GPayload = {
       segment: 'B2G',
-      source_domain: 'sentradaya.com',
+      source_domain: 'dayaberkah.id',
       source_page_path: '/pju',
       contact_name: 'Gov Officer',
       contact_email: 'officer@gov.id',
@@ -228,7 +228,7 @@ describe('POST /api/rfq', () => {
   it('should return 422 validation_error when fields are malformed or missing', async () => {
     const invalidPayload = {
       segment: 'B2G',
-      source_domain: 'sentradaya.com',
+      source_domain: 'dayaberkah.id',
       contact_name: 'Gov Officer',
       contact_email: 'invalid-email-format',
       contact_phone: '08123456789', // Invalid phone format (+62)
@@ -272,7 +272,7 @@ describe('POST /api/rfq', () => {
   it('should still return 201 if notifications fail', async () => {
     const payload = {
       segment: 'B2B',
-      source_domain: 'sentradaya.com',
+      source_domain: 'dayaberkah.id',
       contact_name: 'Buyer Name',
       contact_email: 'buyer@example.com',
       items: [{ product_id: '1', product_name: 'Product 1', quantity: 1 }],
@@ -294,7 +294,7 @@ describe('POST /api/rfq', () => {
   it('should return 503 with fallback url and alert Telegram when database write fails', async () => {
     const payload = {
       segment: 'B2B',
-      source_domain: 'sentradaya.com',
+      source_domain: 'dayaberkah.id',
       contact_name: 'Buyer Name',
       contact_email: 'buyer@example.com',
       items: [{ product_id: '1', product_name: 'Product 1', quantity: 1 }],

@@ -12,11 +12,11 @@ describe('SEO Metadata Utilities', () => {
       const meta = createHubHomeMetadata()
       expect(meta.title).toBe('DBSN Sentradaya | Solusi Energi Terbarukan')
       expect(meta.description?.toLowerCase()).toContain('energi terbarukan')
-      expect(meta.alternates?.canonical).toBe('https://sentradaya.com')
+      expect(meta.alternates?.canonical).toBe('https://dayaberkah.id')
       expect((meta.openGraph as any)?.type).toBe('website')
       expect(meta.openGraph?.images).toContainEqual(
         expect.objectContaining({
-          url: 'https://sentradaya.com/og-default.png',
+          url: 'https://dayaberkah.id/og-default.png',
         })
       )
     })
@@ -33,7 +33,7 @@ describe('SEO Metadata Utilities', () => {
     it('returns correct metadata for static hub sub-pages', () => {
       const meta = createHubPageMetadata('about')
       expect(meta.title).toBe('Tentang Kami | DBSN Sentradaya')
-      expect(meta.alternates?.canonical).toBe('https://sentradaya.com/about')
+      expect(meta.alternates?.canonical).toBe('https://dayaberkah.id/about')
     })
 
     it('throws error for invalid page name', () => {
@@ -52,7 +52,7 @@ describe('SEO Metadata Utilities', () => {
       const meta = createSpokeHomeMetadata('pju', spokeConfig)
       expect(meta.title).toBe('PJU Tenaga Surya | DBSN Sentradaya')
       expect(meta.description).toBe('Penerangan Jalan Umum hemat energi')
-      expect(meta.alternates?.canonical).toBe('https://pju.sentradaya.com')
+      expect(meta.alternates?.canonical).toBe('https://pju.dayaberkah.id')
       expect((meta.openGraph as any)?.type).toBe('website')
     })
   })
@@ -70,7 +70,7 @@ describe('SEO Metadata Utilities', () => {
       const meta = createSpokeProductMetadata('solarcell', product)
       expect(meta.title).toBe('Custom Product Title')
       expect(meta.description).toBe('Custom description')
-      expect(meta.alternates?.canonical).toBe('https://solarcell.sentradaya.com/products/solar-panel-100wp')
+      expect(meta.alternates?.canonical).toBe('https://solarcell.dayaberkah.id/products/solar-panel-100wp')
       expect((meta.openGraph as any)?.type).toBe('article')
     })
 

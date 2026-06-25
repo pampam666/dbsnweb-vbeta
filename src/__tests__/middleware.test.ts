@@ -17,7 +17,7 @@ describe('Subdomain Routing Middleware Integration', () => {
     mockLookupRedirect.mockReset()
     mockLookupRedirect.mockResolvedValue(null)
     process.env = { ...originalEnv }
-    process.env.NEXT_PUBLIC_ROOT_DOMAIN = 'sentradaya.com'
+    process.env.NEXT_PUBLIC_ROOT_DOMAIN = 'dayaberkah.id'
     const mwModule = await import('../middleware')
     middleware = mwModule.default
   })
@@ -26,9 +26,9 @@ describe('Subdomain Routing Middleware Integration', () => {
     process.env = originalEnv
   })
 
-  it('should pass through hub domain (sentradaya.com) with hub headers', async () => {
-    const req = new NextRequest('http://sentradaya.com/about?test=1', {
-      headers: { host: 'sentradaya.com' },
+  it('should pass through hub domain (dayaberkah.id) with hub headers', async () => {
+    const req = new NextRequest('http://dayaberkah.id/about?test=1', {
+      headers: { host: 'dayaberkah.id' },
     })
 
     const res = await middleware(req)
@@ -39,8 +39,8 @@ describe('Subdomain Routing Middleware Integration', () => {
   })
 
   it('should pass through hub domain with www with hub headers', async () => {
-    const req = new NextRequest('http://www.sentradaya.com/contact', {
-      headers: { host: 'www.sentradaya.com' },
+    const req = new NextRequest('http://www.dayaberkah.id/contact', {
+      headers: { host: 'www.dayaberkah.id' },
     })
 
     const res = await middleware(req)
@@ -51,9 +51,9 @@ describe('Subdomain Routing Middleware Integration', () => {
   })
 
   it('should rewrite dashboard domain to /dashboard folder when authenticated', async () => {
-    const req = new NextRequest('http://dashboard.sentradaya.com/profile', {
+    const req = new NextRequest('http://dashboard.dayaberkah.id/profile', {
       headers: {
-        host: 'dashboard.sentradaya.com',
+        host: 'dashboard.dayaberkah.id',
         cookie: 'next-auth.session-token=dummy-token-value',
       },
     })
@@ -66,19 +66,19 @@ describe('Subdomain Routing Middleware Integration', () => {
   })
 
   it('should redirect dashboard domain to /login if unauthenticated', async () => {
-    const req = new NextRequest('http://dashboard.sentradaya.com/profile', {
-      headers: { host: 'dashboard.sentradaya.com' },
+    const req = new NextRequest('http://dashboard.dayaberkah.id/profile', {
+      headers: { host: 'dashboard.dayaberkah.id' },
     })
 
     const res = await middleware(req)
     expect(res).toBeDefined()
     expect(res.status).toBe(307)
-    expect(res.headers.get('location')).toBe('http://dashboard.sentradaya.com/login')
+    expect(res.headers.get('location')).toBe('http://dashboard.dayaberkah.id/login')
   })
 
   it('should allow public dashboard routes to proceed without authentication', async () => {
-    const req = new NextRequest('http://dashboard.sentradaya.com/login', {
-      headers: { host: 'dashboard.sentradaya.com' },
+    const req = new NextRequest('http://dashboard.dayaberkah.id/login', {
+      headers: { host: 'dashboard.dayaberkah.id' },
     })
 
     const res = await middleware(req)
@@ -87,8 +87,8 @@ describe('Subdomain Routing Middleware Integration', () => {
   })
 
   it('should rewrite valid spoke subdomain (pju) to /(spokes)/pju', async () => {
-    const req = new NextRequest('http://pju.sentradaya.com/products/led', {
-      headers: { host: 'pju.sentradaya.com' },
+    const req = new NextRequest('http://pju.dayaberkah.id/products/led', {
+      headers: { host: 'pju.dayaberkah.id' },
     })
 
     const res = await middleware(req)
@@ -123,8 +123,8 @@ describe('Subdomain Routing Middleware Integration', () => {
   })
 
   it('should return 404 for unknown subdomains', async () => {
-    const req = new NextRequest('http://invalid.sentradaya.com/some-path', {
-      headers: { host: 'invalid.sentradaya.com' },
+    const req = new NextRequest('http://invalid.dayaberkah.id/some-path', {
+      headers: { host: 'invalid.dayaberkah.id' },
     })
 
     const res = await middleware(req)
@@ -133,8 +133,8 @@ describe('Subdomain Routing Middleware Integration', () => {
   })
 
   it('should short-circuit and do nothing for API routes', async () => {
-    const req = new NextRequest('http://pju.sentradaya.com/api/rfq', {
-      headers: { host: 'pju.sentradaya.com' },
+    const req = new NextRequest('http://pju.dayaberkah.id/api/rfq', {
+      headers: { host: 'pju.dayaberkah.id' },
     })
 
     const res = await middleware(req)
@@ -144,8 +144,8 @@ describe('Subdomain Routing Middleware Integration', () => {
   })
 
   it('should short-circuit and do nothing for static files and _next', async () => {
-    const req = new NextRequest('http://pju.sentradaya.com/_next/static/chunks/main.js', {
-      headers: { host: 'pju.sentradaya.com' },
+    const req = new NextRequest('http://pju.dayaberkah.id/_next/static/chunks/main.js', {
+      headers: { host: 'pju.dayaberkah.id' },
     })
 
     const res = await middleware(req)
@@ -154,9 +154,9 @@ describe('Subdomain Routing Middleware Integration', () => {
   })
 
   it('should short-circuit and set correct headers for already rewritten dashboard path', async () => {
-    const req = new NextRequest('http://dashboard.sentradaya.com/dashboard/profile', {
+    const req = new NextRequest('http://dashboard.dayaberkah.id/dashboard/profile', {
       headers: {
-        host: 'dashboard.sentradaya.com',
+        host: 'dashboard.dayaberkah.id',
         cookie: 'next-auth.session-token=dummy-token-value',
       },
     })
@@ -169,8 +169,8 @@ describe('Subdomain Routing Middleware Integration', () => {
   })
 
   it('should short-circuit and set correct headers for already rewritten spoke path', async () => {
-    const req = new NextRequest('http://pju.sentradaya.com/pju/products/led', {
-      headers: { host: 'pju.sentradaya.com' },
+    const req = new NextRequest('http://pju.dayaberkah.id/pju/products/led', {
+      headers: { host: 'pju.dayaberkah.id' },
     })
 
     const res = await middleware(req)
@@ -181,8 +181,8 @@ describe('Subdomain Routing Middleware Integration', () => {
   })
 
   it('should return 404 if direct spoke path is requested on hub domain', async () => {
-    const req = new NextRequest('http://sentradaya.com/pju/products/led', {
-      headers: { host: 'sentradaya.com' },
+    const req = new NextRequest('http://dayaberkah.id/pju/products/led', {
+      headers: { host: 'dayaberkah.id' },
     })
 
     const res = await middleware(req)
@@ -192,21 +192,21 @@ describe('Subdomain Routing Middleware Integration', () => {
 
   it('should redirect permanently (301) when a redirect match is found, preserving query parameters', async () => {
     mockLookupRedirect.mockResolvedValue('/products/solar-panel')
-    const req = new NextRequest('http://solarcell.sentradaya.com/old-panel?ref=promo', {
-      headers: { host: 'solarcell.sentradaya.com' },
+    const req = new NextRequest('http://solarcell.dayaberkah.id/old-panel?ref=promo', {
+      headers: { host: 'solarcell.dayaberkah.id' },
     })
 
     const res = await middleware(req)
     expect(res).toBeDefined()
     expect(res.status).toBe(301)
-    expect(res.headers.get('location')).toBe('http://solarcell.sentradaya.com/products/solar-panel?ref=promo')
-    expect(mockLookupRedirect).toHaveBeenCalledWith('/old-panel', 'solarcell', 'http://solarcell.sentradaya.com')
+    expect(res.headers.get('location')).toBe('http://solarcell.dayaberkah.id/products/solar-panel?ref=promo')
+    expect(mockLookupRedirect).toHaveBeenCalledWith('/old-panel', 'solarcell', 'http://solarcell.dayaberkah.id')
   })
 
   it('should not redirect if no match is found, executing normal middleware routing', async () => {
     mockLookupRedirect.mockResolvedValue(null)
-    const req = new NextRequest('http://sentradaya.com/normal-page', {
-      headers: { host: 'sentradaya.com' },
+    const req = new NextRequest('http://dayaberkah.id/normal-page', {
+      headers: { host: 'dayaberkah.id' },
     })
 
     const res = await middleware(req)

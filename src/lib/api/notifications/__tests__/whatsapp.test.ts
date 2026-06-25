@@ -17,7 +17,7 @@ describe('WhatsApp Fallback URL Builder', () => {
   it('should serialize B2B RFQ data correctly into wa.me URL', () => {
     const mockB2BData = {
       segment: 'B2B' as const,
-      source_domain: 'solarcell.sentradaya.com',
+      source_domain: 'solarcell.dayaberkah.id',
       source_page_path: '/checkout',
       contact_name: 'John Doe',
       contact_email: 'john@example.com',
@@ -58,7 +58,7 @@ describe('WhatsApp Fallback URL Builder', () => {
   it('should serialize B2G RFQ data including procurement_type and dipa_reference', () => {
     const mockB2GData = {
       segment: 'B2G' as const,
-      source_domain: 'sentradaya.com',
+      source_domain: 'dayaberkah.id',
       source_page_path: '/pju',
       contact_name: 'Ahmad Basuki',
       contact_email: 'ahmad@dinas.go.id',
@@ -89,7 +89,7 @@ describe('WhatsApp Fallback URL Builder', () => {
   it('should URL encode special characters correctly', () => {
     const mockData = {
       segment: 'B2B' as const,
-      source_domain: 'sentradaya.com',
+      source_domain: 'dayaberkah.id',
       contact_name: 'M. Ali & Partners',
       contact_email: 'ali@example.com',
       items: [
