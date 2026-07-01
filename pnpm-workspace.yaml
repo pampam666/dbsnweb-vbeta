@@ -10,6 +10,7 @@ allowBuilds:
   core-js: true
   esbuild: true
   prisma: true
+  puppeteer: true
   sharp: false
   unrs-resolver: false
   workerd: true
@@ -19,5 +20,3 @@ ignoredBuiltDependencies:
 
 overrides:
   dompurify: "3.4.11"
-
-

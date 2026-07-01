@@ -55,7 +55,7 @@ SETUP_API_KEYS.md
 .vercel
 
 # Gemini / Agent / ECC configs & artifacts
-.agent/
+.agents/
 .antigravity/
 .mcp.json
 .eslintignore
