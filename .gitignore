@@ -61,3 +61,5 @@ SETUP_API_KEYS.md
 .eslintignore
 playwright_results.txt
 test-results/
+.claude/settings.json
+

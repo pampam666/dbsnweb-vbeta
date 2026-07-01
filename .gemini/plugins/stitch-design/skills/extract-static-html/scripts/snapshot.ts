@@ -314,6 +314,29 @@ async function snapshot(opts: Opts): Promise<void> {
       await new Promise((r) => setTimeout(r, opts.wait));
     }
 
+    // Auto-scroll to the bottom of the page to trigger lazy loading and scroll-linked animations
+    console.log('📜 Scrolling page to bottom to trigger lazy loading and animations...');
+    await page.evaluate(async () => {
+      await new Promise((resolve) => {
+        let totalHeight = 0;
+        const distance = 150;
+        const timer = setInterval(() => {
+          const scrollHeight = document.documentElement.scrollHeight;
+          window.scrollBy(0, distance);
+          totalHeight += distance;
+
+          if (totalHeight >= scrollHeight) {
+            clearInterval(timer);
+            // Scroll back to top
+            window.scrollTo(0, 0);
+            resolve(true);
+          }
+        }, 40);
+      });
+    });
+    // Wait a brief moment after scrolling
+    await new Promise((r) => setTimeout(r, 1500));
+
     // Perform click interaction if specified
     if (opts.click) {
       console.log(`🖱️ Clicking element "${opts.click}"...`);
